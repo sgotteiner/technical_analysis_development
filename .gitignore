@@ -1,0 +1,26 @@
+# Data & Raw Datasets (Large CSV / JSON files)
+data/*.csv
+data/*.json
+
+# Generated Exporter Build Output
+ui/tradingview_chart.html
+ui/data/
+
+# Python & Virtual Environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+*.log
+
+# IDE & Tool Files
+.DS_Store
+.idea/
+.vscode/
+.gemini/
+.antigravityignore

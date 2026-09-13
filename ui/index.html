@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingView Technical Analysis & Strategy Architecture Platform</title>
+    <script>
+        /* LIGHTWEIGHT_CHARTS_JS_PLACEHOLDER */
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        /* CSS_STYLES_PLACEHOLDER */
+    </style>
+</head>
+<body>
+
+    <!-- TradingView Top Navigation Bar -->
+    <div id="tv-top-bar">
+        <div class="tv-top-left">
+            <div class="tv-symbol-badge">
+                <span>BTC/USD</span>
+                <span class="tv-exchange">BINANCE</span>
+            </div>
+
+            <div class="tv-divider"></div>
+
+            <div class="tv-tf-group">
+                <button class="tv-tf-btn" id="tf-5m" onclick="setTimeframe('5m')">5m</button>
+                <button class="tv-tf-btn active" id="tf-1h" onclick="setTimeframe('1h')">1h</button>
+                <button class="tv-tf-btn" id="tf-4h" onclick="setTimeframe('4h')">4h</button>
+                <button class="tv-tf-btn" id="tf-1d" onclick="setTimeframe('1d')">1D</button>
+                <button class="tv-tf-btn" id="tf-1w" onclick="setTimeframe('1w')">1W</button>
+            </div>
+
+            <div class="tv-divider"></div>
+
+            <!-- Live OHLC + % Change Bar -->
+            <div class="tv-ohlc-stream">
+                <span class="tv-ohlc-item">O<span id="ohlc-o" class="tv-ohlc-val">--</span></span>
+                <span class="tv-ohlc-item">H<span id="ohlc-h" class="tv-ohlc-val">--</span></span>
+                <span class="tv-ohlc-item">L<span id="ohlc-l" class="tv-ohlc-val">--</span></span>
+                <span class="tv-ohlc-item">C<span id="ohlc-c" class="tv-ohlc-val">--</span></span>
+                <span id="ohlc-change" class="tv-ohlc-up">+0.00%</span>
+            </div>
+        </div>
+
+        <div class="tv-top-right">
+            <label style="font-size: 11px; font-weight: 600; color: #787b86; margin-right: 6px;">Strategy:</label>
+            <select id="strategySelect" class="tv-strat-select" onchange="onStrategySelected(this.value)">
+                <option value="daily_supertrend" selected>⚡ Daily Swing Supertrend Strategy (88.6% Win Rate | +43,198%)</option>
+                <option value="agent_confluence">⭐ Agent Confluence Strategy (Multi-Timeframe Confluence)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="tv-main-body">
+
+        <!-- Main Chart Container -->
+        <div id="tv-chart-wrapper">
+            <div id="tv-toast" class="tv-toast hidden"></div>
+            <div id="tv-loading-overlay" class="tv-loading-overlay hidden">
+                <div class="tv-spinner"></div>
+                <span id="tv-loading-text" class="tv-loading-text">Loading Candle Data...</span>
+            </div>
+            <div class="tv-chart-legend">
+                <div class="tv-legend-title" id="legend-symbol-title">Bitcoin / US Dollar · 1h · BINANCE</div>
+                <div class="tv-legend-row">
+                    <span class="tv-legend-dot" style="background: #089981;"></span> <span id="leg-ema20">EMA 20: --</span>
+                    <span class="tv-legend-dot" style="background: #f23645;"></span> <span id="leg-ema50">EMA 50: --</span>
+                    <span class="tv-legend-dot" style="background: #2962ff;"></span> <span id="leg-sma200">SMA 200: --</span>
+                </div>
+            </div>
+            <div id="chart-container"></div>
+        </div>
+
+        <!-- Right Audit Sidebar -->
+        <div id="tv-sidebar">
+            <div class="tv-sidebar-tabs">
+                <button class="tv-tab-btn active" id="tab-audit-btn" onclick="switchTab('audit')">📊 Strategy Execution</button>
+                <button class="tv-tab-btn" id="tab-inspector-btn" onclick="switchTab('inspector')">🔍 TA Module Inspector</button>
+            </div>
+
+            <div id="tab-audit" class="tv-tab-content">
+                <div class="tv-card-header">
+                    <span id="card-title">Strategy Summary</span>
+                    <span id="card-badge" class="tv-badge tv-badge-win">88.6% WIN RATE</span>
+                </div>
+
+                <div class="tv-card-metrics">
+                    <div><div class="tv-metric-title">Net Return</div><div class="tv-metric-val" id="stat-return" style="color: #089981;">+43,198%</div></div>
+                    <div><div class="tv-metric-title">Win Rate</div><div class="tv-metric-val" id="stat-winrate" style="color: #2962ff;">88.6%</div></div>
+                    <div><div class="tv-metric-title">Total Trades</div><div class="tv-metric-val" id="stat-trades">44</div></div>
+                    <div><div class="tv-metric-title">Beats Baseline</div><div class="tv-metric-val" style="color: #089981;">+41,647% Alpha</div></div>
+                </div>
+
+                <div style="font-size: 11px; font-weight: 700; color: #787b86; margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>TRADE SETUP AUDIT</span>
+                    <span id="trade-counter" style="font-size: 10px; color: #2962ff; font-weight: 600;">Trade 1 of 44</span>
+                </div>
+
+                <div class="tv-trade-nav">
+                    <button class="tv-nav-btn" onclick="prevTrade()" title="Previous Trade">◄ Prev</button>
+                    <div class="tv-select-wrapper">
+                        <select id="tradeSelect" class="tv-trade-select" onchange="onTradeSelected(this.value)">
+                            <option value="0">Trade #1 (+14.2%)</option>
+                        </select>
+                    </div>
+                    <button class="tv-nav-btn" onclick="nextTrade()" title="Next Trade">Next ►</button>
+                </div>
+
+                <div id="trade-details-box" class="tv-details-card">
+                    <div class="tv-detail-row"><span class="tv-detail-label">Entry Price</span><span id="card-entry" class="tv-detail-val">$0.00</span></div>
+                    <div class="tv-detail-row"><span class="tv-detail-label">Entry Time</span><span id="card-entry-time" class="tv-detail-sub">--</span></div>
+                    <div class="tv-detail-row"><span class="tv-detail-label">Exit Price</span><span id="card-exit" class="tv-detail-val">$0.00</span></div>
+                    <div class="tv-detail-row"><span class="tv-detail-label">Exit Time</span><span id="card-exit-time" class="tv-detail-sub">--</span></div>
+                    <div class="tv-detail-row"><span class="tv-detail-label">Duration</span><span id="card-duration" class="tv-detail-val">0 Hours</span></div>
+                    <div class="tv-detail-row"><span class="tv-detail-label">Trade Return</span><span id="card-result" class="tv-detail-val" style="color: #089981;">+0.0%</span></div>
+                </div>
+            </div>
+
+            <div id="tab-inspector" class="tv-tab-content hidden">
+                <div class="tv-card-header">
+                    <span id="ta-card-title">TA Module Inspector</span>
+                    <span id="ta-badge" class="tv-badge" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6;">VISIBLE SCREEN AUDIT</span>
+                </div>
+
+                <div style="margin-top: 10px; margin-bottom: 8px;">
+                    <label style="font-size: 11px; font-weight: 700; color: #787b86; display: block; margin-bottom: 4px;">SELECT TA MODULE / SHAPE TO DRAW:</label>
+                    <select id="taModuleSelect" class="tv-strat-select" style="width: 100%; font-size: 11px;" onchange="renderTAPattern(this.value)">
+                        <option value="hammer" selected>🔨 1. Hammer Reversal (Candlestick)</option>
+                        <option value="engulfing">🟩 2. Bullish Engulfing (Candlestick)</option>
+                        <option value="piercing">🌓 3. Piercing Line (Candlestick)</option>
+                        <option value="flags">🚩 4. Bull Flags (Chart Shape)</option>
+                        <option value="triangles">🔺 5. Triangles (Chart Shape)</option>
+                        <option value="institutional_geometry">📏 6. Multi-Touch Geometry (Chart Shape)</option>
+                        <option value="mtf_sr">🧱 7. Multi-Timeframe S&R (Chart Shape)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const multiStrategyData = /* DATA_MULTI_STRATEGY */;
+        const taModulesData = /* DATA_TA_MODULES */;
+        const ema20Data = /* DATA_EMA20 */;
+        const ema50Data = /* DATA_EMA50 */;
+        const sma200Data = /* DATA_SMA200 */;
+        const rsiData = /* DATA_RSI */;
+        const adxData = /* DATA_ADX */;
+        const volumeData = /* DATA_VOLUME */;
+        const candleData = /* DATA_CANDLES */;
+        const timeframeData = /* DATA_TIMEFRAMES */;
+    </script>
+    <script>
+        /* CHART_ENGINE_JS_PLACEHOLDER */
+    </script>
+</body>
+</html>

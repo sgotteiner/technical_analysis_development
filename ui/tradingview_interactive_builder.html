@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingView Technical Analysis & Strategy Architecture Platform</title>
+    <script src="lightweight-charts.js"></script>
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/toolbar.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+</head>
+<body>
+
+    <!-- TradingView Top Navigation Bar -->
+    <div id="tv-top-bar">
+        <div class="tv-top-left">
+            <div class="tv-symbol-badge">
+                <span>BTC/USD</span>
+                <span class="tv-exchange">BINANCE</span>
+            </div>
+
+            <div class="tv-divider"></div>
+
+            <div class="tv-tf-group">
+                <button class="tv-tf-btn" id="tf-1m" onclick="setTimeframe('1m')">1m</button>
+                <button class="tv-tf-btn" id="tf-5m" onclick="setTimeframe('5m')">5m</button>
+                <button class="tv-tf-btn" id="tf-15m" onclick="setTimeframe('15m')">15m</button>
+                <button class="tv-tf-btn active" id="tf-1h" onclick="setTimeframe('1h')">1h</button>
+                <button class="tv-tf-btn" id="tf-4h" onclick="setTimeframe('4h')">4h</button>
+                <button class="tv-tf-btn" id="tf-1d" onclick="setTimeframe('1d')">1D</button>
+                <button class="tv-tf-btn" id="tf-1w" onclick="setTimeframe('1w')">1W</button>
+            </div>
+
+            <div class="tv-divider"></div>
+
+            <!-- Live OHLC + % Change Bar -->
+            <div class="tv-ohlc-stream">
+                <span class="tv-ohlc-item">O<span id="ohlc-o" class="tv-ohlc-val">--</span></span>
+                <span class="tv-ohlc-item">H<span id="ohlc-h" class="tv-ohlc-val">--</span></span>
+                <span class="tv-ohlc-item">L<span id="ohlc-l" class="tv-ohlc-val">--</span></span>
+                <span class="tv-ohlc-item">C<span id="ohlc-c" class="tv-ohlc-val">--</span></span>
+                <span id="ohlc-change" class="tv-ohlc-up">+0.00%</span>
+            </div>
+        </div>
+
+        <div class="tv-top-right">
+            <label style="font-size: 11px; font-weight: 600; color: #787b86; margin-right: 6px;">Strategy:</label>
+            <select id="strategySelect" class="tv-strat-select" onchange="onStrategySelected(this.value)">
+                <option value="daily_supertrend" selected>⚡ Daily Swing Supertrend Strategy (88.6% Win Rate | +43,198%)</option>
+                <option value="agent_confluence">⭐ Agent Confluence Strategy (Multi-Timeframe Confluence)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="tv-main-body">
+
+        <!-- TradingView Left Drawing Tools Toolbar -->
+        <div id="tv-left-toolbar">
+            <button class="tv-tool-btn active" id="tool-cursor" title="Crosshair Cursor" onclick="selectTool('cursor')">➕</button>
+            <button class="tv-tool-btn" id="tool-trendline" title="Trendline Tool" onclick="selectTool('trendline')">📈</button>
+            <button class="tv-tool-btn" id="tool-ray" title="Horizontal Support/Resistance Ray" onclick="selectTool('ray')">➖</button>
+            <button class="tv-tool-btn" id="tool-rect" title="Rectangle Box Tool" onclick="selectTool('rect')">⬜</button>
+            <button class="tv-tool-btn" title="Clear Custom Drawings" onclick="clearUserDrawings()">🗑️</button>
+        </div>
+
+        <!-- Main Chart Container -->
+        <div id="tv-chart-wrapper">
+            <div class="tv-chart-legend">
+                <div class="tv-legend-title" id="legend-symbol-title">Bitcoin / US Dollar · 1h · BINANCE</div>
+                <div class="tv-legend-row">
+                    <span class="tv-legend-dot" style="background: #089981;"></span> <span id="leg-ema20">EMA 20: --</span>
+                    <span class="tv-legend-dot" style="background: #f23645;"></span> <span id="leg-ema50">EMA 50: --</span>
+                    <span class="tv-legend-dot" style="background: #2962ff;"></span> <span id="leg-sma200">SMA 200: --</span>
+                </div>
+            </div>
+            <div id="chart-container"></div>
+        </div>
+
+        <!-- Right Audit Sidebar -->
+        <div id="tv-sidebar">
+            <div class="tv-sidebar-tabs">
+                <button class="tv-tab-btn active" id="tab-audit-btn" onclick="switchTab('audit')">📊 Strategy Execution Audit</button>
+            </div>
+
+            <div id="tab-audit" class="tv-tab-content">
+                <div class="tv-card-header">
+                    <span id="card-title">Strategy Summary</span>
+                    <span id="card-badge" class="tv-badge tv-badge-win">88.6% WIN RATE</span>
+                </div>
+
+                <div class="tv-card-metrics">
+                    <div><div class="tv-metric-title">Net Return</div><div class="tv-metric-val" id="stat-return" style="color: #089981;">+43,198%</div></div>
+                    <div><div class="tv-metric-title">Win Rate</div><div class="tv-metric-val" id="stat-winrate" style="color: #2962ff;">88.6%</div></div>
+                    <div><div class="tv-metric-title">Total Trades</div><div class="tv-metric-val" id="stat-trades">44</div></div>
+                    <div><div class="tv-metric-title">Beats Baseline</div><div class="tv-metric-val" style="color: #089981;">+41,647% Alpha</div></div>
+                </div>
+
+                <div style="font-size: 11px; font-weight: 700; color: #787b86; margin-top: 10px;">INSPECT INDIVIDUAL TRADE SETUPS:</div>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <button onclick="prevTrade()" style="background: #2a2e39; color: #fff; border: 1px solid #363a45; padding: 4px 8px; border-radius: 4px; cursor: pointer;">◄ Prev</button>
+                    <select id="tradeSelect" onchange="onTradeSelected(this.value)" style="flex: 1; background: #131722; color: #00E5FF; border: 1px solid #363a45; padding: 5px; border-radius: 4px; font-size: 11px;">
+                        <option value="0">Trade #1</option>
+                    </select>
+                    <button onclick="nextTrade()" style="background: #2a2e39; color: #fff; border: 1px solid #363a45; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Next ►</button>
+                </div>
+
+                <div id="trade-details-box" style="background: #131722; padding: 10px; border-radius: 4px; border: 1px solid #2a2e39; font-size: 12px; display: flex; flex-direction: column; gap: 6px;">
+                    <div><strong style="color: #787b86;">Entry:</strong> <span id="card-entry" style="color: #f0f3fa; font-weight: 700;">$0.00</span></div>
+                    <div><strong style="color: #787b86;">Exit:</strong> <span id="card-exit" style="color: #f0f3fa; font-weight: 700;">$0.00</span></div>
+                    <div><strong style="color: #787b86;">Duration:</strong> <span id="card-duration" style="color: #f0f3fa; font-weight: 700;">0 Hours</span></div>
+                    <div><strong style="color: #787b86;">Trade Return:</strong> <span id="card-result" style="color: #089981; font-weight: 700;">+0.0%</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data/dashboard_data.js"></script>
+    <script src="js/chart_init.js"></script>
+    <script src="js/drawing_tools.js"></script>
+    <script src="js/trade_navigation.js"></script>
+    <script src="js/timeframe_manager.js"></script>
+</body>
+</html>

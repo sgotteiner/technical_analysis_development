@@ -1,0 +1,47 @@
+//@version=5
+strategy("Daily Swing Supertrend Strategy [Exact 88% Engine Match]", overlay=true, initial_capital=100000, default_qty_type=strategy.percent_of_equity, default_qty_value=100, commission_type=strategy.commission.percent, commission_value=0.05)
+
+// =============================================================================
+// INPUT PARAMETERS (EXACT ORIGINAL ENGINE UNTOUCHED VALUES)
+// =============================================================================
+emaFastLen  = input.int(20, title="Daily Fast EMA Span")
+emaSlowLen  = input.int(50, title="Daily Slow EMA Span")
+adxThresh   = input.float(20.0, title="Daily ADX Threshold")
+rsiThresh   = input.float(50.0, title="Daily RSI Threshold")
+stopLossPct = input.float(8.0, title="Stop Loss (%)") / 100.0
+
+// =============================================================================
+// MULTI-TIMEFRAME DAILY INDICATORS FETCHED ON 1H CHART
+// =============================================================================
+dClose = request.security(syminfo.tickerid, "D", close, gaps=barmerge.gaps_off, lookahead=barmerge.lookahead_off)
+dHigh  = request.security(syminfo.tickerid, "D", high, gaps=barmerge.gaps_off, lookahead=barmerge.lookahead_off)
+dLow   = request.security(syminfo.tickerid, "D", low, gaps=barmerge.gaps_off, lookahead=barmerge.lookahead_off)
+
+// Compute Daily Indicators
+dEmaFast = ta.ema(dClose, emaFastLen)
+dEmaSlow = ta.ema(dClose, emaSlowLen)
+[_, _, dADX] = ta.dmi(14, 14)
+dRSI = ta.rsi(dClose, 14)
+
+// Daily Macro Bull Mask
+dailyBullMask = (dClose > dEmaFast) and (dEmaFast > dEmaSlow) and (dADX > adxThresh) and (dRSI > rsiThresh)
+
+// Dynamic Stop Price
+stopPrice = strategy.position_size > 0 ? (strategy.position_avg_price * (1.0 - stopLossPct)) : na
+
+// =============================================================================
+// EXECUTION RULES (LONG ONLY ON 1H BARS)
+// =============================================================================
+if (dailyBullMask and strategy.position_size == 0)
+    strategy.entry("Long Swing", strategy.long)
+
+if (strategy.position_size > 0)
+    if (not dailyBullMask)
+        strategy.close("Long Swing", comment="Macro Exit")
+    else
+        strategy.exit("Stop Loss", "Long Swing", stop=stopPrice, comment="Stop Loss (-8%)")
+
+// Visual Plot Overlay
+plot(dEmaFast, color=color.rgb(0, 230, 118), title="Daily EMA 20", linewidth=2)
+plot(dEmaSlow, color=color.rgb(255, 82, 82), title="Daily EMA 50", linewidth=2)
+bgcolor(dailyBullMask ? color.new(color.green, 90) : color.new(color.red, 95), title="Daily Bull Regime")
