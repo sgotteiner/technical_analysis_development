@@ -109,7 +109,18 @@ def export_tradingview_dashboard(cycle_instance=None, filename="tradingview_char
         markers, formatted_trades = format_strategy_trades_and_markers(res.get('trades_list', []))
         multi_strategy_payload[strat_key] = {
             'name': strat_obj.name,
-            'stats': {'return': res['net_return'], 'winRate': res['win_rate'], 'numTrades': res['total_trades'], 'maxDrawdown': 0.0},
+            'stats': {
+                'return': res['net_return'],
+                'winRate': res['win_rate'],
+                'numTrades': res['total_trades'],
+                'medianReturn': res['median_return'],
+                'p33Return': res['p33_return'],
+                'p66Return': res['p66_return'],
+                'meanReturn': res['mean_return'],
+                'minReturn': res['min_return'],
+                'maxReturn': res['max_return'],
+                'maxDrawdown': 0.0
+            },
             'markers': markers,
             'trades': formatted_trades
         }

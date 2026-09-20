@@ -33,10 +33,15 @@ class DailySupertrendStrategy:
         
         # Daily Bull Mask
         daily_bull_mask = (close_d > ema_fast_d) & (ema_fast_d > ema_slow_d) & (adx_d > self.params['adx_thresh']) & (rsi_d > self.params['rsi_thresh'])
-        
-        # Map Daily Signals to 1H dataframe timestamps
+
+        # Shift by 1 day to eliminate same-day lookahead: day D trades on day D-1's
+        # completed daily candle (the close/EMA/ADX/RSI are only known at end of day).
+        daily_bull_mask = daily_bull_mask.shift(1, fill_value=False)
+
+        # Map Daily Signals to 1H dataframe timestamps using vectorized strftime
         daily_signal_dict = dict(zip(df_daily.index.strftime('%Y-%m-%d'), daily_bull_mask))
-        h1_macro_bull = np.array([daily_signal_dict.get(df_1h.index[i].strftime('%Y-%m-%d'), False) for i in range(len(df_1h))])
+        dates_1h = df_1h.index.strftime('%Y-%m-%d')
+        h1_macro_bull = np.array([daily_signal_dict.get(d, False) for d in dates_1h])
         
         signals = np.zeros(len(df_1h), dtype=int)
         signals[h1_macro_bull] = 1

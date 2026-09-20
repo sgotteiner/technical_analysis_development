@@ -38,6 +38,15 @@ def calculate_trade_metrics(
     avg_dur_hours = float(np.mean(durations)) if durations else 0.0
     avg_dur_days = avg_dur_hours / 24.0
     
+    returns_pct = [t.get('ReturnPct', 0.0) * 100.0 for t in trades_list]
+    mean_return = float(np.mean(returns_pct)) if returns_pct else 0.0
+    median_return = float(np.median(returns_pct)) if returns_pct else 0.0
+    p33_return = float(np.percentile(returns_pct, 33.33)) if returns_pct else 0.0
+    p66_return = float(np.percentile(returns_pct, 66.67)) if returns_pct else 0.0
+    min_return = float(np.min(returns_pct)) if returns_pct else 0.0
+    max_return = float(np.max(returns_pct)) if returns_pct else 0.0
+    std_return = float(np.std(returns_pct)) if returns_pct else 0.0
+    
     bnh_profit_dollar = initial_capital * (bnh_return / 100.0)
     bnh_ending_capital = initial_capital + bnh_profit_dollar
     alpha_return = net_return - bnh_return
@@ -57,6 +66,13 @@ def calculate_trade_metrics(
         "avg_dur_days": avg_dur_days,
         "avg_duration_hours": avg_dur_hours,
         "avg_duration_days": avg_dur_days,
+        "mean_return": mean_return,
+        "median_return": median_return,
+        "p33_return": p33_return,
+        "p66_return": p66_return,
+        "min_return": min_return,
+        "max_return": max_return,
+        "std_return": std_return,
         "bnh_return": bnh_return,
         "bnh_ending_capital": bnh_ending_capital,
         "alpha_return": alpha_return,

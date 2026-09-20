@@ -159,6 +159,19 @@ function loadStrategy(stratKey) {
     if (tradesEl && stratData.stats && typeof stratData.stats.numTrades === 'number') {
         tradesEl.textContent = stratData.stats.numTrades;
     }
+    const medianEl = document.getElementById('stat-median');
+    if (medianEl && stratData.stats && typeof stratData.stats.medianReturn === 'number') {
+        medianEl.textContent = (stratData.stats.medianReturn >= 0 ? '+' : '') + stratData.stats.medianReturn.toFixed(2) + '%';
+        medianEl.style.color = stratData.stats.medianReturn >= 0 ? '#8b5cf6' : '#f23645';
+    }
+    const meanEl = document.getElementById('stat-mean');
+    if (meanEl && stratData.stats && typeof stratData.stats.meanReturn === 'number') {
+        meanEl.textContent = (stratData.stats.meanReturn >= 0 ? '+' : '') + stratData.stats.meanReturn.toFixed(2) + '%';
+    }
+    const minmaxEl = document.getElementById('stat-minmax');
+    if (minmaxEl && stratData.stats && typeof stratData.stats.minReturn === 'number' && typeof stratData.stats.maxReturn === 'number') {
+        minmaxEl.textContent = `${stratData.stats.minReturn.toFixed(1)}% / +${stratData.stats.maxReturn.toFixed(1)}%`;
+    }
 
     try { mainSeries.setMarkers(stratData.markers || []); } catch(e) {}
 

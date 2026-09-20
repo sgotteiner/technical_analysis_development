@@ -63,6 +63,7 @@ def extract_block_instances(block_res, df_1h: pd.DataFrame, min_gap_bars: int = 
 
 def evaluate_all_ta_modules(df_daily: pd.DataFrame, df_1h: pd.DataFrame) -> Dict[str, Any]:
     """Runs all 3 Candlestick and 4 Chart Shape TA blocks and returns structured payload."""
+    df_1h_slice = df_1h.iloc[-5000:] if len(df_1h) > 5000 else df_1h
     blocks = {
         'hammer': HammerBlock(tf='1H'),
         'engulfing': EngulfingBlock(tf='1H'),
@@ -76,8 +77,8 @@ def evaluate_all_ta_modules(df_daily: pd.DataFrame, df_1h: pd.DataFrame) -> Dict
     payload = {}
     for key, blk in blocks.items():
         try:
-            res = blk.evaluate(df_daily, df_1h)
-            instances = extract_block_instances(res, df_1h, min_gap_bars=12)
+            res = blk.evaluate(df_daily, df_1h_slice)
+            instances = extract_block_instances(res, df_1h_slice, min_gap_bars=12)
             payload[key] = {
                 'name': blk.name,
                 'category': blk.category,

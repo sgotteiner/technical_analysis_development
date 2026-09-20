@@ -27,6 +27,12 @@ class BacktestResultSchema(BaseModel):
     total_trades: int
     avg_duration_hours: float
     avg_duration_days: float
+    mean_return_pct: float = 0.0
+    median_return_pct: float = 0.0
+    p33_return_pct: float = 0.0
+    p66_return_pct: float = 0.0
+    min_return_pct: float = 0.0
+    max_return_pct: float = 0.0
     bnh_return_pct: float
     bnh_ending_capital: float
     alpha_return_pct: float

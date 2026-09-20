@@ -20,8 +20,9 @@ class AgentConfluenceStrategy:
         ema20_dict = dict(zip(df_daily.index.strftime('%Y-%m-%d'), daily_ema20))
         ema50_dict = dict(zip(df_daily.index.strftime('%Y-%m-%d'), daily_ema50))
         
-        h1_ema20 = np.array([ema20_dict.get(df_1h.index[i].strftime('%Y-%m-%d'), 0.0) for i in range(len(df_1h))])
-        h1_ema50 = np.array([ema50_dict.get(df_1h.index[i].strftime('%Y-%m-%d'), 0.0) for i in range(len(df_1h))])
+        dates_1h = df_1h.index.strftime('%Y-%m-%d')
+        h1_ema20 = np.array([ema20_dict.get(d, 0.0) for d in dates_1h])
+        h1_ema50 = np.array([ema50_dict.get(d, 0.0) for d in dates_1h])
         
         macro_bull_mask = (df_1h['Close'].values > h1_ema20) & (h1_ema20 > h1_ema50)
         
