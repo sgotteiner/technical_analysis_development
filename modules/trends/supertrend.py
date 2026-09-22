@@ -55,10 +55,6 @@ class SuperTrendBlock(BaseBlock):
                     trend[i] = -1
                     
         mask = trend == 1
-        
-        if self.tf == '1D':
-            dates_bullish = set(df.index[mask].strftime('%Y-%m-%d'))
-            h1_mask = np.array([df_1h.index[i].strftime('%Y-%m-%d') in dates_bullish for i in range(len(df_1h))])
-            return BlockResult(self.name, self.category, self.tf, h1_mask)
-            
+        # Return the native-timeframe mask; the strategy orchestrator connects it
+        # onto the trading timeframe via the no-lookahead aligner.
         return BlockResult(self.name, self.category, self.tf, mask)

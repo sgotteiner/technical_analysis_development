@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC Market Regimes</title>
+<script>/* LIGHTWEIGHT_CHARTS_JS_PLACEHOLDER */</script>
+<style>/* REGIMES_CSS */</style>
+</head>
+<body>
+<div id="main">
+  <div id="nav">
+    <button id="prev" title="Previous period (←)">◄ Prev</button>
+    <select id="pick"></select>
+    <button id="next" title="Next period (→)">Next ►</button>
+    <span class="hint">← / → keys</span>
+    <span class="spacer"></span>
+    <button id="all">Show all history</button>
+    <button id="cmpToggle">Compare all periods</button>
+  </div>
+  <div id="chart"><div id="overlay"></div><div id="cmp"></div></div>
+</div>
+<div id="side">
+  <h1>BTC market regimes (answer key)</h1>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--bull)"></span>Bull</span>
+    <span><span class="dot" style="background:var(--bear)"></span>Bear</span>
+    <span><span class="dot" style="background:var(--side)"></span>Sideways</span>
+  </div>
+  <div id="detail"></div>
+  <div class="note">Hover a metric name for its definition. Labels: modules/data/market_regimes.py
+    (verified by tests/test_market_regimes_data.py). Metrics: helpers/regime_metrics.py.
+    Periods between labels are deliberately unlabelled (debated).</div>
+  <dl class="note gloss" id="gloss"></dl>
+</div>
+<script>/* REGIME_METRICS_JS */</script>
+<script>
+const candles = /* DATA_CANDLES */;
+const periods = /* DATA_PERIODS */;
+const COLORS = { bull:'#089981', bear:'#f23645', sideways:'#f0b90b' };
+const BAND = { bull:'rgba(8,153,129,0.16)', bear:'rgba(242,54,69,0.16)', sideways:'rgba(240,185,11,0.16)' };
+let current = 0, showAll = false;
+
+const el = document.getElementById('chart');
+const chart = LightweightCharts.createChart(el, {
+  width: el.clientWidth, height: el.clientHeight,
+  layout: { background:{ type:'solid', color:'transparent' }, textColor:'#d1d4dc', fontSize:11 },
+  grid: { vertLines:{ color:'#1f2430' }, horzLines:{ color:'#1f2430' } },
+  crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+  rightPriceScale: { borderColor:'#2a2e39', mode: LightweightCharts.PriceScaleMode.Logarithmic },
+  timeScale: { borderColor:'#2a2e39', fixLeftEdge:true, fixRightEdge:true },
+});
+const series = chart.addCandlestickSeries({ upColor:'#089981', downColor:'#f23645', borderUpColor:'#089981',
+  borderDownColor:'#f23645', wickUpColor:'#089981', wickDownColor:'#f23645', priceLineVisible:false });
+series.setData(candles);
+
+// Regime bands: HTML rectangles positioned from the chart's own bar coordinates.
+const idxOf = new Map(candles.map((c, i) => [c.time, i]));
+const overlay = document.getElementById('overlay');
+const bandEls = periods.map(p => {
+  const b = document.createElement('div');
+  b.className = 'band';
+  b.style.background = BAND[p.regime];
+  b.style.borderLeft = b.style.borderRight = `1px solid ${COLORS[p.regime]}`;
+  b.innerHTML = `<span style="color:${COLORS[p.regime]}">${p.regime.toUpperCase()} ${p.shape} · ${p.name}</span>`;
+  overlay.appendChild(b);
+  return b;
+});
+function drawBands() {
+  const ts = chart.timeScale(), half = ts.options().barSpacing / 2, pane = chart.paneSize();
+  periods.forEach((p, i) => {
+    const x1 = ts.logicalToCoordinate(idxOf.get(p.start_ts)) - half;
+    const x2 = ts.logicalToCoordinate(idxOf.get(p.end_ts)) + half;
+    const l = Math.max(0, x1), r = Math.min(pane.width, x2), b = bandEls[i];
+    b.style.display = (showAll || i === current) && r > l ? 'block' : 'none';
+    b.style.left = l + 'px'; b.style.width = (r - l) + 'px'; b.style.height = `calc(100% - ${ts.height()}px)`;
+    b.querySelector('span').style.display = (r - l) > 60 ? 'block' : 'none';
+  });
+}
+// Redraw after the chart has laid itself out (two frames), so sizes are never stale.
+const redraw = () => requestAnimationFrame(() => requestAnimationFrame(drawBands));
+chart.timeScale().subscribeVisibleLogicalRangeChange(redraw);
+
+// One-by-one navigation (like trade navigation in the main dashboard).
+const pick = document.getElementById('pick'), cmp = document.getElementById('cmp');
+const cmpBtn = document.getElementById('cmpToggle'), allBtn = document.getElementById('all');
+periods.forEach((p, i) => pick.add(new Option(`${i + 1}/${periods.length} · ${p.regime.toUpperCase()} ${p.shape} · ${p.name}`, i)));
+function setCompare(open) {
+  cmp.style.display = open ? 'block' : 'none';
+  cmpBtn.textContent = open ? 'Back to chart' : 'Compare all periods';
+}
+function focusPeriod(i) {
+  current = (i + periods.length) % periods.length;
+  showAll = false; allBtn.classList.remove('on'); setCompare(false);
+  const p = periods[current], pad = Math.round((p.end_ts - p.start_ts) * 0.25);
+  chart.timeScale().setVisibleRange({ from:p.start_ts - pad, to:Math.min(p.end_ts + pad, candles.at(-1).time) });
+  pick.value = current;
+  renderDetail(p, COLORS);
+  renderCompare(periods, COLORS, current);
+  redraw();
+}
+document.getElementById('prev').onclick = () => focusPeriod(current - 1);
+document.getElementById('next').onclick = () => focusPeriod(current + 1);
+pick.onchange = () => focusPeriod(parseInt(pick.value, 10));
+document.addEventListener('keydown', e => {
+  if (e.target === pick) return;   // the dropdown handles its own arrows
+  if (e.key === 'ArrowLeft') focusPeriod(current - 1);
+  if (e.key === 'ArrowRight') focusPeriod(current + 1);
+});
+allBtn.onclick = () => {
+  showAll = !showAll; allBtn.classList.toggle('on', showAll); setCompare(false);
+  if (showAll) chart.timeScale().fitContent(); else focusPeriod(current);
+  redraw();
+};
+cmpBtn.onclick = () => setCompare(cmp.style.display !== 'block');
+
+renderGlossary();
+const h = location.hash.slice(1);
+focusPeriod(/^\d+$/.test(h) ? parseInt(h, 10) : 0);
+if (h === 'cmp') setCompare(true);
+if (h === 'all') allBtn.click();
+new ResizeObserver(() => {
+  chart.applyOptions({ width:el.clientWidth, height:el.clientHeight });
+  redraw();
+}).observe(el);
+</script>
+</body>
+</html>

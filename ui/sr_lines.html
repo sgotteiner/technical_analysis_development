@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S/R Lines Replay</title>
+<script>/* LIGHTWEIGHT_CHARTS_JS_PLACEHOLDER */</script>
+<style>
+  :root { --bg:#131722; --panel:#1e222d; --line:#2a2e39; --text:#d1d4dc; --muted:#787b86; --sup:#089981; --res:#f23645; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:12px 'Trebuchet MS', Roboto, sans-serif; display:flex; height:100vh; overflow:hidden; }
+  button, input { background:transparent; color:var(--text); border:1px solid var(--line); border-radius:3px; padding:5px 10px; font:inherit; }
+  button { cursor:pointer; } button:hover { background:var(--line); }
+  #main { flex:1; min-width:0; display:flex; flex-direction:column; }
+  #nav { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line); background:var(--panel); }
+  #nav .hint { color:var(--muted); }
+  #chart { flex:1; position:relative; }
+  #side { width:320px; background:var(--panel); border-left:1px solid var(--line); overflow-y:auto; padding:12px 14px; }
+  h1 { font-size:13px; margin:0 0 10px; }
+  .card { background:#131722; border-radius:4px; padding:8px 10px; margin-bottom:8px; border-left:3px solid; }
+  .card .t { font-weight:bold; } .card .m { color:var(--muted); margin-top:3px; }
+  .note { color:var(--muted); line-height:1.45; margin-top:12px; }
+</style>
+</head>
+<body>
+<div id="main">
+  <div id="nav">
+    <button id="back7">◄◄ 7d</button><button id="back1">◄ 1d</button>
+    <input id="date" type="date">
+    <button id="fwd1">1d ►</button><button id="fwd7">7d ►►</button>
+    <span class="hint">← / → = 1 day · Shift + ← / → = 7 days</span>
+  </div>
+  <div id="chart"></div>
+</div>
+<div id="side">
+  <h1>S/R lines at "now"</h1>
+  <div id="cards"></div>
+  <div class="note">Lines use only candles up to "now" (bright candles). Faded candles are the
+    future, shown so you can judge whether the lines held. Solid = where the line acted as S/R
+    (first to last touch), dashed = extended through now and 30 days ahead. Thick = higher
+    level, thin = lower level.<br><br>
+    Definition: the line (any slope) running through the most significant peaks and valleys
+    of the period - it may split the graph, touching both, and small overshoots do not move it.
+    Peaks / valleys are by magnitude; a touch counts when price moved the level's magnitude away
+    from the line on both sides. Each level's lower + upper line form a pipe that must not widen,
+    both lines act at the same time, and its width lies between the median and the largest swing
+    move (checked where it starts and at now).<br>
+    <span id="settings"></span></div>
+</div>
+<script>
+const candles = /* DATA_CANDLES */;
+const snapshots = /* DATA_SNAPSHOTS */;
+const settings = /* DATA_SETTINGS */;
+const DAY = 86400, AHEAD = 30;
+const STYLE = {
+  higher_support: { color:'#089981', width:3, label:'Higher support' },
+  higher_resistance: { color:'#f23645', width:3, label:'Higher resistance' },
+  lower_support: { color:'#26c6a6', width:1, label:'Lower support' },
+  lower_resistance: { color:'#ff7a85', width:1, label:'Lower resistance' },
+};
+const el = document.getElementById('chart');
+const chart = LightweightCharts.createChart(el, {
+  width: el.clientWidth, height: el.clientHeight,
+  layout: { background:{ type:'solid', color:'#131722' }, textColor:'#d1d4dc', fontSize:11 },
+  grid: { vertLines:{ color:'#1f2430' }, horzLines:{ color:'#1f2430' } },
+  crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+  rightPriceScale: { borderColor:'#2a2e39', mode: LightweightCharts.PriceScaleMode.Logarithmic },
+  timeScale: { borderColor:'#2a2e39' },
+});
+const past = chart.addCandlestickSeries({ upColor:'#089981', downColor:'#f23645', borderUpColor:'#089981',
+  borderDownColor:'#f23645', wickUpColor:'#089981', wickDownColor:'#f23645', priceLineVisible:false });
+const future = chart.addCandlestickSeries({ upColor:'rgba(120,123,134,0.35)', downColor:'rgba(120,123,134,0.35)',
+  borderVisible:false, wickUpColor:'rgba(120,123,134,0.35)', wickDownColor:'rgba(120,123,134,0.35)',
+  priceLineVisible:false, lastValueVisible:false });
+const lineOpts = s => ({ color:s.color, lineWidth:s.width, priceLineVisible:false, lastValueVisible:false,
+  crosshairMarkerVisible:false });
+const solid = {}, dashed = {};
+settings.keys.forEach(k => {
+  solid[k] = chart.addLineSeries(lineOpts(STYLE[k]));
+  dashed[k] = chart.addLineSeries({ ...lineOpts(STYLE[k]), lineStyle: LightweightCharts.LineStyle.Dashed });
+});
+
+const first = Math.min(...Object.keys(snapshots).map(Number));
+let now = candles.length - 1;
+const priceAt = (ln, x) => Math.exp(ln[1] + ln[2] * (x - ln[0]));
+
+function render() {
+  past.setData(candles.slice(0, now + 1));
+  future.setData(candles.slice(now + 1));
+  const snap = snapshots[now], lines = snap.lines, cards = [];
+  const pct = v => v === null ? '—' : `${((Math.exp(v) - 1) * 100).toFixed(0)}%`;
+  ['higher', 'lower'].forEach(lvl => {
+    const [w, leg] = snap.pipes[lvl];
+    cards.push(`<div class="card" style="border-color:#787b86"><div class="t">${lvl[0].toUpperCase() + lvl.slice(1)} pipe</div>
+      <div class="m">${w === null ? 'no pipe passes the rules' : 'width ' + pct(w)} · largest swing ${pct(leg)}</div></div>`);
+  });
+  settings.keys.forEach((k, i) => {
+    const ln = lines[i], s = STYLE[k];
+    if (!ln) { solid[k].setData([]); dashed[k].setData([]); cards.push(`<div class="card" style="border-color:${s.color}"><div class="t">${s.label}</div><div class="m">none: no pipe passes the rules at this level</div></div>`); return; }
+    // solid = where the line acted as S/R (first -> last touch); dashed = extension to now + AHEAD
+    const t1 = candles[ln[0]].time, last = ln[4], tLast = candles[last].time;
+    solid[k].setData(t1 === tLast ? [] : [{ time:t1, value:priceAt(ln, ln[0]) }, { time:tLast, value:priceAt(ln, last) }]);
+    const xEnd = Math.min(now + AHEAD, candles.length - 1);
+    dashed[k].setData(xEnd > last ? [{ time:tLast, value:priceAt(ln, last) }, { time:candles[xEnd].time, value:priceAt(ln, xEnd) }] : []);
+    const slopePct = (Math.exp(ln[2]) - 1) * 100, day = t => new Date(t * 1000).toISOString().slice(0, 10);
+    cards.push(`<div class="card" style="border-color:${s.color}"><div class="t">${s.label}</div>
+      <div class="m">now $${Math.round(priceAt(ln, now)).toLocaleString()} · ${ln[3]} touches</div>
+      <div class="m">slope ${slopePct >= 0 ? "+" : ""}${slopePct.toFixed(2)}%/day</div>
+      <div class="m">touches ${day(t1)} → ${day(tLast)}</div></div>`);
+  });
+  document.getElementById('cards').innerHTML = cards.join('');
+  document.getElementById('date').value = new Date(candles[now].time * 1000).toISOString().slice(0, 10);
+  const from = candles[Math.max(0, now - 240)].time, to = candles[Math.min(candles.length - 1, now + 45)].time;
+  chart.timeScale().setVisibleRange({ from, to });
+}
+function step(d) { now = Math.max(first, Math.min(candles.length - 1, now + d)); render(); }
+['back7', 'back1', 'fwd1', 'fwd7'].forEach((id, i) => document.getElementById(id).onclick = () => step([-7, -1, 1, 7][i]));
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowLeft') step(e.shiftKey ? -7 : -1);
+  if (e.key === 'ArrowRight') step(e.shiftKey ? 7 : 1);
+});
+document.getElementById('date').onchange = e => {
+  const ts = Date.parse(e.target.value + 'T00:00:00Z') / 1000;
+  const idx = candles.findIndex(c => c.time >= ts);
+  if (idx >= 0) { now = Math.max(first, idx); render(); }
+};
+const lv = settings.levels;
+document.getElementById('settings').textContent =
+  `Higher: ${lv.higher.period} days, peaks/valleys >= ${lv.higher.magnitude * 100}% · Lower: ${lv.lower.period} days, peaks/valleys >= ${lv.lower.magnitude * 100}% · touch = within ${settings.touch_pct}% of the line`;
+const hashDate = location.hash.slice(1);
+if (/^\d{4}-\d{2}-\d{2}$/.test(hashDate)) { document.getElementById('date').value = hashDate; document.getElementById('date').onchange({ target:{ value:hashDate } }); }
+else render();
+new ResizeObserver(() => chart.applyOptions({ width:el.clientWidth, height:el.clientHeight })).observe(el);
+</script>
+</body>
+</html>

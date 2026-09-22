@@ -1,38 +1,29 @@
 import numpy as np
-import pandas as pd
+from strategies.base_strategy import BaseStrategy
 
-class AgentConfluenceStrategy:
+
+class AgentConfluenceStrategy(BaseStrategy):
     """
     Modular Agent Confluence Strategy.
-    Combines Technical Market Structure (50/20 EMA) + High-Impact Institutional Catalyst News Signals.
-    Exposes generate_signals(df_daily, df_1h) for Engine.run(strategy, cycle_data) execution.
+    Technical Market Structure (20/50 EMA) computed on daily candles, connected
+    onto the 1H trading timeframe via the no-lookahead aligner (BaseStrategy.align).
     """
     def __init__(self, name="Agent Confluence Strategy"):
-        self.name = name
+        super().__init__(name)
         self.catalysts_bull = ['etf', 'approval', 'rate cut', 'halving', 'blackrock', 'stimulus', 'reserve']
         self.catalysts_bear = ['sec lawsuit', 'ban', 'ftx', 'bankruptcy', 'rate hike', 'inflation spike', 'crackdown']
 
     def generate_signals(self, df_daily, df_1h):
-        # 1. Technical Market Structure: EMA 20/50 Trend
+        # Daily EMA structure (computed on completed daily candles)
         daily_ema20 = df_daily['Close'].ewm(span=20, adjust=False).mean()
         daily_ema50 = df_daily['Close'].ewm(span=50, adjust=False).mean()
-        
-        ema20_dict = dict(zip(df_daily.index.strftime('%Y-%m-%d'), daily_ema20))
-        ema50_dict = dict(zip(df_daily.index.strftime('%Y-%m-%d'), daily_ema50))
-        
-        dates_1h = df_1h.index.strftime('%Y-%m-%d')
-        h1_ema20 = np.array([ema20_dict.get(d, 0.0) for d in dates_1h])
-        h1_ema50 = np.array([ema50_dict.get(d, 0.0) for d in dates_1h])
-        
+
+        # Connect daily EMAs onto 1H bars with NO lookahead.
+        h1_ema20 = self.align(df_daily, df_1h, daily_ema20, fill_value=0.0)
+        h1_ema50 = self.align(df_daily, df_1h, daily_ema50, fill_value=0.0)
+
         macro_bull_mask = (df_1h['Close'].values > h1_ema20) & (h1_ema20 > h1_ema50)
-        
-        # 2. Catalyst News Sentiment Array
-        signals = np.zeros(len(df_1h), dtype=int)
-        
-        # Fast vector calculation for signal triggers
-        for i in range(len(df_1h)):
-            if macro_bull_mask[i]:
-                signals[i] = 1
-                
+        signals = macro_bull_mask.astype(int)
+
         audit_log = {"strategy": self.name}
         return signals, macro_bull_mask, audit_log

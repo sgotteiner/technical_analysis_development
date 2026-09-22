@@ -20,11 +20,25 @@ def calculate_buy_and_hold(df: pd.DataFrame) -> Dict[str, float]:
         'bnh_return': bnh_return
     }
 
+def calculate_max_drawdown(equity_curve: List[float]) -> float:
+    """Worst peak-to-trough drop on the equity curve, as a positive percentage."""
+    if not equity_curve:
+        return 0.0
+    peak = equity_curve[0]
+    max_dd = 0.0
+    for v in equity_curve:
+        peak = max(peak, v)
+        if peak > 0:
+            max_dd = max(max_dd, (peak - v) / peak)
+    return max_dd * 100.0
+
+
 def calculate_trade_metrics(
     trades_list: List[Dict[str, Any]],
     initial_capital: float,
     ending_capital: float,
-    bnh_return: float
+    bnh_return: float,
+    equity_curve: List[float] = None
 ) -> Dict[str, Any]:
     """Summarize trade performance metrics into a standardized result dictionary."""
     total_trades = len(trades_list)
@@ -78,5 +92,7 @@ def calculate_trade_metrics(
         "alpha_return": alpha_return,
         "alpha_dollar": alpha_dollar,
         "beats_bnh": beats_bnh,
+        "max_drawdown": calculate_max_drawdown(equity_curve or [initial_capital, ending_capital]),
+        "equity_curve": equity_curve or [initial_capital, ending_capital],
         "trades_list": trades_list
     }

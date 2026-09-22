@@ -1,43 +1,67 @@
 """
 Timestamp & Timeframe Alignment Helpers.
+
+The single, no-lookahead way to connect a higher-timeframe (HTF) signal onto
+lower-timeframe (LTF) bars. Every cross-timeframe mapping in the codebase must
+go through `align_timeframe_signal` so lookahead can never be reintroduced.
 """
 import numpy as np
 import pandas as pd
-from typing import Dict, Any
+from typing import Any
 
-def map_daily_signals_to_intraday(
-    df_daily: pd.DataFrame,
-    df_intraday: pd.DataFrame,
-    daily_mask: pd.Series
+
+def align_timeframe_signal(
+    htf_df: pd.DataFrame,
+    ltf_df: pd.DataFrame,
+    htf_signal: Any,
+    fill_value: Any = False,
 ) -> np.ndarray:
     """
-    Map daily boolean signals/regime mask to intraday dataframe (1H or 5M)
-    by date formatting (%Y-%m-%d).
-    """
-    if df_daily.empty or df_intraday.empty:
-        return np.zeros(len(df_intraday), dtype=bool)
+    Align an HTF signal onto LTF bars with NO lookahead.
 
-    daily_signal_dict = dict(zip(df_daily.index.strftime('%Y-%m-%d'), daily_mask))
-    intraday_mask = np.array([
-        daily_signal_dict.get(df_intraday.index[i].strftime('%Y-%m-%d'), False)
-        for i in range(len(df_intraday))
-    ])
-    return intraday_mask
+    Each LTF bar receives the value of the most recent HTF bar that has already
+    CLOSED at that LTF bar's timestamp. An HTF bar timestamped at its open is
+    treated as closing at open + interval, where the interval is inferred from
+    the HTF index. Works for any timeframe pair (weekly->daily, daily->1h,
+    1h->5m, ...).
 
-def map_hourly_signals_to_5m(
-    df_1h: pd.DataFrame,
-    df_5m: pd.DataFrame,
-    h1_mask: pd.Series
-) -> np.ndarray:
+    Returns an array aligned to `ltf_df` (same length, same order).
     """
-    Map 1H boolean signals to 5M dataframe by timestamp bucket (%Y-%m-%d %H:00).
-    """
-    if df_1h.empty or df_5m.empty:
-        return np.zeros(len(df_5m), dtype=bool)
+    if htf_df.empty or ltf_df.empty:
+        return np.full(len(ltf_df), fill_value)
 
-    h1_signal_dict = dict(zip(df_1h.index.strftime('%Y-%m-%d %H:00'), h1_mask))
-    m5_mask = np.array([
-        h1_signal_dict.get(df_5m.index[i].strftime('%Y-%m-%d %H:00'), False)
-        for i in range(len(df_5m))
-    ])
-    return m5_mask
+    htf_index = pd.DatetimeIndex(htf_df.index)
+    ltf_index = pd.DatetimeIndex(ltf_df.index)
+
+    # HTF bar close = open + one bar interval => the moment the bar's data is known.
+    interval = htf_index.to_series().diff().median()
+    htf_close = htf_index + interval
+
+    right = pd.DataFrame({"t": htf_close, "v": np.asarray(htf_signal)}).sort_values("t")
+    left = pd.DataFrame({"t": ltf_index}).reset_index()  # 'index' preserves LTF order
+    left_sorted = left.sort_values("t")
+
+    merged = pd.merge_asof(left_sorted, right, on="t", direction="backward")
+    merged = merged.sort_values("index")
+    out = merged["v"].to_numpy()
+
+    # LTF bars before the first completed HTF bar have no signal yet.
+    na_mask = pd.isna(out)
+    if na_mask.any():
+        out = out.astype(object)
+        out[na_mask] = fill_value
+
+    if isinstance(fill_value, bool):
+        out = out.astype(bool)
+    return out
+
+
+# --- Backwards-compatible thin wrappers (now lookahead-safe by delegation) ---
+def map_daily_signals_to_intraday(df_daily, df_intraday, daily_mask) -> np.ndarray:
+    """Deprecated: use align_timeframe_signal. Kept for backward compatibility."""
+    return align_timeframe_signal(df_daily, df_intraday, daily_mask, fill_value=False)
+
+
+def map_hourly_signals_to_5m(df_1h, df_5m, h1_mask) -> np.ndarray:
+    """Deprecated: use align_timeframe_signal. Kept for backward compatibility."""
+    return align_timeframe_signal(df_1h, df_5m, h1_mask, fill_value=False)

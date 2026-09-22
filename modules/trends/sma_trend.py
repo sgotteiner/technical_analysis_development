@@ -17,11 +17,5 @@ class SmaTrendBlock(BaseBlock):
         close = df['Close'].values
         
         mask = (sma > 0) & (close > sma)
-        
-        # Map 1D mask to 1H mask if timeframe is Daily
-        if self.tf == '1D':
-            dates_bullish = set(df.index[mask].strftime('%Y-%m-%d'))
-            h1_mask = np.array([df_1h.index[i].strftime('%Y-%m-%d') in dates_bullish for i in range(len(df_1h))])
-            return BlockResult(self.name, self.category, self.tf, h1_mask)
-            
+        # Native-timeframe mask; alignment is owned by the strategy orchestrator.
         return BlockResult(self.name, self.category, self.tf, mask)
