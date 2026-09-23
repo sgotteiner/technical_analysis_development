@@ -123,3 +123,118 @@ dated line under it, never by deleting it.
 - The S/R viewer takes ~9 min to build; the lines are computed for every day.
 - Old shape blocks (flags, triangles, MTF S/R, InstitutionalGeometry) still have lookahead and no tests.
 - Nothing from 2026-09-20 onward is committed.
+
+## 2026-09-22 (later) — S/R playground / annotator (Claude's choices, pending the owner's review)
+The owner asked for: live settings, more than 2 pairs or single lines, his own lines and boxes
+saved as ground truth. How that was done is Claude's:
+- **A local server** (`scripts/sr_playground.py`, FastAPI, port 8765) instead of a static export,
+  because "see the lines immediately" for any setting can't be precomputed (the export takes 9 min
+  for ONE setting). It is a separate page, like the regime viewer (GEMINI.md says one dashboard file).
+- **Every rule became a setting** (`SRRules`), including Claude's own rules, so they can be
+  switched off: both-sides significance, act-together, check-at-now, the candidate zigzag ratio.
+  Also min touches per line (open question 4). Semantics chosen: min-width quantile 0 = no lower
+  bound (width > 0 still); "check at now" off drops both now-conditions; max widening is entered
+  in %/day.
+- **"More than 2 pairs" read as:** any number of levels, plus a number of ranked pipes and single
+  lines per level.
+- **Ranked pipes share no line** (by line_key); ranked single lines keep one line per line_key.
+  Pipe 1 is exactly the old pipe (tested).
+- **Pipe search in touch buckets with a 50M-pair budget per level**; when it runs out the page says
+  "incomplete, checked down to N touches" rather than showing a partial answer as final.
+- **Speed-up:** candidate lines are now scored only against the window's turning points plus the
+  one just before it (the same answer, now tested; 3x faster).
+- **Drawing tools:** two clicks per line or box. Own click detection, because the chart library
+  swallows a quick second click as a double-click. No snapping to highs/lows.
+- **Ground-truth record:** kind, label, note, two (time, price) points, chart id, the "now" it was
+  drawn at, created time; one JSON file, tracked by git. The label suggestions are Claude's list.
+- **New level** = a copy of the last level (to be edited). Settings are remembered per browser.
+
+## Findings 2026-09-22 (playground)
+- Pipes 2-3 are often near-copies of pipe 1 (e.g. around 2021-06-01: all three higher-level
+  supports start 2020-04-29, slopes +0.49 / +0.44 / +0.45 %/day). "No shared line_key" is not
+  enough to make lower-ranked pipes different. What "a different pipe" means is the owner's call.
+- The pipe search was never the cost: at 6% over 400 days the bucket search checks 1.2M pairs,
+  against ~4.6B for all pairs. Building the candidate lines is the cost (68k lines, ~1.4 s).
+
+## Known debt (2026-09-22, playground)
+- The browser test (15 checks: settings, levels, replay, drawing, persistence, reset) ran from the
+  scratchpad with playwright-core + the installed Chrome. It is not in the repo: that would add a
+  Node dependency to a Python repo (owner's call).
+- With several pipes and lines per level the chart gets busy; nothing links a line on the chart to
+  its card yet.
+- The S/R tests now take ~45 s (the one-side brute-force cases take ~23 s of it).
+
+## 2026-09-22 (evening) — setup groups and the first setup detector (Claude's choices, pending review)
+The owner asked: group and name his BTC setup, write code that finds it, and show whether it is
+general. How is Claude's:
+- **Setup record:** name, note, members, author; a drawing belongs to at most one setup; deleting a
+  drawing removes it from its setup; deleting a setup keeps its drawings. Only `author = owner`
+  setups are ground truth. The first setup's note is the owner's own sentence from the chat.
+- **Detector thresholds, all read from ONE example** (so they may fit that example too closely):
+  pole >= 15% within 15 bars; flag 3-25 bars, gives back <= 50%, <= 5% above the pole top;
+  resistance through two 10% zigzag peaks within 400 days, no close > 2% above it before the pole,
+  >= 15% (log) fall after its last peak; flag high within 3% of the line.
+- **Any slope is allowed for the resistance.** The owner's line is flat; allowing slopes is what
+  lets 43 of the 71 detections be rising lines (see Findings).
+- **"Found" tolerances:** line within 2% of the drawn one on the day it was drawn; flag span
+  overlaps the drawn box by >= 50% of the union, in time only.
+- **`broken`** = close above the line on the day, with no margin. On 2026-09-04 that is a close
+  $0.3 above the detected line: "broken" by a hair, while the owner's line is still unbroken there.
+- **Detections in the playground** are drawn in purple dashed lines on the overlay, never mixed
+  with the owner's drawings.
+- The playground was restarted on 8765 without the launcher (which would open another browser tab).
+
+## Findings 2026-09-22 (setup detector)
+- The owner's setup is found (line 0.45% off, flag overlap 95%), from 2026-08-24 on.
+- Over 2017–2026 the detector fires in 71 episodes (459 days, 14% of days). Only 14 have a flat
+  line like the owner's; 24 have a steeply rising "resistance" (> 0.3%/day), mostly in the 2017,
+  2019 and 2020-21 bull runs, e.g. 2017-11-05. Whether those count is the owner's call; if only
+  flat lines count, the detector becomes 14 episodes.
+- Deliberate breaks first caught 12/18; two flag tests passed only because their charts were
+  shorter than the flag window. Now 18/18.
+
+- Owner's review: the infrastructure is good, but he didn't like the detector code and the
+  detections don't look good; maybe more ground truth is needed. What he disliked in the code is
+  not yet known (asked).
+- Owner noticed that price often declined soon after a detection. Measured (BTC daily, 71 episodes,
+  % of cases lower after 5/10/20/30 days): from the first day 51/38/41/41%; from the last day
+  49/44/46/49%; any day 47/46/46/46%. So no decline beyond chance. Likely a viewing effect: the
+  page jumps to an episode's last day, and episodes often end because the flag failed (a drop),
+  which is only known in hindsight.
+
+## 2026-09-23 — swing points / calibration (Claude's choices, pending review)
+- Calibration searches sizes 3%-30% in 0.5% steps over the last 730 days, needs >= 6 legs, and
+  picks the size whose MEDIAN leg length is closest to the target; ties go to the largest size.
+  Median, not mean: leg lengths are very skewed (mean is ~1.5x the median).
+- The points panel draws up to 4 sizes at once, colours fixed, markers above peaks / below valleys.
+- The playground is started from a scratch script instead of `scripts/sr_playground.py`, to avoid
+  the launcher opening a browser tab on every restart (the launcher fix is still unapproved).
+- `test_there_is_ground_truth_to_check` now fails: the owner deleted his setup, so no drawn setup
+  exists to check the detector against. Proposed to make it skip; no answer yet, left failing.
+
+## 2026-09-23 — the line rule (Claude's failure, then the owner's rule)
+- **Claude built the wrong rule first.** The owner had said twice how he finds lines (recent S/R
+  first, then its history); Claude built "every pair of points, ranked by touches", which draws
+  long diagonals through dense clouds. His verdict: "those lines are a piece of shit… come on bro
+  you forgot everything we talked about". The lesson: he states the method, it goes in the code.
+- Anchoring that rule to a recent point (a first patch) was not enough: ranking by touch count
+  still put drifting 24-27 touch lines on top. The ranking was the problem, not the anchor.
+- `recent_levels`: Claude's choices are that recent points within the tolerance collapse into one
+  level (the newest price wins), levels are ranked by history touches then by the newest anchor,
+  and a recent point with no history is still a level (ranked last).
+- `recent_trend_lines` uses min_touches from the same setting as the levels; with 2 touches any
+  pair of recent points is a "trend", which is noisy on the chart. Needs the owner's rule.
+- The 400-point guard now applies only to the touch rule (the owner's rule walks recent points
+  only, so a 2% size with 3,050 points is fine).
+- 2026-09-24, after the owner's review: trend lines rebuilt (`modules/shapes/trend_lines.py`) with
+  his side rule and no window on the past; levels got `max_history` (default 2). Claude's choices
+  inside those: a trend line is dropped when a point of its own kind pokes more than the tolerance
+  past it between first and last touch; trends rank by touches, then reach, then recency; the
+  history limit counts visits, not days. Min touches 3 is now the default because 2 lets
+  two-touch lines spanning six years outrank real trends.
+
+## Known debt (2026-09-22, setups)
+- The browser checks for setups (10) also live in the scratchpad (same reason as above).
+- Detections are listed but can't yet be accepted or rejected in the page.
+- The launcher still opens the browser before the server is ready and still opens on the last
+  candle (fixes proposed, waiting for the owner).

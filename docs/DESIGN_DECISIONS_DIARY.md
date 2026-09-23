@@ -219,3 +219,33 @@ tags: kind=idea · attribution=your-design · portable=yes · signature=no · im
 anchor: 2026-09-21 · — · 2c206b2f @ 20:25Z, 20:39Z; 2026-09-22 @ 12:40Z
 **Idea:** A tool to draw a box around a pattern and label it (flags, S/R and more), to draw lines, to change the settings and see the result, and to show more than two pairs or single lines. It is for improving the shape blocks.
 **Why:** Ground truth for geometry has to come from the owner's eye, and experimenting with settings needs a fast visual loop.
+
+### Buy the breakout of a strong resistance, backed by a bullish pattern (maybe after a retest)
+tags: kind=idea · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-09-22 · uncommitted · 54140a1d (playground session, after 14:41Z)
+**Idea:** Buy when price breaks a resistance line, possibly waiting for a retest of the line. The setup is stronger when the resistance stopped price the last time it got there and a bullish pattern leads into the breakout. The owner's live example, drawn in the playground as ground truth: a flat resistance at ~$82k (2026-01-09 to 2026-09-03) and a bull flag (2026-08-15 to 2026-09-04) that runs into it.
+**Why:** "based on this strong resistance that stopped it the previous time it reached there and the bullish pattern." (Measured, not the owner's words: the previous stop was the 2026-05-06 peak at $82,850, followed by a 30% fall to $57,800 on 2026-07-01.)
+
+### Three stages: setups as ground truth -> code that finds them -> strategies that trade them
+tags: kind=principle · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-09-22 · uncommitted · 54140a1d (playground session)
+**Idea:** Strategy development continues, but now built on ground truth. (1) Ground truth: setups, i.e. groups of drawings (S/R lines, pattern boxes, retest / fakeout boxes) with a note on how to trade them, shown by the owner or proposed by Claude. (2) Code that finds the same setups reliably without anyone drawing, in many more places. (3) Strategies that use the found setups, backtested for profit. The stages are coupled: finding a setup in more places needs code, and its profit can only be measured once it is found in more places. The owner does not want to write the rules himself; the tools should find the lines and patterns, with an understanding of how to trade them.
+**Why:** "backtesting random lines doesnt help me." Patterns are "the most important thing… more important than indicators", and they were left out so far only because the blocks couldn't find them: "i would prefer not using patterns because its hard to do but its too important so we have to stop and fix that." The owner calls himself "not even a decent trader", so his setups are ideas to test, and profit decides. That he could draw a setup, and Claude could then see it, shows it can be found.
+
+### Start with S/R pairs (pipes and triangles); lines should find their own span
+tags: kind=decision · attribution=your-design · portable=yes · signature=no · importance=high
+anchor: 2026-09-22 · uncommitted · 54140a1d (after the first setup detector)
+**Idea:** The owner annotates more ground truth, starting "as simple as possible" with support / resistance pairs: pipes and triangles. Higher timeframes are more fundamental and patterns belong to shorter ones, but higher timeframes "definitely have support and resistance lines", so drawing them well automatically is already worth a lot. What he liked in the first detector: it found the resistance over what looked like a dynamic number of candles, not a fixed window. "In the general version we will need something like that", and more examples should force the code there.
+**Why:** The first detector's results didn't look good, and one example can't define a detector. More ground truth is needed, and S/R pairs are the simplest start.
+
+### The whole of technical analysis: S/R lines, then breakouts, retests and fakeouts
+tags: kind=principle · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-09-23 · uncommitted · 54140a1d (after the owner drew 7 lines and boxes)
+**Idea:** "Thats the basics of technical analysis." S/R lines are the basis; on top of them come breakouts and maybe retests and fakeouts. A flag is a breakout pattern, a cup is a retest pattern, and candlestick patterns belong to the same events. Everything else is timing. The lines also mark the goals of a move: the owner labelled his levels "current resistance", "next resistance", "next next resistance". From one setup you can see that price is either breaking out or coming back to the support.
+**Why:** The owner's analysis of the current BTC chart, drawn in the playground: support ~56.9k, a broken diagonal from the all-time high, and a ladder of horizontal levels at ~80.3k, ~106.1k and ~124.9k, plus boxes for the breakout of the previous resistance and the test of the current one.
+
+### A setup has a dynamic number of lines; two pairs is not enough
+tags: kind=decision · attribution=your-correction · portable=yes · signature=yes · importance=high
+anchor: 2026-09-23 · uncommitted · 54140a1d
+**Idea:** A setup is one picture "from I don't know when until now" that holds as many relevant lines as the chart has — here 7, some horizontal, some diagonal; another setup has a different number. The algorithm has to find all the relevant ones. Price is not always at a level, and what is relevant depends on the timeframe. "Limiting it to 2 pairs of sr lines is not enough for a setup analysis."
+**Replaces:** The 4-line design (2 levels x support + resistance) as the picture of a chart. The magnitude-based line definition stays; what changes is that the number of lines, and how far back each one reaches, come from the chart, not from settings.

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S/R Playground</title>
+<link rel="icon" href="data:,">
+<script src="/ui/lightweight-charts.js"></script>
+<link rel="stylesheet" href="/ui/css/sr_playground.css">
+</head>
+<body>
+<div id="main">
+  <div id="nav">
+    <button id="back7" title="Shift + ←">◄◄ 7d</button><button id="back1" title="←">◄ 1d</button>
+    <input id="date" type="date">
+    <button id="fwd1" title="→">1d ►</button><button id="fwd7" title="Shift + →">7d ►►</button>
+    <span class="sep"></span>
+    <span class="tools">
+      <button data-tool="pan" class="on" title="Esc">✋ Pan</button>
+      <button data-tool="line" title="L: click two points">╱ Line</button>
+      <button data-tool="box" title="B: click two corners">▭ Box</button>
+    </span>
+    <input id="label" list="labels" value="support" title="Label for the next drawing">
+    <datalist id="labels"></datalist>
+    <span id="status" class="hint"></span>
+  </div>
+  <div id="chart"><svg id="overlay"></svg></div>
+</div>
+<div id="side">
+  <h1>S/R Playground</h1>
+  <section id="settings"></section>
+  <h2>Swing points (peaks &amp; valleys)</h2>
+  <section id="points"></section>
+  <h2>Result at "now"</h2>
+  <section id="results"></section>
+  <h2>My setups</h2>
+  <section id="setups"></section>
+  <h2>My drawings (ground truth) <span id="gt-count" class="hint"></span></h2>
+  <section id="annotations"></section>
+  <h2>Detected setups: resistance + bull flag</h2>
+  <section id="detections"></section>
+  <div class="note">Lines use only candles up to "now" (bright); faded candles are the future.
+    Solid = first to last touch, dashed = extended through now + 30 days. Green = support, red =
+    resistance, amber dotted = single lines, purple dashed = a detected setup. Thicker = earlier level, fainter = lower-ranked pipe.
+    Drawings are saved to <code>data/ground_truth/sr_annotations.json</code> with the "now" they
+    were drawn at.</div>
+</div>
+<script type="module" src="/ui/js/sr_playground/main.js"></script>
+</body>
+</html>

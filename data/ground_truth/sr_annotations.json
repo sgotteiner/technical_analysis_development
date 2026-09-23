@@ -1,0 +1,194 @@
+{
+ "annotations": [
+  {
+   "id": "f366b61a0f2d",
+   "created": "2026-09-23T10:27:30+00:00",
+   "kind": "line",
+   "label": "support",
+   "points": [
+    {
+     "time": 1706918400,
+     "price": 55646.98872388613
+    },
+    {
+     "time": 1787011200,
+     "price": 56931.789963894305
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "",
+   "author": "owner",
+   "drawn_at": 1788480000
+  },
+  {
+   "id": "6d6c9dd43fc2",
+   "created": "2026-09-23T10:28:04+00:00",
+   "kind": "line",
+   "label": "previous resistance",
+   "points": [
+    {
+     "time": 1757376000,
+     "price": 134984.98367594954
+    },
+    {
+     "time": 1787875200,
+     "price": 66659.10163444794
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "",
+   "author": "owner",
+   "drawn_at": 1788480000
+  },
+  {
+   "id": "bf34a44eff95",
+   "created": "2026-09-23T10:29:28+00:00",
+   "kind": "line",
+   "label": "current resistance",
+   "points": [
+    {
+     "time": 1738022400,
+     "price": 79687.26339743036
+    },
+    {
+     "time": 1788393600,
+     "price": 80276.79977588213
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "",
+   "author": "owner",
+   "drawn_at": 1788480000
+  },
+  {
+   "id": "c24cb2114e3d",
+   "created": "2026-09-23T10:30:37+00:00",
+   "kind": "line",
+   "label": "next resistance",
+   "points": [
+    {
+     "time": 1731628800,
+     "price": 106789.49006357638
+    },
+    {
+     "time": 1788220800,
+     "price": 106115.03433827434
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "",
+   "author": "owner",
+   "drawn_at": 1788480000
+  },
+  {
+   "id": "f57f5adf941a",
+   "created": "2026-09-23T10:31:42+00:00",
+   "kind": "line",
+   "label": "next next resistance",
+   "points": [
+    {
+     "time": 1751846400,
+     "price": 125480.49926819224
+    },
+    {
+     "time": 1788480000,
+     "price": 124850.22779099787
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "",
+   "author": "owner",
+   "drawn_at": 1788480000
+  },
+  {
+   "id": "c96a630ba0cc",
+   "created": "2026-09-23T10:33:17+00:00",
+   "kind": "box",
+   "label": "breakout of previous resistance",
+   "points": [
+    {
+     "time": 1786492800,
+     "price": 70867.8263871888
+    },
+    {
+     "time": 1787788800,
+     "price": 67009.09837346151
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "",
+   "author": "owner",
+   "drawn_at": 1788480000
+  },
+  {
+   "id": "0d965da260d7",
+   "created": "2026-09-23T10:33:52+00:00",
+   "kind": "box",
+   "label": "testing of current resistance and potetial breakout",
+   "points": [
+    {
+     "time": 1786665600,
+     "price": 83196.79954588458
+    },
+    {
+     "time": 1788393600,
+     "price": 76223.18553811406
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "",
+   "author": "owner",
+   "drawn_at": 1788480000
+  },
+  {
+   "id": "25ac84e6dd50",
+   "created": "2026-09-23T13:07:52+00:00",
+   "kind": "line",
+   "label": "recent support",
+   "points": [
+    {
+     "time": 1780358400,
+     "price": 60158.96636815789
+    },
+    {
+     "time": 1787356800,
+     "price": 59905.69129533878
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "",
+   "author": "owner",
+   "drawn_at": 1788480000
+  },
+  {
+   "id": "02b3a7ddeb6d",
+   "created": "2026-09-23T13:08:04+00:00",
+   "kind": "line",
+   "label": "recent resistance",
+   "points": [
+    {
+     "time": 1780272000,
+     "price": 66429.16987381561
+    },
+    {
+     "time": 1787356800,
+     "price": 65732.19559851527
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "",
+   "author": "owner",
+   "drawn_at": 1788480000
+  }
+ ],
+ "setups": [
+  {
+   "id": "d98eb59a8eb7",
+   "created": "2026-09-22T15:13:36+00:00",
+   "name": "BTC flat resistance + bull flag (Sep 2026)",
+   "note": "buy on a breakout of the resistance line (maybe with a retest) based on this strong resistance that stopped it the previous time it reached there and the bullish pattern",
+   "members": [],
+   "author": "owner"
+  }
+ ]
+}
