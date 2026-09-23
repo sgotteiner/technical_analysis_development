@@ -11,7 +11,7 @@ const DEFAULTS = { targetDays: 14, sizesText: '8', show: true, drawLines: true, 
   tolPct: 1.5, minTouches: 3, maxSlope: '', top: 6, lookback: '', anchorDays: 120, maxHistory: 2 };
 
 export function createPointsController({ root, srChart, getCandles, getNow, status }) {
-  let state = { ...DEFAULTS }, info = null, seq = 0;
+  let state = { ...DEFAULTS }, info = null, seq = 0, presets = [];
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
   const parseSizes = () => state.sizesText.split(/[,\s]+/).filter(Boolean)
@@ -57,11 +57,32 @@ export function createPointsController({ root, srChart, getCandles, getNow, stat
     }
   }
 
+  function loadPreset(name) {
+    const preset = presets.find(p => p.name === name);
+    state = preset ? { ...DEFAULTS, ...preset.settings, presetName: name } : { ...state, presetName: '' };
+    save();
+    refresh();
+  }
+
+  async function savePreset(name, note) {
+    const { presetName, ...settings } = state;
+    try {
+      const saved = await api.savePreset({ name, settings, note });
+      presets = await api.presets();
+      state.presetName = saved.name;
+      save();
+      status(`preset "${saved.name}" saved on commit ${saved.commit || '?'}`);
+      draw(++seq);
+    } catch (e) { status(`preset not saved: ${e.message}`, 'err'); }
+  }
+
   function draw(answered) {
-    renderPointsPanel({ root, state, info, colors: COLORS, candles: getCandles(), answered,
-      onChange: (key, value) => { state[key] = value; save(); refresh(); } });
+    renderPointsPanel({ root, state, info, colors: COLORS, candles: getCandles(), answered, presets,
+      onChange: (key, value) => { state[key] = value; state.presetName = ''; save(); refresh(); },
+      onLoadPreset: loadPreset, onSavePreset: savePreset });
   }
 
   draw();
+  api.presets().then(list => { presets = list; draw(); }, () => {});
   return { refresh };
 }

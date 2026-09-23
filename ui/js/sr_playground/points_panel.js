@@ -32,10 +32,21 @@ function lineSettings(state) {
     </div>`;
 }
 
-export function renderPointsPanel({ root, state, info, colors, candles, answered, onChange }) {
+function presetRow(presets, state) {
+  const current = presets.find(p => p.name === state.presetName);
+  return `<div class="row">
+      <label>preset <select id="pt-preset"><option value="">(not saved)</option>
+        ${presets.map(p => `<option value="${p.name}"${p.name === state.presetName ? ' selected' : ''}>${p.name}</option>`).join('')}
+      </select></label>
+      <button id="pt-save-preset" title="Save these settings with the current commit">save current…</button>
+      ${current ? `<span class="hint">commit ${current.commit || '?'}${current.tag ? ' · tag ' + current.tag : ''}</span>` : ''}
+    </div>`;
+}
+
+export function renderPointsPanel({ root, state, info, colors, candles, answered, presets = [], onChange, onLoadPreset, onSavePreset }) {
   const c = info && info.calibrated, groups = info ? info.sizes : [];
   if (answered) root.dataset.rev = String(answered);        // "this is the answer to request N"
-  root.innerHTML = `<div class="row">
+  root.innerHTML = presetRow(presets, state) + `<div class="row">
       <label><input type="checkbox" id="pt-show" ${state.show ? 'checked' : ''}> show points</label>
       <label>trade length <input id="pt-days" type="number" min="1" max="365" value="${state.targetDays}"> days</label>
       <label>or sizes % <input id="pt-sizes" value="${state.sizesText}" placeholder="6, 12"></label>
@@ -54,6 +65,11 @@ export function renderPointsPanel({ root, state, info, colors, candles, answered
   };
   bind('#pt-show', 'show', 'check');
   bind('#pt-lines', 'drawLines', 'check');
+  root.querySelector('#pt-preset').onchange = e => onLoadPreset(e.target.value);
+  root.querySelector('#pt-save-preset').onclick = () => {
+    const name = prompt('Save these settings as:', state.presetName || '');
+    if (name && name.trim()) onSavePreset(name.trim(), prompt('A note (optional):', '') || '');
+  };
   [['#pt-days', 'targetDays'], ['#pt-sizes', 'sizesText'], ['#pt-look', 'lookback'], ['#pt-mode', 'mode'],
    ['#pt-tol', 'tolPct'], ['#pt-anchor', 'anchorDays'], ['#pt-top', 'top'], ['#pt-touch', 'minTouches'],
    ['#pt-hist', 'maxHistory'],

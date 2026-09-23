@@ -1,0 +1,25 @@
+# Saved S/R playground presets (repositories/sr_preset_repo.py).
+# Each preset keeps the settings AND the commit they were produced on, so a state can be brought
+# back with its code:  git checkout <commit>   (or the tag, where there is one).
+presets:
+- name: good lines 2026-09-24
+  saved_at: '2026-09-24T00:00:00+00:00'
+  commit: 73a062e
+  tag: sr-playground-good-lines-2026-09-24
+  note: >-
+    The owner's verdict: "wow. just wow. love it. this code with these settings got really nice
+    dots and lines." Levels reproduce his drawn 57.8k / 59.1k / 64.2k / 67.3k / 79.5k, and the
+    top trend line is his falling diagonal (-0.15%/day, 5 touches, 2025-11-04 -> 2026-08-19).
+  settings:
+    mode: owner
+    sizesText: '8'
+    targetDays: 14
+    anchorDays: 120
+    minTouches: 3
+    maxHistory: 2
+    tolPct: 1.5
+    top: 6
+    maxSlope: ''
+    lookback: ''
+    show: true
+    drawLines: true
