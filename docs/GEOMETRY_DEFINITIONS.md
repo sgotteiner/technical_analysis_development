@@ -146,6 +146,24 @@ His likes (58, 67) are in, his dislikes (59, 64, 70) are out, and 80k / 106k are
 **The tie-break was the bug**: ranking a crowded area by most visits kept 63,931 over 65,618, which
 sat 0.2% from his own line. "Most recent wins" matches his eye.
 
+## Next session (owner, 2026-09-24, end of session)
+1. **Stepping "now" looks broken and is really slow.** Measured: one `/api/points` call takes ~4 s
+   (94 s on the first call after a restart), so pressing "7d" a few times queues tens of seconds of
+   work while the panel keeps showing the old lines with no sign it is busy. The server is right -
+   at 2026-06-12 it returns different lines - the page just shows a stale answer. Needed: profile
+   and speed up (the big-swing target search and `price_zones` are the suspects), cancel superseded
+   requests, and show "computing" in the panel, not only in the top bar.
+2. **Show the configuration on the chart.** He cannot see the clusters: which dots belong to which
+   line, where the band is, where the visits are. The zone bands were rejected as a replacement for
+   his lines, but something light (dots coloured by cluster, ticks at visits) is still wanted.
+3. **The lines may be lucky.** "I feel like it got lucky finding some lines from the back but you
+   saw in my drawings i used closer ones" - the rule prefers long-lived clusters, while his own
+   lines come from nearer history. Worth a term for recency / nearness in the search.
+4. `scripts/tune_lines.py`: the search generalised over every drawn setup and its own date, so a new
+   setup is draw -> run -> read the table (today's search was hand-run on one date).
+5. Then events (breakout / retest / fakeout, by a move), then strategies and backtests.
+6. A pass over the code and these docs together.
+
 ## Open questions (the owner's call)
 1. Sizes: a fixed set (5 / 10 / 20%), or calibrated from recent data to the trade horizon (~12% for
    2 weeks)? One size, two (trade + structure), or a sweep over many with a ranking?
