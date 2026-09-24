@@ -34,6 +34,7 @@ export function createSrChart(el) {
     };
   }
   const viewPool = makePool(), pointPool = makePool();
+  const drawn = { markers: 0, pointLines: 0, viewLines: 0 };      // what is on the chart (for checks)
   let pool = viewPool;
   const segment = (points, color, width, style) => pool.segment(points, color, width, style);
 
@@ -53,6 +54,8 @@ export function createSrChart(el) {
   function drawView(view, candles, now) {
     pool = viewPool;
     pool.start();
+    drawn.viewLines = Object.values(view ? view.levels : {})
+      .reduce((n, lvl) => n + lvl.pipes.length * 2 + lvl.lines.length, 0);
     Object.values(view ? view.levels : {}).forEach((lvl, li) => {
       const width = LEVEL_WIDTH[Math.min(li, LEVEL_WIDTH.length - 1)];
       lvl.pipes.forEach((p, r) => {
@@ -77,6 +80,7 @@ export function createSrChart(el) {
       if (xEnd > ln.last) segment([at(ln.last), at(xEnd)], g.color, width, LightweightCharts.LineStyle.Dashed);
     }));
     pool.end();
+    drawn.pointLines = groups.reduce((n, g) => n + g.lines.length, 0);
   }
 
   function focus(candles, now) {
@@ -88,7 +92,8 @@ export function createSrChart(el) {
     const markers = groups.flatMap(g => g.points.map(p => ({
       time: p.time, position: p.kind === 'peak' ? 'aboveBar' : 'belowBar', color: g.color, shape: 'circle', size: 0.6 })));
     past.setMarkers(markers.sort((a, b) => a.time - b.time));
+    drawn.markers = markers.length;
   }
 
-  return { chart, series: past, setNow, drawView, focus, setPointMarkers, drawPointLines };
+  return { chart, series: past, setNow, drawView, focus, setPointMarkers, drawPointLines, drawn: () => ({ ...drawn }) };
 }

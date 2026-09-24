@@ -6,6 +6,7 @@ import { createDrawings } from './drawings.js';
 import { renderResults, renderAnnotations } from './panels.js';
 import { createSetupsController } from './setups_controller.js';
 import { createPointsController } from './points_controller.js';
+import { createLayers } from './layers.js';
 
 const $ = id => document.getElementById(id);
 const [candles, defaults, saved] = await Promise.all([api.candles(), api.defaults(), api.annotations()]);
@@ -30,6 +31,13 @@ const setups = createSetupsController({ drawings, getAnnotations: () => annotati
   onChange: () => refreshAnnotations() });
 const points = createPointsController({ root: $('points'), srChart, status,
   getCandles: () => candles, getNow: () => now });
+const layers = createLayers({ root: $('layers'), onChange: applyLayers });
+
+function applyLayers(show) {
+  drawings.setVisible({ drawings: show.drawings, detections: show.detections });
+  points.setVisible({ dots: show.dots, lines: show.lines });
+  srChart.drawView(show.pipes ? view : null, candles, now);
+}
 
 function refreshAnnotations() {
   drawings.setItems(annotations); drawings.select(selected);
@@ -65,7 +73,7 @@ function compute() {
       const v = await api.view(req);
       if (mine !== seq) return;                       // a newer request is on its way
       view = v; request = req;
-      srChart.drawView(view, candles, now);
+      srChart.drawView(layers.state().pipes ? view : null, candles, now);
       renderResults($('results'), view, request, candles);
       const partial = Object.values(view.levels).some(l => !l.complete);
       status(`${((performance.now() - t0) / 1000).toFixed(2)} s${partial ? ' · search incomplete, see results' : ''}`, partial ? 'warn' : 'hint');
@@ -111,4 +119,6 @@ setups.reload();
 const hash = location.hash.slice(1);
 const start = /^\d{4}-\d{2}-\d{2}$/.test(hash) ? candles.findIndex(c => c.time >= Date.parse(hash + 'T00:00:00Z') / 1000) : -1;
 setNow(start >= 0 ? start : candles.length - 1);
-window.__srPlayground = { state: () => ({ now, view, request, annotations, setups: setups.setups() }), setNow, compute, srChart };   // for automated checks
+applyLayers(layers.state());        // honour the boxes that were left unticked last time
+window.__srPlayground = { state: () => ({ now, view, request, annotations, setups: setups.setups(),
+  layers: layers.state(), drawn: srChart.drawn() }), setNow, compute, srChart };   // for automated checks

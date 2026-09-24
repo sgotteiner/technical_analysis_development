@@ -2,6 +2,7 @@
 // Tools: pan (default), line (click two points), box (click two corners). Esc cancels.
 export function createDrawings({ chart, series, svg, container, onCreate }) {
   let tool = 'pan', anchor = null, hover = null, items = [], detected = [], selected = null, lastSig = '';
+  const show = { drawings: true, detections: true };
   const toPoint = p => (p && p.time !== undefined && p.point)
     ? { time: p.time, price: series.coordinateToPrice(p.point.y) } : null;
   // Own click detection: the chart library drops a quick second click as a double-click.
@@ -41,8 +42,8 @@ export function createDrawings({ chart, series, svg, container, onCreate }) {
   }
 
   function frame() {
-    const parts = detected.map(it => shape(it.kind, it.points, 'det', it.label))
-      .concat(items.map(it => shape(it.kind, it.points, it.id === selected ? 'sel' : 'user', it.label)));
+    const parts = (show.detections ? detected : []).map(it => shape(it.kind, it.points, 'det', it.label))
+      .concat((show.drawings ? items : []).map(it => shape(it.kind, it.points, it.id === selected ? 'sel' : 'user', it.label)));
     if (anchor && hover) parts.push(shape(tool, [anchor, hover], 'preview', ''));
     const sig = parts.join('');
     if (sig !== lastSig) { svg.innerHTML = STYLE + sig; lastSig = sig; }
@@ -57,6 +58,7 @@ export function createDrawings({ chart, series, svg, container, onCreate }) {
     setItems(list) { items = list; },
     select(id) { selected = id; },
     setDetected(list) { detected = list; },
+    setVisible(layers) { Object.assign(show, layers); },
   };
 }
 

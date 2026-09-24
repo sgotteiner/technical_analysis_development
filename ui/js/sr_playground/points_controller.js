@@ -12,6 +12,7 @@ const DEFAULTS = { targetDays: 14, sizesText: '8', show: true, drawLines: true, 
 
 export function createPointsController({ root, srChart, getCandles, getNow, status }) {
   let state = { ...DEFAULTS }, info = null, seq = 0, presets = [];
+  const show = { dots: true, lines: true };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
   const parseSizes = () => state.sizesText.split(/[,\s]+/).filter(Boolean)
@@ -47,10 +48,7 @@ export function createPointsController({ root, srChart, getCandles, getNow, stat
       const res = await api.points(body);
       if (mine !== seq) return;
       info = res;
-      const groups = res.sizes.map((g, i) => ({ color: COLORS[i % COLORS.length], ...g }));
-      srChart.setPointMarkers(groups);
-      srChart.drawPointLines(state.drawLines ? groups.map(g => ({ color: g.color, lines: drawables(g) })) : [],
-        getCandles(), now);
+      paint();
       draw(mine);
     } catch (e) {
       if (mine === seq) { status(`points: ${e.message}`, 'err'); info = null; draw(mine); }
@@ -76,6 +74,13 @@ export function createPointsController({ root, srChart, getCandles, getNow, stat
     } catch (e) { status(`preset not saved: ${e.message}`, 'err'); }
   }
 
+  function paint() {          // put on the chart whatever the layer checkboxes allow
+    const groups = (info ? info.sizes : []).map((g, i) => ({ color: COLORS[i % COLORS.length], ...g }));
+    srChart.setPointMarkers(show.dots ? groups : []);
+    srChart.drawPointLines(show.lines && state.drawLines ? groups.map(g => ({ color: g.color, lines: drawables(g) })) : [],
+      getCandles(), getNow());
+  }
+
   function draw(answered) {
     renderPointsPanel({ root, state, info, colors: COLORS, candles: getCandles(), answered, presets,
       onChange: (key, value) => { state[key] = value; state.presetName = ''; save(); refresh(); },
@@ -84,5 +89,5 @@ export function createPointsController({ root, srChart, getCandles, getNow, stat
 
   draw();
   api.presets().then(list => { presets = list; draw(); }, () => {});
-  return { refresh };
+  return { refresh, setVisible(layers) { Object.assign(show, layers); paint(); } };
 }
