@@ -7,6 +7,7 @@ import { renderResults, renderAnnotations } from './panels.js';
 import { createSetupsController } from './setups_controller.js';
 import { createPointsController } from './points_controller.js';
 import { createLayers } from './layers.js';
+import { createZonesController } from './zones_controller.js';
 
 const $ = id => document.getElementById(id);
 const [candles, defaults, saved] = await Promise.all([api.candles(), api.defaults(), api.annotations()]);
@@ -31,11 +32,14 @@ const setups = createSetupsController({ drawings, getAnnotations: () => annotati
   onChange: () => refreshAnnotations() });
 const points = createPointsController({ root: $('points'), srChart, status,
   getCandles: () => candles, getNow: () => now });
+const zones = createZonesController({ root: $('zones'), drawings, getNow: () => now, status,
+  getTrends: () => points.trends() });
 const layers = createLayers({ root: $('layers'), onChange: applyLayers });
 
 function applyLayers(show) {
   drawings.setVisible({ drawings: show.drawings, detections: show.detections });
   points.setVisible({ dots: show.dots, lines: show.lines });
+  zones.setVisible(show.zones);
   srChart.drawView(show.pipes ? view : null, candles, now);
 }
 
@@ -90,6 +94,7 @@ function setNow(i, refocus = true) {
   history.replaceState(null, '', '#' + $('date').value);
   compute();
   points.refresh();
+  zones.refresh();
 }
 
 function setTool(t) {

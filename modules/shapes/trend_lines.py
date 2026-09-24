@@ -20,8 +20,18 @@ import numpy as np
 PEAK = 1
 
 
+def _visits(touched: np.ndarray, min_gap: float) -> np.ndarray:
+    """One visit per group of touches: price has to leave the line and come back (owner's rule for
+    levels, applied to trends). Keeps the first bar of each group."""
+    kept = []
+    for t in touched:
+        if not kept or t - kept[-1] > min_gap:
+            kept.append(float(t))
+    return np.array(kept)
+
+
 def trend_lines(x: np.ndarray, y: np.ndarray, kind: np.ndarray, anchor_from: float, tol_pct: float,
-                min_touches: int = 3) -> List[Dict]:
+                min_touches: int = 3, min_gap: float = 5) -> List[Dict]:
     x, y = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
     kind = np.asarray(kind, dtype=int)
     if len(x) < 2:
@@ -40,17 +50,17 @@ def trend_lines(x: np.ndarray, y: np.ndarray, kind: np.ndarray, anchor_from: flo
                     continue
                 dist = ys - (ys[i] + slope * (xs - xs[i]))
                 hit = np.abs(dist) <= tol
-                if hit.sum() < min_touches:
+                touched = _visits(xs[hit], min_gap)     # neighbouring bars are one visit, not two
+                if len(touched) < min_touches:
                     continue
-                touched = xs[hit]
                 first, last = float(touched.min()), float(touched.max())
                 if last < anchor_from:          # the trend is over: not part of today's picture
                     continue
                 inside = (xs >= first) & (xs <= last)
                 if (side * dist[inside] > tol).any():      # price went through it before it ended
                     continue
-                key = (int(hit.sum()), first, last, round(float(slope), 10))
+                key = (len(touched), first, last, round(float(slope), 10))
                 out.setdefault(key, {"x1": first, "y1": float(ys[i] + slope * (first - xs[i])),
-                                     "slope": float(slope), "role": role, "touches": int(hit.sum()),
+                                     "slope": float(slope), "role": role, "touches": len(touched),
                                      "first": first, "last": last, "points": [float(t) for t in touched]})
     return sorted(out.values(), key=lambda l: (l["touches"], l["last"] - l["first"], l["last"]), reverse=True)

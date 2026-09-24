@@ -58,15 +58,19 @@ def test_bad_requests(client, body):
     assert client.post("/api/points", json=body).status_code == 422
 
 
-def test_levels_come_from_the_recent_points_and_their_history(client, df):
-    """The owner's rule (default): a level is a recent point's price; history counts its visits."""
-    body = {"end": 550, "sizes": [0.12], "lines": {"tol_pct": 2.0, "min_touches": 2, "top": 5, "anchor_days": 120}}
+def test_levels_are_clusters_of_dots_shown_when_recent_or_a_target(client, df):
+    """The owner's rule: cluster the dots into bands; show a cluster when price has been at it
+    recently, or when it is one of the next ones up / down (a target)."""
+    body = {"end": 550, "sizes": [0.12], "lines": {"tol_pct": 2.0, "min_touches": 2, "top": 8,
+                                                   "anchor_days": 120, "merge_pct": 5, "targets_each_way": 2}}
     group = client.post("/api/points", json=body).json()["sizes"][0]
     assert "lines" not in group and group["levels"] and "trends" in group
     for lv in group["levels"]:
-        assert lv["anchor"] >= 550 - 120 + 1                       # every level is anchored recently
-        assert lv["touches"] == lv["history"] + sum(1 for p in lv["points"] if p >= 550 - 120 + 1)
-    assert [lv["history"] for lv in group["levels"]] == sorted([lv["history"] for lv in group["levels"]], reverse=True)
+        assert lv["last"] >= 550 - 120 + 1 or lv["from_history"], "shown = touched recently, or a target"
+        assert lv["visits"] >= 2 and lv["high"] > lv["price"] > lv["low"]
+        assert lv["history"] == sum(1 for p in lv["points"] if p < 550 - 120 + 1)
+    band = max(lv["high"] / lv["low"] for lv in group["levels"])
+    assert band <= 1.051, f"no cluster may be wider than the band: {band:.3f}"
     for t in group["trends"]:
         assert t["last"] >= 550 - 120 + 1        # still touched now, but it may start much earlier
         assert t["role"] in ("support", "resistance")

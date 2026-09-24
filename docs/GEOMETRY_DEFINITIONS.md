@@ -99,6 +99,53 @@ Rejected rule (kept in the page as "any line, by touch count"): every pair of po
 touches. It draws 2017-to-2026 diagonals through dense point clouds; the owner: "those lines are a
 piece of shit they are not remotely related to the recent dots".
 
+## Next build: zones, the current price, and targets (agreed 2026-09-24)
+The owner's review of the levels at 8% / 9%: likes 57.8k and 67.3k, calls 59.1k / 64.2k / 70k
+noise, and the two most important lines are missing — 80.3k (price is standing on it) and 106k.
+Measured causes: 57.8k and 59.1k are 2.3% apart (one zone); 64.2k -> 67.3k -> 70k are 4.9% and 4.0%
+apart (one congestion area); the 79,500 peak of 2026-08-21 is a turning point at 8% but not at 9%,
+so nothing recent anchors 80.3k, though history has 80,600 (2025-11-21) and 81,500 (2025-03-04);
+106k has 107,255 (2025-09-01) but nothing recent, because it is above price.
+1. **Zones instead of lines.** Band width from the swing size in percent (about half a swing);
+   one line per zone, at the strongest price inside it. Strength = **visits**: touches separated
+   by price leaving the zone and coming back, with their spread in time and recency - not a raw
+   touch count. Same rule cleans the 3 near-copy trend lines.
+2. **The current price is always an anchor.** A level is searched at today's price too, not only at
+   recent swing points. When price sits on a level it is labelled by the direction it arrived
+   from: came up to it = resistance, came down to it = support (owner, 2026-09-24).
+3. **Targets:** the nearest zones above and below price from history alone, no recent touch needed.
+4. **Shown as:** a translucent band at the zone's price width from its first visit to now, a solid
+   line at its strongest price, ticks at each visit, dots coloured by zone, its own checkbox; and a
+   panel that answers from the current price first (on / between, then next up and next down).
+
+## The line layer as it stands (2026-09-24, the owner: "wonderful setup... even better than mine")
+One mechanism, no special cases:
+1. **Dots**: peaks and valleys of a zigzag whose size comes from the trade horizon
+   (`modules/shapes/sr_turning_points.py`, `swing_calibration.py`).
+2. **Clusters**: dots fall into price bands of `merge_pct` (`modules/shapes/price_zones.py`). A band
+   never grows wider than that, so nothing chains across the chart. Strength = **visits**: price has
+   to leave the band and come back (three wiggles in a week are one visit).
+3. **Which clusters are shown** (`business_logic_services/level_rule.py`): those price has been at
+   recently, plus the nearest ones above and below that nothing recent touches - the **targets**,
+   searched at a `target_scale` bigger swing, because the ladder is bigger-scale structure.
+4. **One last spacing pass over the whole list**: recent lines and targets come from two different
+   clusterings, so the final list may never hold two lines closer than the band.
+5. **Trends** (`modules/shapes/trend_lines.py`): a falling line runs on peaks (resistance), a rising
+   one on valleys (support); nothing may poke past it before its last touch; it must still be
+   touched now but may start as far back as the trend goes; touches count as **visits** (the same
+   rule as levels - this is what killed the junk line anchored on the 2020 COVID low); near-copies
+   merge and at most one per side is drawn.
+
+**Tuned settings** (preset `tuned lines 2026-09-24`, and the defaults): swing **7%**, band
+**1.5%**, min **3 visits**, crowded area goes to the **most recently visited** cluster, targets
+**2 each way** at **2.5x** the swing, recent = last **120 days**.
+Found by search: sizes 5-12%, bands 1.5-4%, four tie-breaks, min visits 2-3, each scored against
+the owner's drawn lines AND his stated likes / dislikes. Result at 2026-09-04:
+58,000 / 62,510 / 66,956 / 72,799 / 79,500 (price on it) / 108,969 (target) + one falling trend.
+His likes (58, 67) are in, his dislikes (59, 64, 70) are out, and 80k / 106k are found.
+**The tie-break was the bug**: ranking a crowded area by most visits kept 63,931 over 65,618, which
+sat 0.2% from his own line. "Most recent wins" matches his eye.
+
 ## Open questions (the owner's call)
 1. Sizes: a fixed set (5 / 10 / 20%), or calibrated from recent data to the trade horizon (~12% for
    2 weeks)? One size, two (trade + structure), or a sweep over many with a ranking?

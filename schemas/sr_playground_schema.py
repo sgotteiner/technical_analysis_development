@@ -41,6 +41,14 @@ class LinesConfig(BaseModel):
                                        description="a line must touch a point from the last N days; None = anywhere")
     max_history: Optional[int] = Field(None, ge=0, le=50,
                                        description="keep only a level's last N visits; None = all of them")
+    merge_pct: float = Field(0.0, ge=0, le=30,
+                             description="levels within this %% of each other become one line; 0 = off")
+    trends_per_side: int = Field(1, ge=1, le=5, description="how many trend lines per side")
+    prefer: Literal["recent", "visits"] = Field("recent", description="which cluster wins a crowded area")
+    min_visits: int = Field(3, ge=1, le=10, description="visits a cluster needs to be a line")
+    target_scale: float = Field(2.5, ge=1, le=6, description="targets use swings this much bigger")
+    targets_each_way: int = Field(0, ge=0, le=5,
+                                  description="levels above and below price that nothing recent touches; 0 = off")
 
 
 class PointsRequest(BaseModel):
@@ -63,6 +71,17 @@ class PointsRequest(BaseModel):
         if not self.sizes and self.target_days is None:
             raise ValueError("give sizes, a target_days, or both")
         return self
+
+
+class ZonesRequest(BaseModel):
+    """Price zones at a swing size, and the ladder read from the current price."""
+    end: int = Field(ge=0)
+    size: float = Field(gt=0.005, le=1)
+    band_pct: Optional[float] = Field(None, gt=0, le=50, description="default: half the swing size")
+    min_visits: int = Field(2, ge=1, le=20)
+    n_each: int = Field(3, ge=1, le=10)
+    trends: Optional[List[Dict]] = Field(None, description="scoring only: the trend lines on screen")
+    tol_pct: Optional[float] = Field(None, gt=0, le=20, description="scoring only: how close counts as found")
 
 
 class Point(BaseModel):

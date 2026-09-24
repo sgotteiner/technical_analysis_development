@@ -4,6 +4,7 @@ const KEY = 'sr_playground_layers_v1';
 export const LAYERS = [
   ['drawings', 'my drawings'],
   ['dots', 'dots'],
+  ['zones', 'zones'],
   ['lines', 'calculated lines'],
   ['pipes', 'pipes'],
   ['detections', 'detected setups'],

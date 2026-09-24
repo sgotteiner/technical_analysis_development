@@ -6,9 +6,12 @@ import { api } from './api.js';
 import { renderPointsPanel } from './points_panel.js';
 
 const COLORS = ['#29b6f6', '#ffca28', '#ab47bc', '#66bb6a'];
-const KEY = 'sr_playground_points_v4';
-const DEFAULTS = { targetDays: 14, sizesText: '8', show: true, drawLines: true, mode: 'owner',
-  tolPct: 1.5, minTouches: 3, maxSlope: '', top: 6, lookback: '', anchorDays: 120, maxHistory: 2 };
+const KEY = 'sr_playground_points_v6';
+// measured against the owner's own lines (2026-09-24): 7% swings, a 1.5% band, 3 visits and
+// "the most recently visited cluster wins" reproduce his 58 and 67 and drop his 59, 64 and 70.
+const DEFAULTS = { targetDays: 14, sizesText: '7', show: true, drawLines: true, mode: 'owner',
+  tolPct: 1.5, minTouches: 3, maxSlope: '', top: 6, lookback: '', anchorDays: 120, maxHistory: 2,
+  mergePct: 1.5, targets: 2, minVisits: 3, prefer: 'recent' };
 
 export function createPointsController({ root, srChart, getCandles, getNow, status }) {
   let state = { ...DEFAULTS }, info = null, seq = 0, presets = [];
@@ -42,6 +45,9 @@ export function createPointsController({ root, srChart, getCandles, getNow, stat
         mode: state.mode, tol_pct: +state.tolPct, min_touches: +state.minTouches,
         max_slope_pct: state.maxSlope === '' ? null : +state.maxSlope, top: +state.top,
         anchor_days: +state.anchorDays, max_history: state.maxHistory === '' ? null : +state.maxHistory,
+        merge_pct: state.mergePct === '' ? 0 : +state.mergePct,
+        targets_each_way: state.targets === '' ? 0 : +state.targets,
+        min_visits: +state.minVisits, prefer: state.prefer,
       } : null,
     };
     try {
@@ -83,11 +89,21 @@ export function createPointsController({ root, srChart, getCandles, getNow, stat
 
   function draw(answered) {
     renderPointsPanel({ root, state, info, colors: COLORS, candles: getCandles(), answered, presets,
-      onChange: (key, value) => { state[key] = value; state.presetName = ''; save(); refresh(); },
+      onChange: (key, value) => {
+        state[key] = value;
+        if (key === 'targetDays') state.sizesText = '';      // a typed size would silently win
+        state.presetName = '';
+        save();
+        refresh();
+      },
       onLoadPreset: loadPreset, onSavePreset: savePreset });
   }
 
   draw();
   api.presets().then(list => { presets = list; draw(); }, () => {});
-  return { refresh, setVisible(layers) { Object.assign(show, layers); paint(); } };
+  // the trend lines on screen, for the scoreboard: their price at "now" and their slope
+  const trends = () => (info ? info.sizes : []).flatMap(g => (g.trends || []).map(t => ({
+    at_now: Math.exp(t.y1 + t.slope * (getNow() - t.x1)), slope_pct_day: Math.expm1(t.slope) * 100 })));
+
+  return { refresh, trends, setVisible(layers) { Object.assign(show, layers); paint(); } };
 }

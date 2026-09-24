@@ -17,7 +17,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 SHIPPED = ROOT / "config" / "sr_presets.yaml"
 FIELDS = {"sizesText", "targetDays", "anchorDays", "minTouches", "maxHistory", "tolPct", "top",
-          "mode", "maxSlope", "lookback", "show", "drawLines"}
+          "mode", "maxSlope", "lookback", "show", "drawLines",
+          "mergePct", "minVisits", "prefer", "targets"}          # keep in step with the panel
 
 
 def current_commit(root: Path = ROOT) -> Optional[str]:

@@ -249,3 +249,27 @@ tags: kind=decision · attribution=your-correction · portable=yes · signature=
 anchor: 2026-09-23 · uncommitted · 54140a1d
 **Idea:** A setup is one picture "from I don't know when until now" that holds as many relevant lines as the chart has — here 7, some horizontal, some diagonal; another setup has a different number. The algorithm has to find all the relevant ones. Price is not always at a level, and what is relevant depends on the timeframe. "Limiting it to 2 pairs of sr lines is not enough for a setup analysis."
 **Replaces:** The 4-line design (2 levels x support + resistance) as the picture of a chart. The magnitude-based line definition stays; what changes is that the number of lines, and how far back each one reaches, come from the chart, not from settings.
+
+### Levels are zones: cluster by percentage, judge by the moves' time
+tags: kind=decision · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-09-24 · 6ce3874 · 54140a1d
+**Idea:** Near-identical lines are noise and must be cleaned: 57.8k and 59.1k are one support zone, and 64.2k / 67.3k / 70k are one congestion area ("i like the 58, 67, dont like 59, 64, 69"). Clustering is the way, and it is "tricky because its also relative to the period length but you can count on the same metric of percentage to see similar moves and measure the moves time": the band comes from the swing size in percent (scale-free), and the strength of a zone comes from its visits over time, not from a raw touch count.
+**Why:** Three lines through one congestion area say nothing more than one line does, and the count of touches rewards clumps of wiggles.
+
+### Always answer from the current price: what is my support, my resistance, what is next
+tags: kind=decision · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-09-24 · 6ce3874 · 54140a1d
+**Idea:** "You should always think about the current price. You should think what is my current support and resistance and if it on a line it can be both and whats the next ones." Price is not always at a level — sometimes it is between two — but the answer is always framed from where price is now. When price sits ON a level, the label comes from the direction it arrived from: **came up to it = resistance, came down to it = support**.
+**Why:** The 80.3k level, the most important line on the chart and the one price is standing on, was missed because the search only anchored on recent swing points. The trader's question is never "list all lines", it is "what is above me and what is below me".
+
+### What he likes and dislikes about a drawn result is ground truth too
+tags: kind=principle · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-09-24 · uncommitted · 54140a1d
+**Idea:** "I like the 58, 67, dont like 59, 64, 69" and "there are 3 trend lines again" are as much ground truth as the lines he draws. A rule change is judged on both: does it find the lines he drew, and does it avoid the ones he rejected. Tuning by eye without checking those is not allowed - "do you even listen to me and look at my ground truth?", and "we said you need to check yourself before handing it back to me".
+**Why:** Claude twice reported a result as good after checking it only against the drawn lines, while it still contained a line the owner had explicitly rejected and had dropped one he had explicitly kept.
+
+### Wrong-side and stale lines are noise; a touch is a visit everywhere
+tags: kind=decision · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-09-24 · uncommitted · 54140a1d
+**Idea:** An up-trend line drawn above the graph, or a down-trend below it, is noise. A trend line must still be touched now, but may start as far back as the trend goes. And the visits rule is general, not only for levels: two touches on neighbouring bars are one touch for a trend line as well.
+**Why:** The rejected up-trend line claimed three touches - 2020-03-13, 2026-06-05 and 2026-06-06 - two of them on consecutive days, anchored on the COVID low six years back.

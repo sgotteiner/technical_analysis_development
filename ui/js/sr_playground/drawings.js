@@ -1,7 +1,7 @@
 // The owner's drawings: lines and pattern boxes on an SVG overlay that follows the chart.
 // Tools: pan (default), line (click two points), box (click two corners). Esc cancels.
 export function createDrawings({ chart, series, svg, container, onCreate }) {
-  let tool = 'pan', anchor = null, hover = null, items = [], detected = [], selected = null, lastSig = '';
+  let tool = 'pan', anchor = null, hover = null, items = [], detected = [], zones = [], selected = null, lastSig = '';
   const show = { drawings: true, detections: true };
   const toPoint = p => (p && p.time !== undefined && p.point)
     ? { time: p.time, price: series.coordinateToPrice(p.point.y) } : null;
@@ -31,6 +31,23 @@ export function createDrawings({ chart, series, svg, container, onCreate }) {
     return x === null || y === null ? null : [x, y];
   };
 
+  // a zone: a coloured band across its life, the visits marked on it, price and count on the left
+  function band(z) {
+    const [a, b] = z.points.map(xy);
+    if (!a || !b) return '';
+    const x = Math.min(a[0], b[0]), y = Math.min(a[1], b[1]);
+    const w = Math.max(Math.abs(b[0] - a[0]), 2), h = Math.max(Math.abs(b[1] - a[1]), 2);
+    const mid = y + h / 2;
+    const ticks = (z.visits || []).map(t => {
+      const vx = chart.timeScale().timeToCoordinate(t);
+      return vx === null ? '' : `<rect class="visit" x="${vx - 2}" y="${y}" width="4" height="${h}" fill="${z.color}" fill-opacity="0.75"/>`;
+    }).join('');
+    return `<g class="zone"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${z.color}" fill-opacity="0.10"
+      stroke="${z.color}" stroke-opacity="0.45"/>
+      <line x1="${x}" y1="${mid}" x2="${x + w}" y2="${mid}" stroke="${z.color}" stroke-width="1.5" stroke-opacity="0.9"/>
+      ${ticks}<text x="${x + 4}" y="${y - 3}" fill="${z.color}">${esc(z.label)}</text></g>`;
+  }
+
   function shape(kind, points, cls, label) {
     const [a, b] = points.map(xy);
     if (!a || !b) return '';
@@ -42,7 +59,8 @@ export function createDrawings({ chart, series, svg, container, onCreate }) {
   }
 
   function frame() {
-    const parts = (show.detections ? detected : []).map(it => shape(it.kind, it.points, 'det', it.label))
+    const parts = zones.map(band)
+      .concat((show.detections ? detected : []).map(it => shape(it.kind, it.points, 'det', it.label)))
       .concat((show.drawings ? items : []).map(it => shape(it.kind, it.points, it.id === selected ? 'sel' : 'user', it.label)));
     if (anchor && hover) parts.push(shape(tool, [anchor, hover], 'preview', ''));
     const sig = parts.join('');
@@ -58,6 +76,7 @@ export function createDrawings({ chart, series, svg, container, onCreate }) {
     setItems(list) { items = list; },
     select(id) { selected = id; },
     setDetected(list) { detected = list; },
+    setZones(list) { zones = list; },
     setVisible(layers) { Object.assign(show, layers); },
   };
 }

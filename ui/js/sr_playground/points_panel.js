@@ -8,7 +8,7 @@ function foundRows(state, info, colors, candles) {
     const color = colors[i % colors.length];
     const row = text => `<div class="m" style="color:${color}">${text}</div>`;
     if (state.mode === 'owner') {
-      return (g.levels || []).map(lv => row(`level ${num(lv.price)} · touched ${lv.touches}× (${lv.history} before) · ${day(candles, lv.first)} → ${day(candles, lv.last)}`)).join('')
+      return (g.levels || []).map(lv => row(`level ${num(lv.price)}${lv.from_history ? ' (target)' : ''}${lv.merged_from > 1 ? ` (${lv.merged_from} merged)` : ''} · touched ${lv.touches}× (${lv.history} before) · ${day(candles, lv.first)} → ${day(candles, lv.last)}`)).join('')
         + (g.trends || []).map(t => row(`${t.role} trend ${(Math.expm1(t.slope) * 100).toFixed(2)}%/day · ${t.touches} touches · ${day(candles, t.first)} → ${day(candles, t.last)}`)).join('');
     }
     return (g.lines || []).map((l, j) => row(`line ${j + 1}: ${l.touches} touches · ${(Math.expm1(l.slope) * 100).toFixed(2)}%/day · ${day(candles, l.first)} → ${day(candles, l.last)}`)).join('');
@@ -28,6 +28,13 @@ function lineSettings(state) {
       <label>show <input id="pt-top" type="number" min="1" max="50" value="${state.top}"></label>
       <label>min touches <input id="pt-touch" type="number" min="2" max="20" value="${state.minTouches}"></label>
       <label>history <input id="pt-hist" type="number" min="0" max="50" value="${state.maxHistory}" placeholder="all"> visits</label>
+      <label>merge within <input id="pt-merge" type="number" min="0" step="0.5" value="${state.mergePct}">%</label>
+      <label>targets <input id="pt-targets" type="number" min="0" max="5" value="${state.targets}"> each way</label>
+      <label>min visits <input id="pt-visits" type="number" min="1" max="10" value="${state.minVisits}"></label>
+      <label>crowded area <select id="pt-prefer">
+        <option value="recent"${state.prefer === 'recent' ? ' selected' : ''}>most recent wins</option>
+        <option value="visits"${state.prefer === 'visits' ? ' selected' : ''}>most visits wins</option>
+      </select></label>
       ${touchesRule ? `<label>max slope <input id="pt-slope" type="number" step="0.05" min="0" value="${state.maxSlope}" placeholder="any">%/day</label>` : ''}
     </div>`;
 }
@@ -48,7 +55,7 @@ export function renderPointsPanel({ root, state, info, colors, candles, answered
   if (answered) root.dataset.rev = String(answered);        // "this is the answer to request N"
   root.innerHTML = presetRow(presets, state) + `<div class="row">
       <label><input type="checkbox" id="pt-show" ${state.show ? 'checked' : ''}> show points</label>
-      <label>trade length <input id="pt-days" type="number" min="1" max="365" value="${state.targetDays}"> days</label>
+      <label class="${state.sizesText ? 'hint' : ''}">trade length <input id="pt-days" type="number" min="1" max="365" value="${state.targetDays}"> days${state.sizesText ? ' (unused)' : ''}</label>
       <label>or sizes % <input id="pt-sizes" value="${state.sizesText}" placeholder="6, 12"></label>
       <label>lookback <input id="pt-look" type="number" min="30" value="${state.lookback}" placeholder="all"> d</label>
       <label><input type="checkbox" id="pt-lines" ${state.drawLines ? 'checked' : ''}> lines</label>
@@ -72,6 +79,6 @@ export function renderPointsPanel({ root, state, info, colors, candles, answered
   };
   [['#pt-days', 'targetDays'], ['#pt-sizes', 'sizesText'], ['#pt-look', 'lookback'], ['#pt-mode', 'mode'],
    ['#pt-tol', 'tolPct'], ['#pt-anchor', 'anchorDays'], ['#pt-top', 'top'], ['#pt-touch', 'minTouches'],
-   ['#pt-hist', 'maxHistory'],
+   ['#pt-hist', 'maxHistory'], ['#pt-merge', 'mergePct'], ['#pt-targets', 'targets'], ['#pt-visits', 'minVisits'], ['#pt-prefer', 'prefer'],
    ['#pt-slope', 'maxSlope']].forEach(([id, key]) => bind(id, key));
 }

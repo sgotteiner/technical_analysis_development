@@ -1,15 +1,16 @@
 # Saved S/R playground presets (repositories/sr_preset_repo.py).
-# Each preset keeps the settings AND the commit they were produced on, so a state can be brought
-# back with its code:  git checkout <commit>   (or the tag, where there is one).
+# Each preset keeps the settings AND the commit they were produced on, so a state can be
+# brought back with its code:  git checkout <commit>   (or the tag, where there is one).
+# Written by the playground's "save current..." button; safe to edit by hand.
 presets:
 - name: good lines 2026-09-24
   saved_at: '2026-09-24T00:00:00+00:00'
   commit: 73a062e
   tag: sr-playground-good-lines-2026-09-24
-  note: >-
-    The owner's verdict: "wow. just wow. love it. this code with these settings got really nice
-    dots and lines." Levels reproduce his drawn 57.8k / 59.1k / 64.2k / 67.3k / 79.5k, and the
-    top trend line is his falling diagonal (-0.15%/day, 5 touches, 2025-11-04 -> 2026-08-19).
+  note: 'The owner''s verdict: "wow. just wow. love it. this code with these settings
+    got really nice dots and lines." Levels reproduce his drawn 57.8k / 59.1k / 64.2k
+    / 67.3k / 79.5k, and the top trend line is his falling diagonal (-0.15%/day, 5
+    touches, 2025-11-04 -> 2026-08-19).'
   settings:
     mode: owner
     sizesText: '8'
@@ -23,3 +24,45 @@ presets:
     lookback: ''
     show: true
     drawLines: true
+- name: good lines 9% 2026-09-24
+  saved_at: '2026-09-24T11:21:42+00:00'
+  commit: 6ce3874
+  note: 'The owner, after comparing with 8%: "9 is better".'
+  settings:
+    mode: owner
+    sizesText: '9'
+    targetDays: 14
+    anchorDays: 120
+    minTouches: 3
+    maxHistory: 2
+    tolPct: 1.5
+    top: 6
+    maxSlope: ''
+    lookback: ''
+    show: true
+    drawLines: true
+- name: tuned lines 2026-09-24
+  saved_at: '2026-09-24T14:41:39+00:00'
+  commit: 6ce3874
+  note: 'The owner: ''wonderful setup... even better than mine.'' Found by searching
+    sizes 5-12%, bands 1.5-4%, four tie-breaks and min visits 2-3, scored against
+    his drawn lines AND his stated likes (58, 67) and dislikes (59, 64, 70). Lines:
+    58,000 / 62,510 / 66,956 / 72,799 / 79,500 (price on it) / 108,969 (target), plus
+    one falling resistance trend.'
+  settings:
+    mode: owner
+    sizesText: '7'
+    targetDays: 14
+    anchorDays: 120
+    minTouches: 3
+    maxHistory: 2
+    tolPct: 1.5
+    top: 6
+    maxSlope: ''
+    lookback: ''
+    show: true
+    drawLines: true
+    mergePct: 1.5
+    targets: 2
+    minVisits: 3
+    prefer: recent

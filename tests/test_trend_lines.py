@@ -69,6 +69,17 @@ def test_min_touches_and_ranking():
     assert [l["touches"] for l in lines] == sorted([l["touches"] for l in lines], reverse=True)
 
 
+def test_touches_on_neighbouring_bars_count_once():
+    """The owner's rule for levels applies to trends: price must leave and come back.
+    A line "touched" on 2026-06-05 and 06-06 was touched once, not twice."""
+    x, y, kind = _pts([(0, 100, PEAK), (20, 70, VALLEY), (100, 88, PEAK), (101, 87.9, PEAK),
+                       (150, 60, VALLEY), (190, 81, PEAK)])
+    lines = trend_lines(x, y, kind, anchor_from=170, tol_pct=1.5, min_touches=3)
+    for l in lines:
+        gaps = [b - a for a, b in zip(l["points"], l["points"][1:])]
+        assert all(g > 5 for g in gaps), l["points"]
+
+
 def test_empty_input():
     empty = np.array([])
     assert trend_lines(empty, empty, empty.astype(int), 0, 1.5, 2) == []

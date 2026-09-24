@@ -10,7 +10,8 @@ import pandas as pd
 from modules.shapes.sr_settings import SRRules
 from modules.shapes.sr_lines import candidate_lines, top_lines
 from modules.shapes.point_lines import lines_from_points
-from modules.shapes.recent_levels import recent_levels
+from modules.shapes.level_clusters import merge_trends
+from business_logic_services.level_rule import levels_from_points
 from modules.shapes.trend_lines import trend_lines
 from modules.shapes.sr_pipes import ranked_pipes, swing_legs, pipe_width
 from modules.shapes.sr_turning_points import turning_points, PEAK
@@ -33,6 +34,7 @@ def _level_view(df, end, cfg, rules, pairs, singles, tp) -> Dict:
             "median_swing": float(np.median(legs)) if len(legs) else None}
 
 
+TREND_SLOPE_PCT = 0.08      # %/day: how close two trends must be to count as one
 MAX_POINTS_FOR_LINES = 400      # every pair against every point: beyond this it is too slow to watch
 
 
@@ -49,7 +51,19 @@ def swing_points(df: pd.DataFrame, end: int, size: float, cache: Optional[Dict] 
             for i, k, y in zip(tp["idx"][known], tp["kind"][known], tp["y"][known])]
 
 
-def point_lines(points: list, cfg, end: int) -> list:
+def _per_side(trends: list, per_side: int) -> list:
+    """At most `per_side` trend lines for support and for resistance: the rest are variations."""
+    kept = {"support": 0, "resistance": 0}
+    out = []
+    for t in trends:
+        if kept[t["role"]] < per_side:
+            kept[t["role"]] += 1
+            out.append(t)
+    return out
+
+
+def point_lines(points: list, cfg, end: int, price_now: float = 0.0, price_before: float = 0.0,
+                big_points: list = None) -> list:
     """Lines through the given swing points (modules/shapes/point_lines.py). A line must touch a
     point from the last `anchor_days` — the owner finds the recent S/R first, then its history."""
     x = np.array([p["bar"] for p in points], dtype=float)
@@ -62,8 +76,20 @@ def point_lines(points: list, cfg, end: int) -> list:
         return {"lines": lines_from_points(x, y, cfg.tol_pct, cfg.min_touches, cfg.max_slope_pct, cfg.top, anchor)}
     kinds = np.array([1 if p["kind"] == "peak" else -1 for p in points], dtype=int)
     start = anchor if anchor is not None else 0
-    return {"levels": recent_levels(x, y, start, cfg.tol_pct, cfg.max_history)[:cfg.top],
-            "trends": trend_lines(x, y, kinds, start, cfg.tol_pct, cfg.min_touches)[:cfg.top]}
+    band = cfg.merge_pct if cfg.merge_pct > 0 else cfg.tol_pct * 2
+    big = None
+    if big_points:
+        big = (np.array([p["bar"] for p in big_points], dtype=float),
+               np.log(np.array([p["price"] for p in big_points], dtype=float)),
+               np.array([1 if p["kind"] == "peak" else -1 for p in big_points], dtype=int))
+    levels = levels_from_points(x, y, kinds, start, band, price_now, price_before, end,
+                                min_visits=cfg.min_visits, targets_each_way=cfg.targets_each_way,
+                                target_dots=big, target_band_pct=band * 2, top=cfg.top,
+                                prefer=cfg.prefer)
+    trends = trend_lines(x, y, kinds, start, cfg.tol_pct, cfg.min_touches)
+    trends = merge_trends(trends, end, cfg.merge_pct, TREND_SLOPE_PCT)   # near-copies are one trend
+    trends = _per_side(trends, cfg.trends_per_side)
+    return {"levels": levels, "trends": trends}
 
 
 def playground_view(df: pd.DataFrame, end: int, levels: Dict, rules: SRRules, pairs: int = 1, singles: int = 0,

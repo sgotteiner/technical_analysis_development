@@ -9,7 +9,9 @@ from modules.shapes.sr_settings import DEFAULT_LEVELS, DEFAULT_RULES, parse_rule
 from repositories.sr_annotation_repo import AnnotationStore
 from modules.shapes.swing_calibration import calibrate_size
 from business_logic_services.sr_playground_service import playground_view, swing_points, point_lines
-from schemas.sr_playground_schema import PointsRequest, ViewRequest, LABELS
+from business_logic_services.zone_service import zone_view
+from business_logic_services.ground_truth_score import score_against_drawings
+from schemas.sr_playground_schema import PointsRequest, ViewRequest, ZonesRequest, LABELS
 
 
 def make_router(df: pd.DataFrame, store: AnnotationStore, chart: str = "btc_1d") -> APIRouter:
@@ -46,11 +48,32 @@ def make_router(df: pd.DataFrame, store: AnnotationStore, chart: str = "btc_1d")
             group = {"size": s, "points": pts}
             if req.lines:
                 try:
-                    group.update(point_lines(pts, req.lines, req.end))
+                    close = df["Close"].to_numpy()
+                    big = swing_points(df, req.end, round(s * req.lines.target_scale, 4), cache)
+                    group.update(point_lines(pts, req.lines, req.end, float(close[req.end]),
+                                             float(close[max(0, req.end - 10)]), big))
                 except ValueError as e:
                     raise HTTPException(422, str(e))
             groups.append(group)
         return {"end": req.end, "calibrated": calibrated, "sizes": groups}
+
+    @router.post("/zones")
+    def post_zones(req: ZonesRequest):
+        if req.end >= len(df):
+            raise HTTPException(422, f"end must be < {len(df)}")
+        return zone_view(df, req.end, req.size, req.band_pct, req.min_visits, req.n_each, cache)
+
+    @router.post("/score")
+    def post_score(req: ZonesRequest):
+        """What the code finds against what the owner drew, on the day he drew it."""
+        if req.end >= len(df):
+            raise HTTPException(422, f"end must be < {len(df)}")
+        zones = zone_view(df, req.end, req.size, req.band_pct, req.min_visits, req.n_each, cache)
+        drawings = [a for a in store.list() if a["kind"] == "line"]
+        trends = [{"at_now": float(t["at_now"]), "slope_pct_day": float(t["slope_pct_day"])}
+                  for t in req.trends or []]
+        return score_against_drawings(drawings, {"zones": zones["zones"], "trends": trends},
+                                      zones["price_now"], req.tol_pct or 3.0)
 
     @router.get("/annotations")
     def list_annotations():
