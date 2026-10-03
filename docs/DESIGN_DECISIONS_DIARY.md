@@ -375,3 +375,23 @@ the targets are the rungs above in order, with R. Plus the state the structure i
 **Why:** "i explained to you what i did and i expect to get the same explanation." Confirmed in his
 words when read back ("thats correct"). Written up in `docs/GEOMETRY_DEFINITIONS.md`.
 **Links:** [[Always answer from the current price: what is my support, my resistance, what is next]]
+
+### Tools to explain with, not only to annotate with
+tags: kind=decision · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-03 · cd5ab85 · (chat)
+**Idea:** The annotator was for drawing ground truth. This is the other half: tools for him to say
+WHY and HOW, and to see what the code did. Asked for one at a time through the session - a note on
+every verdict and a drawing to put in its place; freehand sketching ("i want to be able to explain
+to you better"), several strokes under one note and his choice whether to keep them; peaks and
+valleys as boxes ("i need to see what you do"); an explanation of each line saying what it is and
+how it was found ("i explained to you what i did and i expect to get the same explanation"); one
+line at a time ("i want to be able to click a line in the setup and see only whats related to it");
+and the sidebar as cards.
+**Why:** Not scaffolding - it is where the design came from. Six of the corrections that changed the
+algorithm this session arrived through a tool built in the same session: the note box on the 67 line
+gave "the earlier it is the bigger the move it has to relate to" and "its a weak short term
+support"; the sketch gave the May 2026 80k peak and the structural read behind it, which pinned
+"same move and same resistance"; the boxes made "why up to 2018?" visible; clicking one line exposed
+that the sidebar was a second, rival level-finder. His own summary of the session names them first:
+"i have good infrastructure to see it and anotate and communicate about it with you."
+**Links:** [[An annotator / playground for shapes and S/R]] · [[Ground truth is the real problem, and errors cascade]]

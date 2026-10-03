@@ -237,6 +237,22 @@ requests are cancelled, the kept answer is the one for the date on screen).
    last request shares the CPU with three abandoned ones. Stopping them needs the server to know a
    request is superseded (a request id plus a check between stages) - not built, not asked for.
 
+## Seeing it and talking about it (built 2026-10-03)
+The half of the system that is not the algorithm: how he sees what the code did and tells Claude why
+it is wrong. Every one of these was asked for by him, and between them they produced six of the
+design corrections in this session.
+
+| tool | what it is for |
+|---|---|
+| ✓ / ✗ on every line, with a note | his verdict on what the code drew, recorded as ground truth instead of living in the chat |
+| "draw instead" | the line he would have drawn in its place, linked to the verdict |
+| freehand sketch (Ctrl+drag, or the Sketch tool) | explaining something in a picture; several strokes under one note; keep it, or "just showing you" and clear it later |
+| swing boxes | each peak and valley as the journey it is - support to resistance to support - bounded to the picture |
+| the setup, explained | a card describing the lines the chart draws: what each one is, how it was found, and the dots it is made of |
+| click a line | only that line, its dots, and the boxes of those dots - nothing else |
+| the sidebar as cards | one card per section, open what you need |
+| the build stamp | the page says when its own files changed, so a cached page can never be mistaken for a bug |
+
 ## Next session (2026-10-03, end of session)
 His read, in his words: "the setup is correct and shows nicely. i can see it got there using
 parameter tuning and not geometrically like me so it may overfit but thats a start because it is
