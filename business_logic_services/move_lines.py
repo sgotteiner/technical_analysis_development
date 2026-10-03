@@ -6,11 +6,12 @@ what a touch is WORTH and which touches belong to the line at all:
 
   worth    the leg that arrived at it, not its own wiggle - "the move this line resisted was about
            10%" for the 67 line, against ~28% for the line price is working now
-  belongs  "the earlier it is the bigger the move it has to relate to": a touch whose move is too
-           small for its age is not part of this line, which is what stops a line being drawn from
-           2021 - "i woudnt draw it from that long before"
   matters  "its the same move and same resistance" - a line is relevant now when the moves it
            turned back are the size of the move running now
+
+A touch is never discounted for being old: "its not about age ... i didnt mention age. only relative
+terms" (owner, 2026-10-03). How far back the picture reaches is decided by the backward search in
+business_logic_services/precedents.py - by finding a comparable move, not by fading one out.
 
 So the answer is not a flat list of prices: each line comes back with its move, how that compares
 with the move running now, and the span its surviving touches actually cover.
@@ -18,7 +19,6 @@ with the move running now, and the span its surviving touches actually cover.
 from typing import Dict, List, Optional
 import numpy as np
 from modules.shapes.price_zones import label_for, price_zones
-from modules.shapes.swing_moves import required_move
 
 
 def _term(ratio: float) -> str:
@@ -30,7 +30,7 @@ def _term(ratio: float) -> str:
 
 def lines_by_move(x: np.ndarray, y: np.ndarray, kinds: np.ndarray, moves: np.ndarray,
                   band_pct: float, price_now: float, price_before: float, end: float,
-                  current_move: float, age_scale: float = 365.0, min_touches: int = 2,
+                  current_move: float, min_touches: int = 2,
                   top: int = 0) -> List[Dict]:
     """`moves[i]` is the leg that ran into the point at `x[i]`. Returns the lines, strongest match
     to the move running now first."""
@@ -40,21 +40,17 @@ def lines_by_move(x: np.ndarray, y: np.ndarray, kinds: np.ndarray, moves: np.nda
     out: List[Dict] = []
     for z in price_zones(x, y, kinds, band_pct, price_now, end):
         bars = [float(b) for b in z["points"]]
-        ages = np.array([end - b for b in bars], dtype=float)
+        if len(bars) < min_touches:
+            continue                      # one dot is a dot, not a line
         mv = np.array([move_of.get(b, 0.0) for b in bars])
-        keeps = mv >= required_move(ages, current_move, age_scale)
-        if int(keeps.sum()) < min_touches:
-            continue                      # nothing left that is big enough for how old it is
-        kept_bars = [b for b, k in zip(bars, keeps) if k]
-        kept_moves = mv[keeps]
-        median_move = float(np.median(kept_moves))
+        median_move = float(np.median(mv))
         ratio = median_move / current_move
         out.append({
             "price": z["price"], "y": z["y"], "low": z["low"], "high": z["high"],
-            "move": median_move, "biggest_move": float(kept_moves.max()),
+            "move": median_move, "biggest_move": float(mv.max()),
             "vs_now": ratio, "term": _term(ratio),
-            "touches": len(kept_bars), "dropped": int((~keeps).sum()),
-            "first": min(kept_bars), "last": max(kept_bars), "points": kept_bars,
+            "touches": len(bars),
+            "first": min(bars), "last": max(bars), "points": bars,
             "at_price_now": z["at_price_now"],
             "label": label_for(z["price"], price_now, price_before),
             "visits": z["visits"],

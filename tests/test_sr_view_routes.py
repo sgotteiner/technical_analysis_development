@@ -1,5 +1,5 @@
 """
-Tests for the playground HTTP API (routes/sr_playground_routes.py), through the real app that
+Tests for the playground HTTP API (routes/sr_view_routes.py), through the real app that
 scripts/sr_playground.py serves: page, candles, defaults, live view, and ground-truth CRUD.
 """
 import numpy as np
@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 from scripts.sr_playground import create_app
 from modules.shapes.sr_settings import DEFAULT_LEVELS, DEFAULT_RULES
-from business_logic_services.sr_playground_service import playground_view
+from business_logic_services.sr_pipe_view import playground_view
 
 N = 460
 

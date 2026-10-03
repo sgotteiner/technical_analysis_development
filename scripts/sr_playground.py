@@ -15,8 +15,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from repositories.sr_annotation_repo import AnnotationStore
-from routes.sr_playground_routes import make_router
+from repositories.json_doc import JsonDoc
+from repositories.sr_drawings_repo import DrawingStore
+from repositories.sr_setups_repo import SetupStore
+from repositories.sr_verdicts_repo import VerdictStore
+from routes.sr_view_routes import make_view_router
+from routes.sr_ground_truth_routes import make_ground_truth_router
 from routes.setup_routes import make_setup_router
 from routes.preset_routes import make_preset_router
 from repositories.sr_preset_repo import PresetStore, SHIPPED as PRESETS
@@ -51,10 +55,11 @@ def ui_build(ui_dir: str = UI_DIR) -> str:
 
 def create_app(df: pd.DataFrame, ground_truth_path: str = GROUND_TRUTH, presets_path=PRESETS) -> FastAPI:
     app = FastAPI(title="S/R Playground")
-    store = AnnotationStore(ground_truth_path)
-    app.include_router(make_setup_router(df, store))
+    doc = JsonDoc(ground_truth_path)          # one file, three collections over it
+    app.include_router(make_setup_router(df, SetupStore(doc)))
     app.include_router(make_preset_router(PresetStore(presets_path)))
-    app.include_router(make_router(df, store))
+    app.include_router(make_view_router(df))
+    app.include_router(make_ground_truth_router(df, DrawingStore(doc), VerdictStore(doc)))
     app.mount("/ui", StaticFiles(directory=UI_DIR), name="ui")
 
     @app.middleware("http")

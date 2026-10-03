@@ -12,7 +12,7 @@ const KEY = 'sr_playground_points_v6';
 // "the most recently visited cluster wins" reproduce his 58 and 67 and drop his 59, 64 and 70.
 const DEFAULTS = { targetDays: 14, sizesText: '7', show: true, drawLines: true, mode: 'owner',
   tolPct: 1.5, minTouches: 3, maxSlope: '', top: 6, lookback: '', anchorDays: 120, maxHistory: 2,
-  mergePct: 1.5, targets: 2, minVisits: 3, prefer: 'recent', ageScale: 700 };
+  mergePct: 1.5, targets: 2, minVisits: 3, prefer: 'recent' };
 
 export function createPointsController({ root, srChart, drawings, getCandles, getNow, status,
                                          getDrawings = () => [], armLineTool = () => {},
@@ -60,7 +60,7 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
         anchor_days: +state.anchorDays, max_history: state.maxHistory === '' ? null : +state.maxHistory,
         merge_pct: state.mergePct === '' ? 0 : +state.mergePct,
         targets_each_way: state.targets === '' ? 0 : +state.targets,
-        min_visits: +state.minVisits, prefer: state.prefer, age_scale: +state.ageScale,
+        min_visits: +state.minVisits, prefer: state.prefer,
       } : null,
     };
     const ctrl = new AbortController(), t0 = performance.now();

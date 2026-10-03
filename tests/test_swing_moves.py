@@ -8,7 +8,7 @@ same valley level into the same resistance - that is why he calls that line the 
 import numpy as np
 import pandas as pd
 import pytest
-from modules.shapes.swing_moves import leg_moves, required_move, running_move
+from modules.shapes.swing_moves import leg_moves, running_move
 from modules.shapes.sr_turning_points import turning_points
 from scripts.sr_playground import load_daily
 
@@ -50,12 +50,6 @@ def test_the_running_move_is_bigger_than_the_last_completed_leg():
     running, _, _ = running_move(tp, df["High"].to_numpy(), df["Low"].to_numpy(), len(df) - 1)
     assert running > completed, "the open leg has run further than the last finished one"
 
-
-def test_an_older_touch_has_to_have_moved_more_to_still_count():
-    req = required_move(np.array([30, 365, 1780]), current_move=28.0, age_scale=365)
-    assert req[0] < req[1] < req[2], "the earlier it is, the bigger the move it has to relate to"
-    assert req[1] == pytest.approx(28.0), "at the scale age, it must match the move running now"
-    assert req[2] > 100, "a touch from five years back needs a huge move"
 
 
 def test_his_own_case_the_may_peak_and_now_are_the_same_move():

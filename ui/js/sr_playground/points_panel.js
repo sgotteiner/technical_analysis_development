@@ -11,7 +11,6 @@ function lineSettings(state) {
         <option value="moves"${state.mode === 'moves' ? ' selected' : ''}>by the move that ran into it</option>
         <option value="touches"${touchesRule ? ' selected' : ''}>any line, by touch count</option>
       </select></label>
-      ${state.mode === 'moves' ? `<label title="at this age a touch must match the move running now">old touches fade over <input id="pt-agescale" type="number" min="30" max="5000" step="50" value="${state.ageScale}"> days</label>` : ''}
       <label>max distance <input id="pt-tol" type="number" step="0.1" min="0.1" value="${state.tolPct}">%</label>
       <label>recent = last <input id="pt-anchor" type="number" min="1" value="${state.anchorDays}"> days</label>
       <label>show <input id="pt-top" type="number" min="1" max="50" value="${state.top}"></label>
@@ -90,6 +89,5 @@ export function renderPointsPanel({ root, state, info, colors, candles, answered
   [['#pt-days', 'targetDays'], ['#pt-sizes', 'sizesText'], ['#pt-look', 'lookback'], ['#pt-mode', 'mode'],
    ['#pt-tol', 'tolPct'], ['#pt-anchor', 'anchorDays'], ['#pt-top', 'top'], ['#pt-touch', 'minTouches'],
    ['#pt-hist', 'maxHistory'], ['#pt-merge', 'mergePct'], ['#pt-targets', 'targets'], ['#pt-visits', 'minVisits'], ['#pt-prefer', 'prefer'],
-   ['#pt-agescale', 'ageScale'],
    ['#pt-slope', 'maxSlope']].forEach(([id, key]) => bind(id, key));
 }

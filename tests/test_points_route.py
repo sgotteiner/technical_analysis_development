@@ -1,5 +1,5 @@
 """
-Tests for the swing-points API (routes/sr_playground_routes.py): the peaks and valleys at chosen
+Tests for the swing-points API (routes/sr_view_routes.py): the peaks and valleys at chosen
 sizes, to draw on the chart. The owner, 2026-09-23: "i need to see it. cant decide like that."
 """
 import numpy as np

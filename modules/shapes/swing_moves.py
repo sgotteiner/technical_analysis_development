@@ -55,13 +55,3 @@ def running_move(tp: Dict[str, np.ndarray], high: np.ndarray, low: np.ndarray,
         reached = float(np.min(low[start:end + 1]))
     return abs(reached / base - 1) * 100, start, (1 if rising else -1)
 
-
-def required_move(age_days: np.ndarray, current_move: float, age_scale: float) -> np.ndarray:
-    """How big a touch's move must be to still count, given how long ago it was.
-
-    "the earlier it is the bigger the move it has to relate to" (owner). One knob: at `age_scale`
-    days old a touch has to match the move running now; nearer touches need proportionally less,
-    older ones proportionally more. The knob is meant to be SEARCHED against his verdicts, not
-    chosen - which is why there is only one of it.
-    """
-    return current_move * np.asarray(age_days, dtype=float) / max(age_scale, 1e-9)

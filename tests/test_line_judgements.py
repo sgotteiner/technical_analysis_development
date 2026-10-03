@@ -1,14 +1,15 @@
 """
 The owner's verdicts on the lines the CODE drew (2026-10-03: "if you want me to see and judge tell
 me"). A verdict is ground truth about a line at a date, so a later search with other settings is
-scored against it. Store: repositories/sr_annotation_repo.py, API: /api/judgements.
+scored against it. Store: repositories/sr_verdicts_repo.py, API: /api/judgements.
 """
 import json
 import numpy as np
 import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
-from repositories.sr_annotation_repo import AnnotationStore, SAME_LINE_PCT
+from gt_store import GroundTruth
+from repositories.sr_verdicts_repo import SAME_LINE_PCT
 from scripts.sr_playground import create_app
 
 AT = 1757030400          # a "now" in unix seconds
@@ -17,7 +18,7 @@ GOOD = {"kind": "level", "verdict": "good", "price": 72799.0, "at": AT}
 
 @pytest.fixture
 def store(tmp_path):
-    return AnnotationStore(tmp_path / "gt.json")
+    return GroundTruth(tmp_path / "gt.json")
 
 
 @pytest.fixture

@@ -1,11 +1,11 @@
 """
-Tests for the playground view (business_logic_services/sr_playground_service.py): what the
+Tests for the playground view (business_logic_services/sr_pipe_view.py): what the
 page draws for one "now" and one set of settings — per level, ranked pipes and single lines.
 It must agree with the shape blocks and use only candles up to "now".
 """
 import numpy as np
 import pandas as pd
-from business_logic_services.sr_playground_service import playground_view
+from business_logic_services.sr_pipe_view import playground_view
 from modules.shapes.sr_settings import DEFAULT_LEVELS, DEFAULT_RULES, SRRules
 from modules.shapes.sr_pipes import sr_lines_at, ranked_pipes, pipe_width
 from modules.shapes.sr_lines import ranked_lines

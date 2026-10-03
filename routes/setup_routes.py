@@ -6,10 +6,10 @@ from typing import Dict
 import pandas as pd
 from fastapi import APIRouter, HTTPException
 from business_logic_services.setup_evaluation import detection_episodes, evaluate_setup, resistance_flag_setups
-from repositories.sr_annotation_repo import AnnotationStore
+from repositories.sr_setups_repo import SetupStore
 
 
-def make_setup_router(df: pd.DataFrame, store: AnnotationStore) -> APIRouter:
+def make_setup_router(df: pd.DataFrame, store: SetupStore) -> APIRouter:
     router = APIRouter(prefix="/api", tags=["Setups"])
     cache: Dict = {}
 

@@ -6,7 +6,7 @@ flag span (pole start -> now) overlaps the drawn flag box by >= 50% of their uni
 """
 import numpy as np
 from business_logic_services.setup_evaluation import evaluate_setup, resistance_flag_setups, detection_episodes
-from repositories.sr_annotation_repo import AnnotationStore
+from gt_store import GroundTruth
 from setup_charts import setup_chart
 
 
@@ -41,7 +41,7 @@ def test_a_box_drawn_elsewhere_is_not_found():
 
 
 def test_only_owner_setups_with_a_resistance_line_and_a_flag_box_are_checked(tmp_path):
-    store = AnnotationStore(tmp_path / "gt.json")
+    store = GroundTruth(tmp_path / "gt.json")
     pts = [{"time": 1600000000, "price": 100}, {"time": 1610000000, "price": 101}]
     line, flag = store.add({"kind": "line", "label": "Resistance", "points": pts}), store.add({"kind": "box", "label": "bull flag", "points": pts})
     other = store.add({"kind": "box", "label": "cup", "points": pts})

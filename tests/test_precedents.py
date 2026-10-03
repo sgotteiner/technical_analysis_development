@@ -9,8 +9,8 @@ whose move is the same size (2026-10-03). The things that must be true:
 """
 import numpy as np
 import pytest
-from business_logic_services.precedents import (SIMILAR_HI, SIMILAR_LO, levels_with_precedents,
-                                                picture_starts_at, precedent_at, similar_move)
+from business_logic_services.precedents import (SIMILAR_HI, SIMILAR_LO, picture_starts_at,
+                                                precedent_at, similar_move)
 
 # bars, the price each point reached, and the move that got there
 BARS = np.array([100.0, 200.0, 300.0, 400.0, 500.0])
@@ -67,20 +67,6 @@ def test_the_picture_reaches_back_to_the_precedent_and_no_further():
     assert picture_starts_at(80000, CURRENT, BARS, PRICES, moves, 1.0, NOW) == 100.0
 
 
-def test_levels_in_play_come_back_ordered_from_price():
-    got = levels_with_precedents(BARS, PRICES, MOVES, [80000, 60000, 50000],
-                                 CURRENT, 1.0, NOW, price_now=79000)
-    assert [round(l["price"]) for l in got] == [80000, 60000, 50000]
-    assert got[0]["label"] == "resistance" and got[1]["label"] == "support"
-    assert got[0]["matched"] is True
-
-
-def test_one_line_per_level():
-    got = levels_with_precedents(BARS, PRICES, MOVES, [80000, 80200, 60000],
-                                 CURRENT, 1.0, NOW, price_now=79000)
-    assert len(got) == 2, "80,200 is the same level as 80,000 at a 1% band"
-
-
 def test_it_does_not_read_the_whole_history_when_it_does_not_have_to():
     """The point of stopping: the work is bounded by how far back the match is."""
     bars = np.arange(1.0, 2001.0)
@@ -88,17 +74,3 @@ def test_it_does_not_read_the_whole_history_when_it_does_not_have_to():
     moves = np.full(2000, 30.0)
     p = precedent_at(80000, CURRENT, bars, prices, moves, 1.0, 2001.0)
     assert p["checked"] == 1, f"it read {p['checked']} points to find the one next door"
-
-
-def test_the_breakout_targets_are_the_previous_peaks_above():
-    """'the next breakout is the previous peak above that point which was 96 or 108.'"""
-    from business_logic_services.precedents import targets_above
-    bars = np.array([100.0, 200.0, 300.0, 400.0])
-    prices = np.array([96000.0, 108000.0, 70000.0, 96500.0])
-    got = targets_above(bars, prices, price_now=81000, band_pct=4.5, n=2)
-    # walking BACK in time: the latest peak above price is bar 400, then the previous one above IT
-    assert [round(t["price"]) for t in got] == [96500, 108000]
-    assert got[0]["bar"] == 400.0, "the most recent one above price, not the cheapest"
-    assert got[0]["reward_pct"] == pytest.approx((96500 / 81000 - 1) * 100)
-    assert len(targets_above(bars, prices, 81000, 4.5, n=1)) == 1, "it stops once it has enough"
-    assert targets_above(bars, prices, 200000, 4.5) == [], "nothing above price"

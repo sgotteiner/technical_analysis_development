@@ -1,29 +1,12 @@
-// Side-panel lists: the algorithm's result per level, and the owner's drawings (editable).
-const pct = v => v === null || v === undefined ? '—' : `${((Math.exp(v) - 1) * 100).toFixed(0)}%`;
+// The owner's drawings: the list, and everything that changes one. Saving, labelling, deleting and
+// assigning a drawing to a setup all live here, not in main.js - the page wires the parts together,
+// it should not also BE the drawings editor.
+import { api } from './api.js';
+
 const day = t => new Date(t * 1000).toISOString().slice(0, 10);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-function lineText(ln, candles) {
-  const slope = (Math.exp(ln.slope) - 1) * 100;
-  return `${ln.touches} touches · ${slope >= 0 ? '+' : ''}${slope.toFixed(2)}%/day · ${day(candles[ln.x1].time)} → ${day(candles[ln.last_touch].time)}`;
-}
-
-export function renderResults(root, view, request, candles) {
-  if (!view) { root.innerHTML = ''; return; }
-  root.innerHTML = Object.entries(view.levels).map(([name, lvl]) => {
-    const cfg = request.levels[name];
-    const warn = lvl.complete ? '' : `<div class="m warn">search stopped early (budget): only pipes with ≥ ${lvl.checked_down_to} total touches were checked</div>`;
-    const pipes = lvl.pipes.length ? lvl.pipes.map((p, i) => `<div class="m"><b>Pipe ${i + 1}</b> · width ${pct(p.width)}<br>
-        &nbsp;support: ${lineText(p.support, candles)}<br>&nbsp;resistance: ${lineText(p.resistance, candles)}</div>`).join('')
-      : (request.pairs ? '<div class="m">no pipe passes the rules</div>' : '');
-    const lines = lvl.lines.map((l, i) => `<div class="m">Line ${i + 1}: ${lineText(l, candles)}</div>`).join('');
-    return `<div class="card"><div class="t">${esc(name)} · ${cfg.period}d · ${+(cfg.magnitude * 100).toFixed(2)}%</div>
-      <div class="m">${lvl.candidates} candidate lines · swings: largest ${pct(lvl.largest_swing)}, median ${pct(lvl.median_swing)}</div>
-      ${warn}${pipes}${lines}</div>`;
-  }).join('') || '<div class="hint">no level shown</div>';
-}
-
-export function renderAnnotations(root, items, selected, setups, { onSelect, onPatch, onDelete, onAssign }) {
+function render(root, items, selected, setups, { onSelect, onPatch, onDelete, onAssign }) {
   root.innerHTML = '';
   if (!items.length) { root.innerHTML = '<div class="hint">none yet: pick Line or Box, then click twice on the chart</div>'; return; }
   items.forEach(a => {
@@ -46,4 +29,37 @@ export function renderAnnotations(root, items, selected, setups, { onSelect, onP
     row.querySelector('button').onclick = () => onDelete(a);
     root.appendChild(row);
   });
+}
+
+export function createAnnotations({ root, count, drawings, status, saved,
+                                    getSetups, onAssign, onReload, centerOn }) {
+  let items = saved, selected = null;
+
+  function refresh() {
+    drawings.setItems(items); drawings.select(selected);
+    count.textContent = items.length ? `(${items.length})` : '';
+    render(root, items, selected, getSetups(), {
+      onSelect: a => { selected = selected === a.id ? null : a.id; refresh(); centerOn(a); },
+      onPatch: async (a, patch) => {
+        try {
+          const b = await api.patchAnnotation(a.id, patch);
+          items = items.map(x => x.id === b.id ? b : x);
+          onReload();
+        } catch (e) { status(`not saved: ${e.message}`, 'err'); }
+      },
+      onDelete: async a => {
+        if (!confirm(`Delete ${a.kind} "${a.label}"?`)) return;
+        try { await api.deleteAnnotation(a.id); items = items.filter(x => x.id !== a.id); onReload(); }
+        catch (e) { status(`not deleted: ${e.message}`, 'err'); }
+      },
+      onAssign });
+  }
+
+  return {
+    refresh,
+    all: () => items,
+    select(id) { selected = id; refresh(); },
+    add(ann) { items = [...items, ann]; refresh(); },
+    async reloadFromServer() { items = await api.annotations(); refresh(); },
+  };
 }

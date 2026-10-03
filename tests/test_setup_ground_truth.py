@@ -8,11 +8,12 @@ setup_evaluation.py). New owner setups of this kind are picked up automatically.
 import os
 import pytest
 from business_logic_services.setup_evaluation import resistance_flag_setups, evaluate_setup
-from repositories.sr_annotation_repo import AnnotationStore
+from repositories.json_doc import JsonDoc
+from repositories.sr_setups_repo import SetupStore
 from scripts.sr_playground import load_daily, DATA, GROUND_TRUTH
 
 pytestmark = pytest.mark.skipif(not (os.path.exists(DATA) and os.path.exists(GROUND_TRUTH)), reason="no local data")
-SETUPS = resistance_flag_setups(AnnotationStore(GROUND_TRUTH)) if os.path.exists(GROUND_TRUTH) else []
+SETUPS = resistance_flag_setups(SetupStore(JsonDoc(GROUND_TRUTH))) if os.path.exists(GROUND_TRUTH) else []
 
 
 def test_there_is_ground_truth_to_check():

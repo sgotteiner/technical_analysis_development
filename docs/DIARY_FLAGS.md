@@ -604,10 +604,54 @@ says exactly "Not Found" for a missing ROUTE and something specific for a missin
   the verdicts, so a ✗ is recorded and not scored. Scoring against them is the next step, not built.
 - One verdict exists. The recorder is built; the ground truth is still one chart, one date.
 - The browser check for the recorder (13 checks) lives in the scratchpad, like the earlier ones.
-- `SAME_LINE_PCT` is duplicated in `found_lines.js` and `sr_annotation_repo.py`.
+- `SAME_LINE_PCT` is duplicated in `found_lines.js` and `sr_verdicts_repo.py`.
 
 ## Known debt (2026-09-22, setups)
 - The browser checks for setups (10) also live in the scratchpad (same reason as above).
 - Detections are listed but can't yet be accepted or rejected in the page.
 - The launcher still opens the browser before the server is ready and still opens on the last
   candle (fixes proposed, waiting for the owner).
+
+## The cleanup pass (2026-10-03, after his "i want clean code")
+
+**What was wrong, measured.** 13 tracked source files over his 150-line limit, 8 of them touched
+this session. But the real finding was cohesion, not length:
+
+- `age_scale` / `required_move` - a mechanism he had explicitly rejected, still live in six files
+  including a labelled control on his page. Deleted everywhere. Its removal moved his anchor line
+  from "this move" to "short term" at the current threshold (0.73x, not 0.75x): the knob had been
+  propping up that verdict. The `_term` cut-offs and using the MEDIAN of a cluster's moves at all
+  are still Claude's unsearched guesses - his own claim is about THE matching touch ("previous 80k
+  resistance after about 25% move like the current move"), whose move is 30.8% against 28.3%
+  running, and that is what the test now pins.
+- `targets_above` - his "96 or 108" breakout-target rule, implemented, tested, and never wired to
+  anything. Deleted rather than wired, because wiring it would change a setup he has approved:
+  the rule and the open question (the walk-back gives 116,400 where he said 108) stay recorded in
+  `docs/GEOMETRY_DEFINITIONS.md`, and the code is in git at cd5ab85.
+- `levels_with_precedents` - the engine of the parallel level-finder he rejected ("what is this
+  joke"). Dead since the story was rewritten to describe the chart's own lines. Deleted.
+- `MIN_DOTS_FOR_A_LEVEL` - orphaned by that same rewrite, so "a cluster, not a single dot" was not
+  actually being applied by that path. It is now the `min_touches` floor inside the move rule.
+
+**Where the files were split, and why there.** Four files held two or three unrelated things:
+`sr_playground_service.py` (the 2026-09-22 pipe view + the 2026-10-03 setup layer, sharing nothing
+but a filename), `sr_playground_schema.py` (what the page asks for + what the owner records - no
+request ever carries both), `sr_playground_routes.py` (computing + writing ground truth),
+`sr_annotation_repo.py` (three collections in one class), `drawings.js` (pointer input + six SVG
+renderers + the stylesheet), `panels.js` (two unrelated renderers in 49 lines). The duplicated
+preamble in three service functions named the missing object: `swing_frame.py`, the structure at
+one "now", which `setup_view.py` and `swing_view.py` now share.
+
+**Proved, not assumed.** 19 API responses captured before and after (3 dates x 3 rules, plus the
+pipe view, zones and the stores): **0 real differences**, and the 3,938 float differences are all
+the old `exp(log(high))` round-trip becoming the exact high (e.g. 3850.0000000000023 -> 3850.0),
+which also removed a real inconsistency - the dots said `exp(log(high))` while the story said
+`high`. The page was then loaded in a browser: 18 drawings, 94 overlay shapes, the tool help, a
+step of "now", and the full setup story, with no console errors and no failed requests.
+
+**Still open after this pass** (unchanged by it): nothing in the rule has been SEARCHED - the swing
+size (the page still defaults to 7% though he has twice said 9%), the band, the 0.7-1.45x
+similarity window, the `_term` cut-offs, and what makes a cluster good enough. Supports remain the
+weak side. `ground_truth_score.py` still does not read his verdicts, so false positives are
+uncounted. Three line rules are reachable from the page, which is the point of a playground, but
+only one of them is his.

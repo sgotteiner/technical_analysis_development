@@ -55,7 +55,7 @@ export function foundRows({ state, info, colors, candles, judgements = [], drawi
       const text = lv.vs_now !== undefined
         ? `${num(lv.price)} ${lv.label}${lv.at_price_now ? ' (price on it)' : ''}`
           + ` · move ${lv.move.toFixed(0)}% = ${lv.vs_now.toFixed(2)}× now — ${lv.term}`
-          + ` · ${lv.touches} touches${lv.dropped ? ` (${lv.dropped} too old for their move)` : ''}`
+          + ` · ${lv.touches} touches`
           + ` · ${day(candles, lv.first)} → ${day(candles, lv.last)}`
         : `level ${num(lv.price)}${lv.from_history ? ' (target)' : ''}`
           + `${lv.at_price_now ? ' (price on it)' : ''}`

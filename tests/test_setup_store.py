@@ -1,5 +1,5 @@
 """
-Tests for setup groups in the ground-truth store (repositories/sr_annotation_repo.py).
+Tests for setup groups in the ground-truth store (repositories/sr_setups_repo.py).
 Owner, 2026-09-22: "unite several drawings to a setup group and an annotation how i would trade
 that" — a setup = a name, a note on how to trade it, and its member drawings (lines, pattern
 boxes, retest / fakeout boxes). Drawings and setups record who made them (owner or Claude): only
@@ -7,7 +7,7 @@ the owner's count as ground truth.
 """
 import json
 import pytest
-from repositories.sr_annotation_repo import AnnotationStore
+from gt_store import GroundTruth
 
 LINE = {"kind": "line", "label": "resistance", "points": [{"time": 1600000000, "price": 100.0}, {"time": 1610000000, "price": 101.0}]}
 BOX = {"kind": "box", "label": "bull flag", "points": [{"time": 1605000000, "price": 80.0}, {"time": 1606000000, "price": 99.0}]}
@@ -15,13 +15,13 @@ BOX = {"kind": "box", "label": "bull flag", "points": [{"time": 1605000000, "pri
 
 @pytest.fixture
 def store(tmp_path):
-    return AnnotationStore(tmp_path / "gt.json")
+    return GroundTruth(tmp_path / "gt.json")
 
 
 def test_old_file_without_setups_reads_as_no_setups(tmp_path):
     path = tmp_path / "gt.json"
     path.write_text(json.dumps({"annotations": []}), encoding="utf-8")
-    assert AnnotationStore(path).list_setups() == []
+    assert GroundTruth(path).list_setups() == []
 
 
 def test_drawings_record_the_author(store):
@@ -35,7 +35,7 @@ def test_setup_groups_drawings_with_a_trading_note(store, tmp_path):
     a, b = store.add(LINE), store.add(BOX)
     s = store.add_setup({"name": "BTC resistance + bull flag", "note": "buy the breakout", "members": [a["id"], b["id"]]})
     assert s["id"] and s["author"] == "owner" and s["members"] == [a["id"], b["id"]]
-    again = AnnotationStore(tmp_path / "gt.json")
+    again = GroundTruth(tmp_path / "gt.json")
     assert again.list_setups() == [s] and len(again.list()) == 2
 
 

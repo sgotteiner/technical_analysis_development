@@ -10,8 +10,8 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 from business_logic_services.ground_truth_score import score_against_drawings
-from repositories.sr_annotation_repo import AnnotationStore
-from schemas.sr_playground_schema import MAX_SKETCH_POINTS
+from gt_store import GroundTruth
+from schemas.sr_ground_truth_schema import MAX_SKETCH_POINTS
 from scripts.sr_playground import create_app
 
 T0 = 1757030400
@@ -22,7 +22,7 @@ SKETCH = {"kind": "freehand", "label": "sketch", "points": path(40),
 
 @pytest.fixture
 def store(tmp_path):
-    return AnnotationStore(tmp_path / "gt.json")
+    return GroundTruth(tmp_path / "gt.json")
 
 
 @pytest.fixture

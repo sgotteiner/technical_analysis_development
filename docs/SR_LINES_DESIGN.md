@@ -67,9 +67,15 @@ live, no precompute).
 - **Pipe search:** pairs are checked in buckets of equal total touches, best first. Same answer as
   checking all pairs (brute-force tests) for a fraction of the work. It stops after 50M pairs per
   level, and the page then says the search is incomplete and down to which total it checked.
-- Code: `business_logic_services/sr_playground_service.py`, `routes/sr_playground_routes.py`,
-  `repositories/sr_annotation_repo.py`, `schemas/sr_playground_schema.py`, `ui/sr_playground.html`,
-  `ui/js/sr_playground/`.
+- Code, one thing per file (split 2026-10-03): the pipe view in
+  `business_logic_services/sr_pipe_view.py`; the structure at one "now" in `swing_frame.py`,
+  drawn by `swing_view.py`; the line rules picked in `line_rules.py`; the setup explained in
+  `setup_view.py` + `setup_story.py` + `precedents.py`. Routes split by what they do:
+  `routes/sr_view_routes.py` computes, `routes/sr_ground_truth_routes.py` records. One JSON
+  file in `repositories/json_doc.py`, with `sr_drawings_repo.py`, `sr_setups_repo.py` and
+  `sr_verdicts_repo.py` over it. Schemas likewise: `schemas/sr_view_schema.py` (what the page
+  asks for) and `schemas/sr_ground_truth_schema.py` (what he records). Page:
+  `ui/sr_playground.html`, `ui/js/sr_playground/`.
 
 Seen in the first run (around 2021-06-01): pipes 2-3 are often near-copies of pipe 1 (same support
 start, slopes within 0.05 %/day). With 3 pipes and 4 lines per level the chart gets busy, and

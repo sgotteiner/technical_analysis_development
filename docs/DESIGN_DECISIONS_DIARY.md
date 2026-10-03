@@ -395,3 +395,35 @@ support"; the sketch gave the May 2026 80k peak and the structural read behind i
 that the sidebar was a second, rival level-finder. His own summary of the session names them first:
 "i have good infrastructure to see it and anotate and communicate about it with you."
 **Links:** [[An annotator / playground for shapes and S/R]] · [[Ground truth is the real problem, and errors cascade]]
+
+### Clean is one thing per file, not a line count
+tags: kind=principle · attribution=your-correction · portable=yes · signature=yes · importance=high
+anchor: 2026-10-03 · (chat, no commit)
+**Idea:** The test for a file is not its length but its contents: "are there multiple things in the
+file and is there a good reason for that." Asked after an audit answered "all files under 150
+lines?" with a table of line counts - the counts were the wrong answer to the question he was
+really asking. A reason can be real (three collections share one JSON file so that deleting a
+drawing tidies the setups and verdicts pointing at it, in one write) or only apparent ("both are
+pydantic", "both are renderers"), and only the real one earns the sharing.
+**Why:** The 150-line rule is a symptom detector, not the rule itself - a 49-line file with two
+unrelated renderers in it is dirtier than a 148-line file doing one thing. Judging by length lets
+a file keep growing until it trips a number, and then splits it at the wrong seam. Judging by
+contents finds the seam the code already has: this pass split four files along seams that were
+visible in their own import lists and docstrings, and the duplicated six-line preamble in three
+functions named the object that was missing (the swing frame at one "now").
+**Links:** [[Tools to explain with, not only to annotate with]]
+
+### A rejected mechanism has to leave the code, not just the design doc
+tags: kind=bug-lesson · attribution=your-correction · portable=yes · signature=no · importance=high
+anchor: 2026-10-03 · (chat, no commit)
+**Idea:** When he rejects a mechanism, deleting it from the design and leaving it running is worse
+than never having written it: the code then says something he has already said is wrong. `age_scale`
+("its not about age ... i didnt mention age. only relative terms") was removed from the design doc
+and the commit message while staying live in six files, including a labelled input on his own page
+("old touches fade over N days").
+**Why:** A future session reads the code, not the diary, and would have defended the knob as
+intended behaviour. Removing it also showed what it had been hiding: his anchor line's cluster
+median drops from 0.75x to 0.73x of the move running now, so the age filter had been propping up a
+verdict the rest of the rule did not earn on its own. That is a finding worth having - a knob that
+flatters the result is worse than no knob, and it only became visible once it was gone.
+**Links:** [[Clean is one thing per file, not a line count]]
