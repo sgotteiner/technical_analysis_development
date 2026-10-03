@@ -78,3 +78,13 @@ textarea { width:100%; background:transparent; color:var(--text); border:1px sol
 .card-sec.shut > section { display:none; }
 .note { color:var(--muted); line-height:1.45; margin-top:14px; }
 code { font-size:11px; }
+/* the guide card: one block per thing, its name then what it is then how it is used */
+.card.guide { border-left-color:#9ccc65; }
+.card.guide > .t { margin-bottom:5px; }
+.g-row { margin:7px 0 0; }
+.g-row .t { color:var(--text); font-weight:normal; }
+.g-row .m { line-height:1.45; }
+.g-how { color:var(--sel); }
+.g-tag { font-size:10px; padding:0 4px; border-radius:3px; border:1px solid currentColor; }
+.g-tag.ok { color:var(--sup); } .g-tag.warn { color:var(--warn); } .g-tag.hint { color:var(--muted); }
+.g-note { margin-top:9px; font-style:italic; }

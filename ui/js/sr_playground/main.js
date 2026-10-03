@@ -12,6 +12,7 @@ import { createLayers } from './layers.js';
 import { createZonesController } from './zones_controller.js';
 import { createSketchpad } from './sketchpad.js';
 import { createCards } from './cards.js';
+import { renderGuide } from './guide_panel.js';
 import { createTools } from './tools.js';
 
 const $ = id => document.getElementById(id);
@@ -120,8 +121,9 @@ const hash = location.hash.slice(1);
 const start = /^\d{4}-\d{2}-\d{2}$/.test(hash) ? candles.findIndex(c => c.time >= Date.parse(hash + 'T00:00:00Z') / 1000) : -1;
 setNow(start >= 0 ? start : candles.length - 1);
 applyLayers(layers.state());        // honour the boxes that were left unticked last time
-// the sidebar as cards: the explanation and the swing points open, the rest put away
-const cards = createCards({ root: $('side'), open: ['story', 'points'] });
+// the sidebar as cards. The guide first, so the page says what it is before it shows anything
+renderGuide($('guide'));
+const cards = createCards({ root: $('side'), open: ['guide', 'story', 'points'] });
 window.__srPlayground = { state: () => ({ now, view, request, annotations: annotations.all(),
   setups: setups.setups(), layers: layers.state(), drawn: srChart.drawn() }),
   setNow, compute, srChart };   // for automated checks
