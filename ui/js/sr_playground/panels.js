@@ -29,7 +29,10 @@ export function renderAnnotations(root, items, selected, setups, { onSelect, onP
   items.forEach(a => {
     const row = document.createElement('div');
     row.className = 'ann' + (a.id === selected ? ' sel' : '');
-    row.innerHTML = `<span>${a.kind === 'box' ? '▭' : '╱'}</span><input class="lab" title="label"><input class="note" placeholder="note">
+    const icon = { box: '▭', freehand: '✎' }[a.kind] || '╱';
+    const asked = a.purpose === 'ask';          // only shown to explain something; clearable
+    if (asked) row.className += ' asked';
+    row.innerHTML = `<span title="${asked ? 'sketch you were only showing me' : a.kind}">${icon}</span><input class="lab" title="label"><input class="note" placeholder="note">
       <span class="d">${day(a.points[0].time)}</span><button title="Delete">×</button>
       <select title="setup"><option value="">no setup</option>${setups.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select>`;
     const [lab, note] = row.querySelectorAll('input');

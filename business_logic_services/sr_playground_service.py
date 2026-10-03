@@ -12,6 +12,12 @@ from modules.shapes.sr_lines import candidate_lines, top_lines
 from modules.shapes.point_lines import lines_from_points
 from modules.shapes.level_clusters import merge_trends
 from business_logic_services.level_rule import levels_from_points
+from business_logic_services.move_lines import ladder_by_move, lines_by_move
+from modules.shapes.swing_moves import leg_moves, running_move
+from modules.shapes.swing_boxes import swing_boxes
+from business_logic_services.setup_story import setup_story
+from business_logic_services.precedents import picture_starts_at
+from modules.shapes.price_zones import price_zones
 from modules.shapes.trend_lines import trend_lines
 from modules.shapes.sr_pipes import ranked_pipes, swing_legs, pipe_width
 from modules.shapes.sr_turning_points import turning_points, PEAK
@@ -36,6 +42,7 @@ def _level_view(df, end, cfg, rules, pairs, singles, tp) -> Dict:
 
 TREND_SLOPE_PCT = 0.08      # %/day: how close two trends must be to count as one
 MAX_POINTS_FOR_LINES = 400      # every pair against every point: beyond this it is too slow to watch
+MIN_DOTS_FOR_A_LEVEL = 2        # one dot is a dot, not a level (owner, 2026-10-03)
 
 
 def swing_points(df: pd.DataFrame, end: int, size: float, cache: Optional[Dict] = None,
@@ -46,9 +53,72 @@ def swing_points(df: pd.DataFrame, end: int, size: float, cache: Optional[Dict] 
     known = tp["conf"] <= end
     if lookback:
         known &= tp["idx"] >= end - lookback + 1
+    # what each point is worth: the leg that ran into it, and the leg running now (owner, 2026-10-03)
+    high, low = df["High"].to_numpy(), df["Low"].to_numpy()
+    moves = leg_moves(tp, high, low)
+    now_move, _, _ = running_move(tp, high, low, end)
     return [{"bar": int(i), "time": int(df.index[i].timestamp()), "price": float(np.exp(y)),
-             "kind": "peak" if k == PEAK else "valley"}
-            for i, k, y in zip(tp["idx"][known], tp["kind"][known], tp["y"][known])]
+             "kind": "peak" if k == PEAK else "valley", "move": float(m), "running_move": now_move}
+            for i, k, y, m in zip(tp["idx"][known], tp["kind"][known], tp["y"][known], moves[known])]
+
+
+def swing_box_view(df: pd.DataFrame, end: int, size: float, cache=None,
+                   from_bar: float = 0.0) -> list:
+    """Each peak and valley as the journey it is - support to resistance to support, and the
+    opposite for a valley (owner, 2026-10-03: "i need to see what you do")."""
+    cache = cache if cache is not None else {}
+    tp = cache[size] if size in cache else cache.setdefault(size, turning_points(df, size))
+    boxes = swing_boxes(tp, df["High"].to_numpy(), df["Low"].to_numpy(), end, from_bar)
+    t = df.index
+    return [{**b, "from_time": int(t[b["from_bar"]].timestamp()),
+             "to_time": int(t[b["to_bar"]].timestamp())} for b in boxes]
+
+
+def picture_start(df: pd.DataFrame, end: int, size: float, band_pct: float, cache=None) -> float:
+    """How far back the picture reaches: to the precedent of the level price is working now."""
+    cache = cache if cache is not None else {}
+    tp = cache[size] if size in cache else cache.setdefault(size, turning_points(df, size))
+    high, low = df["High"].to_numpy(), df["Low"].to_numpy()
+    known = (tp["conf"] <= end) & (tp["idx"] <= end)
+    idx = tp["idx"][known]
+    if len(idx) < 3:
+        return 0.0
+    bars = idx.astype(float)
+    prices = np.where(tp["kind"][known] == PEAK, high[idx], low[idx]).astype(float)
+    moves = leg_moves(tp, high, low)[known]
+    now_move, _, _ = running_move(tp, high, low, end)
+    close = df["Close"].to_numpy()
+    return picture_starts_at(float(close[end]), now_move, bars, prices, moves, band_pct, end)
+
+
+def story_view(df: pd.DataFrame, end: int, size: float, levels: list, trend: Optional[Dict],
+               band_pct: float, cache=None) -> Dict:
+    """The setup in words - explaining the lines the chart is ALREADY drawing, never finding its
+    own (owner, 2026-10-03: the two must not be "completely different numbers")."""
+    cache = cache if cache is not None else {}
+    tp = cache[size] if size in cache else cache.setdefault(size, turning_points(df, size))
+    high, low = df["High"].to_numpy(), df["Low"].to_numpy()
+    known = (tp["conf"] <= end) & (tp["idx"] <= end)
+    idx = tp["idx"][known]
+    if len(idx) < 3 or not levels:
+        return {}
+    bars = idx.astype(float)
+    prices = np.where(tp["kind"][known] == PEAK, high[idx], low[idx]).astype(float)
+    moves = leg_moves(tp, high, low)[known]
+    now_move, from_bar, _ = running_move(tp, high, low, end)
+    t = df.index
+    day = lambda b: t[int(b)].strftime("%Y-%m-%d")
+    close = df["Close"].to_numpy()
+    # every dot's box, so a line can show the journeys of the dots it is made of
+    boxes_by_bar = {b["bar"]: {**b, "from_time": int(t[b["from_bar"]].timestamp()),
+                               "to_time": int(t[b["to_bar"]].timestamp())}
+                    for b in swing_boxes(tp, high, low, end)}
+    story = setup_story(levels, trend, float(close[end]), float(close[max(0, end - 10)]),
+                        now_move, from_bar, end, band_pct, day, bars, prices, moves, boxes_by_bar)
+    for line in story["lines"]:
+        line["times"] = [int(t[int(b)].timestamp()) for b in line["points"]]
+        line["dates"] = [day(b) for b in line["points"]]
+    return story
 
 
 def _per_side(trends: list, per_side: int) -> list:
@@ -63,7 +133,7 @@ def _per_side(trends: list, per_side: int) -> list:
 
 
 def point_lines(points: list, cfg, end: int, price_now: float = 0.0, price_before: float = 0.0,
-                big_points: list = None) -> list:
+                big_points: list = None, size: float = 0.0) -> list:
     """Lines through the given swing points (modules/shapes/point_lines.py). A line must touch a
     point from the last `anchor_days` — the owner finds the recent S/R first, then its history."""
     x = np.array([p["bar"] for p in points], dtype=float)
@@ -77,6 +147,18 @@ def point_lines(points: list, cfg, end: int, price_now: float = 0.0, price_befor
     kinds = np.array([1 if p["kind"] == "peak" else -1 for p in points], dtype=int)
     start = anchor if anchor is not None else 0
     band = cfg.merge_pct if cfg.merge_pct > 0 else cfg.tol_pct * 2
+    if cfg.mode == "moves":
+        # a touch is worth the move that ran into it, and a line matters when its moves are the
+        # size of the move running now (owner, 2026-10-03). Kept beside the rule he already likes.
+        moves = np.array([p.get("move", 0.0) for p in points], dtype=float)
+        now_move = float(points[-1].get("running_move", 0.0)) if points else 0.0
+        # "band width from the swing size, about half a swing" - his rule, so it is the default
+        band = cfg.band_pct if cfg.band_pct else (size * 100 / 2 if size else band)
+        lines = lines_by_move(x, y, kinds, moves, band, price_now, price_before, end,
+                              current_move=now_move, age_scale=cfg.age_scale,
+                              min_touches=max(2, cfg.min_visits - 1), top=cfg.top)
+        return {"levels": lines, "trends": [], "current_move": now_move,
+                "ladder": ladder_by_move(lines, price_now, cfg.targets_each_way or 3)}
     big = None
     if big_points:
         big = (np.array([p["bar"] for p in big_points], dtype=float),

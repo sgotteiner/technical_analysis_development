@@ -273,3 +273,105 @@ tags: kind=decision · attribution=your-design · portable=yes · signature=yes 
 anchor: 2026-09-24 · uncommitted · 54140a1d
 **Idea:** An up-trend line drawn above the graph, or a down-trend below it, is noise. A trend line must still be touched now, but may start as far back as the trend goes. And the visits rule is general, not only for levels: two touches on neighbouring bars are one touch for a trend line as well.
 **Why:** The rejected up-trend line claimed three touches - 2020-03-13, 2026-06-05 and 2026-06-06 - two of them on consecutive days, anchored on the COVID low six years back.
+
+## F6 — The lines are a trading plan (2026-10-03)
+Why this feature at all: the line layer was being judged by how many of the owner's drawn prices it
+hit. He stopped that: the lines are a trade, and the mission was never a fit to his drawings.
+
+### The mission is a generic algorithm, not a fit to my drawings
+tags: kind=principle · attribution=your-correction · portable=yes · signature=yes · importance=high
+anchor: 2026-10-03 · (chat, no commit)
+**Idea:** The drawn lines and the description of how they were found are SOURCE MATERIAL for
+deriving a general rule - not a test set to score against, and not a reason to wait for more
+drawings. "i drew lines and described how i found them as best as i could with some suggestions for
+you to try things. your mission was to find the generic algorithm for sr lines."
+**Why:** Claude had inverted it: it scored hit-counts against the 9 drawings, called the owner the
+bottleneck for more of them, and reported "5 of 7 found" as success. Measured consequence of the
+inversion: the approved preset is 7 hand-set constants fitted to one chart on one date, two of
+which replace things the owner had specified as DERIVED (swing size from the trade horizon, band
+from the swing size). Run as he stated it, his own rule scores 3/7, not 5/7, and returns 0 lines at
+2022-09-05.
+**Links:** [[What he likes and dislikes about a drawn result is ground truth too]]
+
+### The lines are a trading plan, so the score is R and rungs - not price hits
+tags: kind=principle · attribution=your-correction · portable=yes · signature=yes · importance=high
+anchor: 2026-10-03 · (chat, no commit)
+**Idea:** The labels are roles in a trade, not names: "current resistance" is what you buy the break
+of, "next / next next" are where you take profit in order, the supports are where price goes if it
+fails, and a broken "previous resistance" is support beneath you. A line 3% off is not 3% wrong - it
+moves the stop, changes R, and a missing line is a missing rung. "do you even have trading plan in
+mind while working?"
+**Why:** Read as the plan, the same 2026-09-04 chart gives two different trades from "5 of 7 lines
+found": his drawn lines -> stop 66,659, risk 17.0%, 1.90 R to 106k; the code's lines -> stop 72,799,
+risk 8.4%, 4.40 R. And 124,850, found at no setting at all, is the rung that takes the trade from
+1.90 R to 3.27 R. No hit-count can see any of that.
+**Links:** [[Always answer from the current price: what is my support, my resistance, what is next]]
+
+### The stop is the previous support - the rung below the one price is standing on
+tags: kind=decision · attribution=your-design · portable=yes · signature=no · importance=high
+anchor: 2026-10-03 · (chat, no commit)
+**Idea:** The invalidation needs no new line type and no new setting: it is the next rung DOWN in the
+ladder from the level price is standing on. "the previous support obviously its not rocket science."
+It falls straight out of the ladder already specified - the one you are on, the next up, the next
+down - which turns that ladder from a list of prices into a complete trade.
+**Why:** Claude asked which of the seven drawn lines was the stop, having assumed the nearest DRAWN
+one (66,659). The answer made the assumption wrong: 72,799 is also real support, so the rung below
+79,500 is 72,799 and the risk is 8.4%, not 17.0%. Corollary he confirmed: a broken resistance is
+support by the flip rule, without needing to be retested from above first - Claude's "nothing
+bounced there" test was its own invention.
+**Links:** [[Flip]] · [[Levels are zones: cluster by percentage, judge by the moves' time]]
+
+## F7 — How he finds a line: the backward search (2026-10-03)
+
+### A line is worth the size of the move that ran into it
+tags: kind=decision · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-03 · (chat, no commit)
+**Idea:** A touch is not worth its own wiggle; it is worth the leg that arrived at it. "previous 80k
+resistance after about 25% move like the current move that is now on this resistance. important line
+because its the same move and same resistance." The leg still running counts unfinished - the trade
+IS the unfinished part.
+**Why:** Measured on his own sketch: the May 2026 peak ran 65,000 -> 82,850 (+27.5%) and the leg
+running now ran 64,166 -> 82,300 (+28.3%), off two valleys 1.3% apart. The two statements he made
+("about 25%" and "about 30%") are the same number, and they only agree at the 9% swing size he
+picked himself.
+**Links:** [[Levels are zones: cluster by percentage, judge by the moves' time]]
+
+### Not age, not the era it happened in: walk back and stop at the match
+tags: kind=decision · attribution=your-correction · portable=yes · signature=yes · importance=high
+anchor: 2026-10-03 · (chat, no commit)
+**Idea:** "you have a peak at a certain level and size you look it in the past. thats it ... 30 here
+30 then. or whatever you can find in that level. you found something similar like i did and
+described you stop. you dont check the entire history." A backward search with an early exit: from
+the current state, walk back through the times price was at this level and stop at the first whose
+move is a comparable size. No window, no day limit - "because you try to predict the future based on
+the past so you have to find relations. not limit to less days."
+**Why:** Measured: on his chart the level price is working now matches 2026-05-06 after reading ONE
+point of 723; every level in play together reads 11 (2% of the history). It never reaches 2020 - not
+by a filter, by stopping.
+**Replaces:** Two mechanisms Claude invented and he rejected. (1) An age term, `age_scale`, read out
+of "the earlier it is the bigger the move it has to relate to" - "its not about age ... i didnt
+mention age. only relative terms." (2) Normalising each move by the swing scale of its own era -
+"nothing for then. you dont compare with previous era. 30 here 30 then."
+
+### A level is a cluster of good dots, never a single one
+tags: kind=decision · attribution=your-correction · portable=yes · signature=no · importance=high
+anchor: 2026-10-03 · (chat, no commit)
+**Idea:** "you need the nearest good dot not just any dot and maybe even cluster of dots and not just
+a single one because its too sensitive." Walking out from price, a level is the nearest CLUSTER that
+is worth something - a single turning point is a dot, not a level.
+**Why:** The supports in the first setup roster were the nearest raw swing point below price, which
+produced levels nobody would draw (76,606 - one minor swing). He rejected the whole roster except
+the one line that came from the search: "i dont like any of your lines maybe except for the current
+resistance."
+
+### A setup is a short roster where every line says what it is and how it was found
+tags: kind=decision · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-03 · (chat, no commit)
+**Idea:** The answer to one question, asked from where price is now, never a list of prices. The move
+running now is the yardstick. Five to seven lines - the trend, current support and resistance, the
+next ones, "maybe a bit more not a lot more" - and each says **what it is** (its role in the trade)
+and **how it was found**. Plus the trade that falls out: buy the break, the stop is the rung below,
+the targets are the rungs above in order, with R. Plus the state the structure is in.
+**Why:** "i explained to you what i did and i expect to get the same explanation." Confirmed in his
+words when read back ("thats correct"). Written up in `docs/GEOMETRY_DEFINITIONS.md`.
+**Links:** [[Always answer from the current price: what is my support, my resistance, what is next]]

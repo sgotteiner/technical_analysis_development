@@ -1,19 +1,6 @@
 // The swing-points panel: sizes, the line rule and its settings, and what was found.
-const day = (candles, bar) => new Date(candles[bar].time * 1000).toISOString().slice(0, 10);
-const num = v => Math.round(v).toLocaleString();
-
-function foundRows(state, info, colors, candles) {
-  if (!info || !state.drawLines) return '';
-  return info.sizes.map((g, i) => {
-    const color = colors[i % colors.length];
-    const row = text => `<div class="m" style="color:${color}">${text}</div>`;
-    if (state.mode === 'owner') {
-      return (g.levels || []).map(lv => row(`level ${num(lv.price)}${lv.from_history ? ' (target)' : ''}${lv.merged_from > 1 ? ` (${lv.merged_from} merged)` : ''} · touched ${lv.touches}× (${lv.history} before) · ${day(candles, lv.first)} → ${day(candles, lv.last)}`)).join('')
-        + (g.trends || []).map(t => row(`${t.role} trend ${(Math.expm1(t.slope) * 100).toFixed(2)}%/day · ${t.touches} touches · ${day(candles, t.first)} → ${day(candles, t.last)}`)).join('');
-    }
-    return (g.lines || []).map((l, j) => row(`line ${j + 1}: ${l.touches} touches · ${(Math.expm1(l.slope) * 100).toFixed(2)}%/day · ${day(candles, l.first)} → ${day(candles, l.last)}`)).join('');
-  }).join('');
-}
+// The found lines and the owner's verdict on each live in ./found_lines.js.
+import { foundRows, bindFound, theStory } from './found_lines.js';
 
 function lineSettings(state) {
   if (!state.drawLines) return '';
@@ -21,8 +8,10 @@ function lineSettings(state) {
   return `<div class="row">
       <label>rule <select id="pt-mode">
         <option value="owner"${state.mode === 'owner' ? ' selected' : ''}>recent levels + their history</option>
+        <option value="moves"${state.mode === 'moves' ? ' selected' : ''}>by the move that ran into it</option>
         <option value="touches"${touchesRule ? ' selected' : ''}>any line, by touch count</option>
       </select></label>
+      ${state.mode === 'moves' ? `<label title="at this age a touch must match the move running now">old touches fade over <input id="pt-agescale" type="number" min="30" max="5000" step="50" value="${state.ageScale}"> days</label>` : ''}
       <label>max distance <input id="pt-tol" type="number" step="0.1" min="0.1" value="${state.tolPct}">%</label>
       <label>recent = last <input id="pt-anchor" type="number" min="1" value="${state.anchorDays}"> days</label>
       <label>show <input id="pt-top" type="number" min="1" max="50" value="${state.top}"></label>
@@ -50,10 +39,20 @@ function presetRow(presets, state) {
     </div>`;
 }
 
-export function renderPointsPanel({ root, state, info, colors, candles, answered, presets = [], onChange, onLoadPreset, onSavePreset }) {
+export function renderPointsPanel({ root, state, info, colors, candles, answered, presets = [], busy = false,
+                                    secs = null, judgements = [], drawings = [], verdictError = null,
+                                    focus = null, onFocus = () => {},
+                                    onChange, onLoadPreset, onSavePreset, ...verdict }) {
   const c = info && info.calibrated, groups = info ? info.sizes : [];
   if (answered) root.dataset.rev = String(answered);        // "this is the answer to request N"
-  root.innerHTML = presetRow(presets, state) + `<div class="row">
+  // while it is working, the lines below belong to the PREVIOUS "now": say so here, not only in
+  // the top bar (owner, 2026-09-24: "no sign it is busy")
+  root.dataset.busy = busy ? '1' : '';
+  root.innerHTML = presetRow(presets, state)
+    + (verdictError ? `<div class="row err" id="pt-jerr">${verdictError}</div>` : '')
+    + (busy ? '<div class="row warn" id="pt-busy">computing… (the lines below are the previous answer)</div>'
+       : secs === null ? '' : `<div class="row hint" id="pt-took">${secs.toFixed(2)} s</div>`)
+    + `<div class="row">
       <label><input type="checkbox" id="pt-show" ${state.show ? 'checked' : ''}> show points</label>
       <label class="${state.sizesText ? 'hint' : ''}">trade length <input id="pt-days" type="number" min="1" max="365" value="${state.targetDays}"> days${state.sizesText ? ' (unused)' : ''}</label>
       <label>or sizes % <input id="pt-sizes" value="${state.sizesText}" placeholder="6, 12"></label>
@@ -64,7 +63,18 @@ export function renderPointsPanel({ root, state, info, colors, candles, answered
       : c ? '<div class="m warn">not enough history to calibrate a size</div>' : ''}
     ${groups.map((g, i) => `<div class="m" style="color:${colors[i % colors.length]}">${(g.size * 100).toFixed(1)}%: ${g.points.length} points up to now</div>`).join('')}
     ${lineSettings(state)}
-    ${foundRows(state, info, colors, candles)}`;
+    ${foundRows({ state, info, colors, candles, judgements, drawings })}`;
+  bindFound(root, { candles, info, judgements, ...verdict });   // onJudge / onUnjudge / onNote / …
+  // the explanation has its own card, and a line in it can be clicked to see only that line
+  const story = document.getElementById('story');
+  if (story) {
+    story.innerHTML = ((info && info.sizes) || []).map(g => theStory(g, focus)).join('');
+    story.querySelectorAll('.line[data-role]').forEach(row => {
+      row.onclick = () => onFocus(row.dataset.role === focus ? null : row.dataset.role);
+    });
+    const all = story.querySelector('#st-all');
+    if (all) all.onclick = e => { e.preventDefault(); onFocus(null); };
+  }
 
   const bind = (id, key, kind) => {
     const el = root.querySelector(id);
@@ -80,5 +90,6 @@ export function renderPointsPanel({ root, state, info, colors, candles, answered
   [['#pt-days', 'targetDays'], ['#pt-sizes', 'sizesText'], ['#pt-look', 'lookback'], ['#pt-mode', 'mode'],
    ['#pt-tol', 'tolPct'], ['#pt-anchor', 'anchorDays'], ['#pt-top', 'top'], ['#pt-touch', 'minTouches'],
    ['#pt-hist', 'maxHistory'], ['#pt-merge', 'mergePct'], ['#pt-targets', 'targets'], ['#pt-visits', 'minVisits'], ['#pt-prefer', 'prefer'],
+   ['#pt-agescale', 'ageScale'],
    ['#pt-slope', 'maxSlope']].forEach(([id, key]) => bind(id, key));
 }

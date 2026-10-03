@@ -39,39 +39,45 @@ def ladder(zones: List[Dict], price_now: float, price_before: float, n_each: int
             "below": sorted([z for z in rest if z["price"] < price_now], key=lambda z: -z["price"])[:n_each]}
 
 
-def _visits(bars: np.ndarray, inside: np.ndarray) -> int:
-    """Touches grouped into visits: a new visit starts after price has been outside the band."""
-    visits, was_inside = 0, False
-    for is_in in inside:
-        if is_in and not was_inside:
-            visits += 1
-        was_inside = is_in
-    return visits
+def _visits(inside: np.ndarray) -> int:
+    """Touches grouped into visits: a new visit starts after price has been outside the band, so a
+    visit is a rising edge of `inside` (the points are in bar order)."""
+    return int(inside[0]) + int(np.count_nonzero(inside[1:] & ~inside[:-1]))
 
 
 def price_zones(x: np.ndarray, y: np.ndarray, kind: np.ndarray, band_pct: float,
                 now_price: float, now_bar: float, tol_now_pct: float = 1.5) -> List[Dict]:
-    """`x` bars, `y` log prices of the turning points, `kind` peak/valley. Returns ranked zones."""
+    """`x` bars, `y` log prices of the turning points, `kind` peak/valley. Returns ranked zones.
+
+    Every point's price is a candidate centre (plus the current price); the fullest band is taken
+    first and the ones it already covers drop out. Which point falls in which band is worked out
+    once, as a matrix, rather than per candidate."""
     x, y = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
     if not len(x):
         return []
     band = np.log(1 + band_pct / 100) / 2          # half a band each side of the centre
     order = np.argsort(x)
     x, y, kind = x[order], y[order], np.asarray(kind)[order]
-    centres = list(y) + [float(np.log(now_price))]  # the current price is always a candidate
+    centres = np.append(y, float(np.log(now_price)))   # the current price is always a candidate
+    near_all = np.abs(y[:, None] - centres[None, :]) <= band       # (point, candidate)
+    # fullest band first; ties keep the order the points came in (sort is stable)
+    ranked = sorted(range(len(centres)), key=lambda c: -near_all[:, c].sum())
     zones: List[Dict] = []
-    for centre in sorted(centres, key=lambda c: -np.sum(np.abs(y - c) <= band)):
-        if any(abs(centre - z["y"]) <= band for z in zones):
+    taken = np.empty(len(centres))                 # the y of each zone already accepted
+    for c in ranked:
+        centre = float(centres[c])
+        if len(zones) and (np.abs(taken[:len(zones)] - centre) <= band).any():
             continue                                # already covered by a stronger zone
-        near = np.abs(y - centre) <= band
+        near = near_all[:, c]
         if not near.any():
             continue
-        touched, price = x[near], float(np.exp(np.median(y[near])))
-        zones.append({"y": float(np.median(y[near])), "price": price,
+        touched, zone_y = x[near], float(np.median(y[near]))
+        taken[len(zones)] = zone_y
+        zones.append({"y": zone_y, "price": float(np.exp(zone_y)),
                       "low": float(np.exp(centre - band)), "high": float(np.exp(centre + band)),
-                      "touches": int(near.sum()), "visits": _visits(x, near),
-                      "first_visit": float(touched.min()), "last_visit": float(touched.max()),
-                      "points": [float(t) for t in touched],
+                      "touches": int(near.sum()), "visits": _visits(near),
+                      "first_visit": float(touched[0]), "last_visit": float(touched[-1]),
+                      "points": touched.tolist(),
                       "at_price_now": bool(abs(np.log(now_price) - centre) <= np.log(1 + tol_now_pct / 100))})
     zones.sort(key=lambda z: (z["visits"], z["last_visit"]), reverse=True)
     return zones

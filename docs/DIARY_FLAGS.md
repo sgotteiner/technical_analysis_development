@@ -261,6 +261,351 @@ Claude's choices inside the agreed rules, pending review:
 - The scoreboard (`/api/score`) only counts drawn lines it misses, not lines it invents.
 - Browser checks still live in the scratchpad, not the repo.
 
+## 2026-10-02 — making stepping "now" usable (Claude's choices, pending review)
+The owner asked for four things: profile, speed up, cancel superseded requests, show "computing" in
+the panel. How is Claude's:
+- **Nothing about the rules changed, only the order they are applied in.** The two cheap filters
+  put first (hits a recent point; enough raw hits) are the owner's own rules, used as necessary
+  conditions. Proved identical rather than assumed: 240 comparisons against the committed code.
+- **Cancellation is client-side only** (`AbortController` in `api.js`, one in-flight request per
+  points controller). The server thread is not stopped; see the finding below.
+- **The busy line's wording** `computing… (the lines below are the previous answer)`, and `secs`
+  shown next to the answer when it lands, mirroring the top bar. The stale lines are left ON the
+  chart while it computes - the owner asked for "computing" in the panel, not for his chart to be
+  cleared, and clearing it was not his call to make.
+- `root.dataset.busy` on the points panel, so a browser check can wait for the answer.
+- `price_zones._visits` lost its unused `bars` argument (nothing imported it).
+
+## Findings 2026-10-02 (speed)
+- **The suspects in the owner's note were wrong.** `trend_lines` was 94% of a `/api/points` call
+  (31.8 s of 33.8 s profiled); `price_zones` was 1.2 s and the big-swing target search did not
+  appear. Measured over HTTP: 7.4 s -> 0.77 s mean per step, 113 s -> 4.7 s for four quick steps.
+- **The 94 s first call after a restart is `/api/setup-detections`**, which runs the setup detector
+  over 2017-2026 on the page's first load and holds the interpreter for 16-22 s while
+  `/api/points` (0.7 s of real work) waits behind it. Unrelated to the line layer; the owner's call.
+- **An aborted fetch does not stop the server's thread**, so four quick steps cost 4.7 s rather
+  than 0.6 s. Server-side cancellation needs a request id and checkpoints; not built.
+
+## Known debt (2026-10-02)
+- The browser check for the busy state and cancellation (10 checks) lives in the scratchpad, like
+  the earlier ones, and reuses `playwright-core` copied from the previous session's scratchpad.
+- Four of the owner's own rapid steps still burn ~4.7 s of server CPU on answers nobody will see.
+
+## 2026-10-03 — the ✓/✗ recorder (Claude's choices, approved mechanism)
+The owner approved building it after saying "if you want me to see and judge tell me. i didnt see
+you wanted it" — Claude had been writing "unjudged" into debt lists instead of asking. Inside the
+approved mechanism, these are Claude's:
+- **A verdict is about the LINE, not the settings**: key = (chart, the "now" it was judged at, kind,
+  price within `SAME_LINE_PCT` = 0.5%). Settings are stored as provenance only, so a later search
+  with other settings is still scored against the verdict. Without this a ✗ would only ever apply to
+  the one setting combination that produced it.
+- **Re-judging the same line at the same date replaces the verdict** (changing his mind leaves one
+  truth, not two); clicking the active mark takes the verdict back.
+- **Per date, not forever**: the same price can be a good line in September and a bad one in June,
+  so verdicts do not follow him when he steps "now".
+- A trend is judged at the price it holds at "now", so levels and trends compare on one scale.
+- Stored in the same `sr_annotations.json` under a new `judgements` key, beside the drawings.
+- New module `ui/js/sr_playground/found_lines.js` (the found-line rows moved out of
+  `points_panel.js`, which was heading past the 150-line limit).
+- **Claude recorded one verdict from the conversation** (72,799 = good, 2026-09-04) because the
+  owner stated it directly when asked. Nothing else was recorded.
+
+### The note and the replacement (same day, after he used it)
+He asked: "if i click x i would like to have the option to note why or even draw a replacement. a
+note option is always good." Claude's choices inside that:
+- **The note is offered on BOTH verdicts, not only on ✗** ("a note option is always good"), with the
+  placeholder changing: "why not?" on a reject, "why?" on an accept. It appears only once a line is
+  judged, so an unjudged list stays clean.
+- **Re-judging clears the note**: the old reason belonged to the old verdict. Only the note and the
+  replacement are patchable; the verdict itself is re-recorded, never edited.
+- **"draw instead" arms the existing line tool** and links whatever drawing he makes next to that
+  verdict (`replacement` = the drawing's id). The line is also a normal drawing, so it is ground
+  truth in its own right - the link is extra, not a different kind of record.
+- Deleting that drawing clears the link but keeps the verdict and its reason: why he rejected a
+  line outlives the line he would have drawn.
+- Once linked, the button turns into "instead: <label>" and jumps to the drawing.
+
+### A latent bug the refactor exposed: `seq` was doing two jobs
+Moving the verdict logic into `verdicts.js` made the page hang on "computing…" forever. Cause:
+`seq` is the points-request sequence ("which answer wins"), and `draw(++seq)` was ALSO being used
+as a plain repaint by `savePreset` and the verdict handlers. So any repaint while a `/api/points`
+call was in flight bumped `seq`, and the answer arrived to `mine !== seq` and was discarded - busy
+never cleared. This was already true before the refactor (saving a preset or clicking ✓ mid-request
+would lose the answer); loading the verdicts on page start just made it fire every time. Fixed by
+keeping `answered` for the request path only; repaints call `draw()` with no argument.
+
+### The date axis was off the bottom of the window the whole time
+"i cant see dates in the graph so i couldnt tell you the date of that 80k peak i was referring."
+Measured: `#chart` ended 19 px below `window.innerHeight` at every window size (950, 800, 1100) -
+exactly the height of the time axis. Cause: `#chart` is a flex child with `flex:1` but no
+`min-height:0`, so it refused to shrink below the chart's own content and the axis was pushed out
+of view. One line of CSS. It had been like that since the playground was built, which is why he
+has never been able to name a date - a tooling gap that was silently limiting what he could tell
+Claude.
+
+### Freehand sketches, so he can explain (Claude's choices, within what he asked for)
+"i would love another tool to press ctrl and draw with the mouse and note the draw. i want to be
+able to explain to you better." Claude's choices inside that:
+- **A new drawing kind `freehand`**, stored beside the lines and boxes. It is an EXPLANATION, never
+  ground truth for the line layer: `ground_truth_score` and `setup_evaluation` already filter on
+  kind, and there is a test that a sketch does not change the score.
+- **Ctrl + drag**, with panning switched off while Ctrl is held (otherwise the chart slides under
+  the hand that is drawing). A plain drag still pans - tested.
+- **The path is thinned to one point per 4 px** and capped at 500 points, so a sketch is a few
+  dozen points rather than every mouse sample.
+- **It asks "What are you showing me?" the moment the stroke ends**, because the words are the
+  point of the sketch; the note is also editable afterwards in the drawings list (that input
+  already existed). Label is fixed to "sketch"; the drawings list shows it with a pencil.
+- Lines and boxes are still exactly two points; only a freehand may have many.
+
+Then: "the drawing doesnt work and there isnt a text how to use it." Claude could not reproduce the
+failure (the chart library does not intercept Ctrl; the browser checks passed), and the most likely
+cause was his browser still running cached modules - the `/ui` files were served with an ETag but
+**no `Cache-Control`**, so a module graph could be reused without revalidating. Rather than keep
+guessing, three changes:
+- **`Cache-Control: no-cache, must-revalidate` on `/` and `/ui`.** The ETag makes revalidation a
+  304, so it costs nothing and removes a whole class of "works for Claude, not for him" - the
+  second such incident after the nine-day-old server.
+- **A visible `✎ Sketch` tool** beside Pan / Line / Box (shortcut `S`): with it on, a plain drag
+  draws, so the feature no longer depends on a modifier chord that might be eaten. Ctrl + drag
+  still works from any tool, which is what he asked for.
+- **A how-to line in the status bar for every tool**, not only the new one. A drawing tool nobody
+  can find is a tool nobody has - that was his point, and it applied to Line and Box as well.
+
+Then he hit `kind Input should be 'line', 'box' or 'freehand' ... input_value='sketch'`. Cause: NEW
+html (so he saw the Sketch button) with OLD `drawings.js` from cache, and the old file sends the
+tool name straight through as the shape kind. Claude's defect, not just a cache problem: `click()`
+blacklisted the tools that must not draw (`pan`, `sketch`), so any tool it did not know about
+posted its own name to the API. Now a **whitelist** - a click-click only ever builds `line` or
+`box`, and an unrecognised tool draws nothing. Tested: with Sketch active a click-click creates
+nothing and posts nothing, and Line still draws.
+
+Then: "when i draw it moves the screen not draw" - the signature of old `drawings.js` again, since
+a file with no sketch handling just lets the chart pan. **Five stale-code incidents in one session**
+(a nine-day-old server, cached JS, cached HTML, new HTML with old JS, then stale JS again), each
+one first appearing as a broken feature. Two changes, and the second was not asked for:
+- **`no-store` instead of `no-cache`** on `/` and `/ui`. `no-cache` still let Chrome serve ES
+  modules from its module map across reloads. This is a localhost dev tool; refetching a few KB is
+  free, and being unable to trust that the page is the code costs a round trip every time.
+- **A build stamp in the toolbar** (`ui <date time>`, the newest mtime of the UI files, served via
+  `/api/defaults`). Claude offered it twice and got no answer, then built it on the third incident
+  because without it neither side can tell a broken feature from a cached page. **Pending his
+  review** - it is the one thing here he did not ask for.
+And a real robustness bug it uncovered, independent of caching: the stroke only began if the FIRST
+point resolved, so starting a sketch past the last candle or at an edge left the drag to the chart,
+which panned - "it moves the screen instead". The stroke now starts on intent, panning goes off
+immediately, and points join as they resolve. Tested from four starting positions.
+
+Sixth incident, same day: "sketch is doing a box" - the old `drawings.js` sets an anchor on the
+first click and previews any tool it does not know as a rectangle. `no-store` was still not enough,
+because Chrome keeps a module map per document. **The page's assets now live under a URL that
+carries the build** (`/build/<ui-mtime>/...`), and the page is rewritten to point at it when it is
+served. Relative imports resolve against the importing module's own URL, so the whole graph moves
+with the build and a new page can no longer be paired with an old script. The `/ui` mount stays for
+anything that links it directly; the versioned route is its own prefix because the mount would
+otherwise swallow it. Traversal out of the UI directory is refused (tested).
+
+## 2026-10-03 (later) — two corrections that rewrote the rule, and the boxes
+**Claude invented an age knob he never asked for.** `age_scale` came from reading "the earlier it
+is the bigger the move it has to relate to" as a fade-by-days. His correction: "its not about age
+... i didnt mention age. only relative terms. because you try to predict the future based on the
+past so you have to find relations. not limit to less days." Cutting history by days throws away
+the thing history is for.
+**Then Claude proposed normalising each move by the swing scale of its own era** - also wrong, and
+rejected in his words: "nothing for then. you dont compare with previous era. 30 here 30 then."
+**What he actually does** (`business_logic_services/precedents.py`): a BACKWARD SEARCH WITH AN
+EARLY EXIT. "you have a peak at a certain level and size you look it in the past. thats it ... you
+found something similar like i did and described you stop. you dont check the entire history."
+Measured on his chart: the level price is working now matches **2026-05-06 at 82,850 after +27.5%**
+against the current +28.3%, found after reading **1 point of 723**; all the levels in play together
+read **11 of 723 (2% of the history)**, oldest point reached 2026-02-05. It never gets near COVID -
+not by a filter, by stopping. 11 tests.
+Claude's choices still inside it: the "same move" band (0.7-1.45x), and taking the most recent
+occurrence at a level when nothing matches ("or whatever you can find in that level"). **Unsearched.**
+Open and asked, not decided: his second target was 108, but walking back for the previous peak
+above 97,924 gives 116,400. 108 is a shelf visited several times rather than a single peak.
+
+### The setup in words (`business_logic_services/setup_story.py`)
+"how am i supposed to guess which ones did you use for the setup analysis? i still dont know what
+youre doing. i explained to you what i did and i expect to get the same explanation. what is each
+line which is minimum the trend and current and next support and resistance but maybe a bit more
+not a lot more and how did you find them."
+
+The boxes were the wrong answer to "show me what you do": they showed ALL 723 swings and none of
+the reasoning. The answer is a short roster where every line says what it is and how it was found,
+and the few points it was built from are circled and named ON the chart, so they can be told apart
+from the hundreds. Claude's choices: the roles (`the trend`, `current/next/next next` support and
+resistance, two each way); one line per level so two rungs inside a band are not listed twice; a
+target's derivation is the walk back and nothing else is said about it, because adding its own
+precedent made the sentence contradict itself.
+
+**Known weak, said plainly rather than hidden:** the supports below price are taken from raw swing
+points, not clustered levels, so one of them (76,606) is a single minor swing rather than a level
+anyone would draw; and two adjacent supports can share one precedent when the band covers both.
+
+### "why up to 2018?" and "where are the pipes i drew"
+Both the same cause, measured: the boxes had **no selection rule at all** - one per turning point
+across the whole file, 722 of them back to 2017-08-19. There was no reason for 2018; it was not a
+decision, it was an omission. And they buried his own work: the overlay held **2,275 nodes, 18 of
+them his** (9 sketches, 7 lines, 2 boxes - all rendering correctly, just invisible in the noise).
+Fixed with his own rule: the picture reaches back to the precedent and no further, so the boxes
+start at 2026-05-06 - **6 boxes, 55 overlay nodes**. The route computes the picture start from
+`picture_starts_at` and passes it to `swing_boxes(from_bar=...)`.
+Worth separating, since he asked about 2018 twice: three layers had three different reaches - the
+dots/boxes to 2017 (no rule), the lines of the rule he currently has selected to 2021 (the old
+far-history leaning, still there), and the new backward search to 2025-03-02 (it stops).
+
+### Claude built a SECOND level-finder and put it beside the first
+"the sidebar setup where i look at individual parts is different (and worse) then the full setup.
+completely different numbers... what is this joke. the full setup is good."
+Measured, and worse than he said: **not one line of the setup card was on the chart**, at either
+swing size. The card ran `setup_story` as its own pipeline - precedent search over raw prices, then
+clusters - while the chart drew `levels_from_points`. Two independent answers in one page. The box
+shown for "next resistance" was a VALLEY, because it was the box of a precedent point from the
+other pipeline rather than of the line's own dots.
+Rewritten: **the story explains the lines the chart is already drawing and never finds its own.**
+It takes `group["levels"]` as input, assigns the roles from where price is, and for each line says
+how the rule built it (the cluster of dots) plus the precedent behind it. The boxes shown are the
+boxes of the line's OWN dots. Verified: every line in the card is now a line on the chart.
+The lesson, worth keeping: an explanation is a description of the answer, never a rival to it.
+
+### Click a line, see only that line (`focus` in the points controller)
+"i want to be able to click a line in the setup and see only whats related to it. i still cant see
+what youre doing its too messy." Clicking a row in the explanation card draws that line alone, with
+the point(s) it was built from circled and named, and takes the dots, the swing boxes and the other
+lines off. Clicking it again, or "show all", brings everything back. His own drawings are never
+hidden by it - they are his, and the layer checkbox already governs them. 9 browser checks.
+
+### What a setup is - now written down
+He asked "is it documented? can i see it?" after confirming the definition ("thats correct"). It
+was not: only a one-line `**Setup** [owner]` entry from 2026-09-23 existed, and the rest was
+scattered across the diary. Written as its own section in `docs/GEOMETRY_DEFINITIONS.md`: the move
+running now as the yardstick, five to seven lines, each saying what it is AND how it was found, the
+trade that falls out, the state, and what a setup is not. **Worth a diary entry too (his design,
+confirmed in his words) - drafted, not appended, because the diary is append-only and he gates it.**
+
+### The sidebar as cards (`ui/js/sr_playground/cards.js`)
+"the sidebar is too confusing should be opening cards that each current sections is a card and one
+card will be explanation." Each `<h2>` + `<section>` becomes one collapsible card; what is open is
+remembered per browser. Claude's choices: the explanation and the swing points open by default and
+everything else shut, and the explanation moved out of the points panel into its own card at the
+top (it was being rendered inline among the found lines, which is part of why the sidebar read as
+a wall).
+
+### Peaks and valleys as boxes (`modules/shapes/swing_boxes.py`)
+"peak is from support to resistance to support and valley is the opposite. i need to see what you
+do." One box per confirmed turning point: the journey, not the point. Claude's choices: the box
+bottom is the LOWER of the two supports either side (top the higher of the two resistances for a
+valley); the newest box has no far side yet so it runs to now and is drawn dashed and marked
+`open`; the label is dropped when the box is too small to hold it, because at 700+ swings the text
+collided into noise and hid the structure he wanted to see. Its own layer checkbox. 6 tests.
+
+## 2026-10-03 — the first algorithm built from his concepts (pending his review)
+"ive given you many ideas and you seem to understand. i dont really understand how you intend to
+convert these concepts to algorithms but give it a try and show me and if i dont like it ill dive
+in." Built as a THIRD rule in the page, beside the one he already likes - never replacing it.
+`modules/shapes/swing_moves.py` + `business_logic_services/move_lines.py`, rule "by the move that
+ran into it". Claude's choices inside his concepts:
+- **A touch is worth the leg that arrived at it** (previous turning point to this one, extreme to
+  extreme), not its own wiggle. His anchor: the May 2026 peak ran +27.5% and the leg running now
+  +28.3%, off two valleys 1.3% apart - "the same move and same resistance", and it is a test.
+- **The running leg counts unfinished**, which is what he meant by reading the chart as a pipe that
+  "could stay in the pipe or breakout".
+- **One knob for his age rule**: `age_scale`, where a touch that old must match the move running
+  now; nearer touches need proportionally less. Deliberately ONE parameter so it can be searched
+  against his verdicts rather than chosen. Default 700 days, **not yet searched**.
+- **The band defaults to half the swing size** - his own rule, which the existing rule does not
+  apply (it types 1.5%). This mattered: at 1.5% the 79.5k and 82.8k peaks split into two lines and
+  the picture he describes does not appear.
+- **The ladder decides which lines are shown**, not a global ranking. Claude first ranked by
+  move-match alone and got 2019 levels at $6,927 on the chart; "always answer from the current
+  price" is his rule and fixes it.
+- `_term` thresholds (0.75 / 0.35 of the current move = "this move" / "short term" / "far smaller")
+  are Claude's wording and Claude's numbers. **Unsearched.**
+Result at 2026-09-04, 9% swings: the line price stands on is **81,049, move 29.1% = 1.03x the move
+running now, "this move"**, spanning 2025-11-21 -> 2026-05-06 - his sketched May peak. The 67 line
+comes out **0.40x "short term"** drawn from 2026, not 2021. The ladder reads: buy the break of
+81,049, stop 75,720, risk 6.6%, target 93,092 at 2.26 R.
+14 tests, **7/7 deliberate breaks caught**, 10 browser checks.
+
+### Known debt (2026-10-03, the move rule)
+- `age_scale`, the `_term` thresholds and the min-touches floor are all unsearched guesses. The
+  search against his verdicts is the next step and the whole point of the one-knob design.
+- Trend lines are not implemented for this rule (it returns levels only).
+- It has been looked at on ONE date again. The same trap as the tuned preset.
+
+### A sketch is several strokes, one note, and his choice what happens to it
+"id like to make more than one draw for a certain note. a setup." / "sketches i clicked cancel dont
+save i see trash in my drawings" / "i want to decide if i sketch to communicate with you and forget
+or to really save it." The cancel bug was real: `prompt()` returns null on Cancel and the code did
+`|| ''`, so a cancelled sketch was saved with an empty note - one such sketch (136 points) was in
+his file and has been removed. Claude's choices inside what he asked for:
+- **Strokes are held in the page until he decides** (`ui/js/sr_playground/sketchpad.js`), not saved
+  per stroke. That is what makes "several draws, one note" and "cancel leaves nothing" the same
+  mechanism rather than two features - there is nothing to delete because nothing was written.
+  Undecided strokes are drawn in amber on the chart.
+- **`purpose`: `keep` or `ask`** on the annotation, plus a `group` id shared by the strokes of one
+  sketch. "just showing you" sketches are listed apart (dashed amber) and cleared in one click;
+  his lines, boxes and kept sketches are never touched by that clear.
+- **A group saves all-or-nothing** - a half-written explanation is worse than none.
+- **Not reused: the existing `setups`.** He said "a setup", but `setup_evaluation` expects a setup
+  to hold a labelled line and a flag box and would break on a sketch-only one. A `group` id on the
+  annotations carries the same meaning with no blast radius. **Pending his review** - he may have
+  meant the real setup object.
+- Esc discards an undecided sketch before it falls through to cancelling the tool.
+
+### Claude's own test broke his page, and the page hid it
+"i clicked the 79 too and didnt see any change." Measured: nothing was listening on 8765 and his
+ground-truth file still held only the one verdict, so no click had ever reached a server. Cause:
+Claude verified the launcher by running `scripts/sr_playground.py` under a 60-second `timeout`. The
+launcher calls `webbrowser.open` BEFORE serving, so it opened a tab on his machine and the server
+behind that tab died a minute later. He then worked in a live-looking tab with no server.
+Two failures, not one:
+- Claude left a time-limited server behind a browser tab it had opened on his machine. A
+  verification must not leave the thing it verified in a worse state than it found it.
+- **The page hid the failure.** A click that never reaches the server only wrote to the top status
+  bar, which is not where he is looking when he clicks a line. Now: `api.js` turns any network
+  failure into "the server did not answer - is scripts/sr_playground.py still running?", the points
+  panel shows it as a red row (`#pt-jerr`), the mark does NOT light up for something that was not
+  saved, and the error clears when a click gets through. 6 browser checks.
+
+### The 404 he hit, and why the message was useless
+"got this when clicking v: verdict not saved: Not Found" - his server was PID 20592, the same
+process from before the endpoint existed. The page's JS is read from disk per request, so a NEW page
+can talk to an OLD server: new buttons, missing route. `api.js` now tells the two apart (FastAPI
+says exactly "Not Found" for a missing ROUTE and something specific for a missing item) and says
+"it is older than the page - restart scripts/sr_playground.py".
+
+## Findings 2026-10-03 (the lines read as a trade)
+- **Claude had been scoring geometry, not trades.** "5 of 7 lines within 3%" is blind to money. Read
+  as the plan the owner described (entry = break of the level price stands on, stop = the rung
+  below, targets = the rungs above, in order), the same 2026-09-04 chart gives two different trades:
+  his drawn lines -> stop 66,659, risk 17.0%, 1.90 R to 106k; the algorithm's lines -> stop 72,799,
+  risk 8.4%, 4.40 R. A line sitting between price and the real support halves the risk and doubles
+  the R, and no hit-count can see it.
+- **Claude's "72,799 is noise" read was wrong**, overruled by the owner: it is real support. The
+  test Claude applied ("nothing bounced there") is not the owner's rule — his rule is the flip, so a
+  broken resistance is support without needing a retest first. Consequence: the algorithm found a
+  real support the owner had not drawn, which tightens the stop. That is the mechanism working.
+- **The algorithm cannot name the trade.** At 2026-09-04 `at_price_now` is empty: price closed 1.98%
+  above its own 79,500 line and the "standing on it" test is a hard 1.5%. So there is no "on", no
+  entry, no plan — on the very day he drew the setup, for the line he called the most important on
+  the chart. That 1.5% is another fitted constant doing structural work.
+- **The approved preset is a 7-constant fit, not a generic rule.** Two of those constants replace
+  things the owner specified as derived: size from the trade horizon (calibrates to 12.5-30%, the
+  preset types 7%) and band from the swing size ("about half a swing"; the preset types 1.5%). Run
+  as he stated it, his own rule scores 3/7 instead of 5/7, and returns 0 lines at 2022-09-05.
+- **His picture is multi-scale, the algorithm is single-scale**: "recent support" (~60k) and "next
+  next resistance" (125k) are in one drawing. 80.3k appears at 6% but not 8% or 12.5%; 124,850 is
+  found at no setting at all — and it is the rung that takes the trade from 1.90 R to 3.27 R.
+
+## Known debt (2026-10-03)
+- `ground_truth_score.py` already returns `extra` (lines matching no drawing) but nothing yet reads
+  the verdicts, so a ✗ is recorded and not scored. Scoring against them is the next step, not built.
+- One verdict exists. The recorder is built; the ground truth is still one chart, one date.
+- The browser check for the recorder (13 checks) lives in the scratchpad, like the earlier ones.
+- `SAME_LINE_PCT` is duplicated in `found_lines.js` and `sr_annotation_repo.py`.
+
 ## Known debt (2026-09-22, setups)
 - The browser checks for setups (10) also live in the scratchpad (same reason as above).
 - Detections are listed but can't yet be accepted or rejected in the page.

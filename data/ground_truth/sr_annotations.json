@@ -179,6 +179,2206 @@
    "note": "",
    "author": "owner",
    "drawn_at": 1788480000
+  },
+  {
+   "id": "6013d7530a50",
+   "created": "2026-10-03T11:33:03+00:00",
+   "kind": "freehand",
+   "label": "the 80k peak, May 2026",
+   "points": [
+    {
+     "time": 1778630400,
+     "price": 83474.40004375411
+    },
+    {
+     "time": 1778457600,
+     "price": 83474.40004375411
+    },
+    {
+     "time": 1778371200,
+     "price": 83474.40004375411
+    },
+    {
+     "time": 1778284800,
+     "price": 83474.40004375411
+    },
+    {
+     "time": 1778198400,
+     "price": 83474.40004375411
+    },
+    {
+     "time": 1778025600,
+     "price": 83393.91294912343
+    },
+    {
+     "time": 1777852800,
+     "price": 83393.91294912343
+    },
+    {
+     "time": 1777680000,
+     "price": 83393.91294912343
+    },
+    {
+     "time": 1777593600,
+     "price": 83393.91294912343
+    },
+    {
+     "time": 1777507200,
+     "price": 83233.16844213103
+    },
+    {
+     "time": 1777420800,
+     "price": 83072.73377545651
+    },
+    {
+     "time": 1777334400,
+     "price": 82673.0002648767
+    },
+    {
+     "time": 1777334400,
+     "price": 82037.42419141093
+    },
+    {
+     "time": 1777420800,
+     "price": 81485.30350158403
+    },
+    {
+     "time": 1777420800,
+     "price": 80858.85824037802
+    },
+    {
+     "time": 1777507200,
+     "price": 80547.4424504736
+    },
+    {
+     "time": 1777593600,
+     "price": 80314.66942617387
+    },
+    {
+     "time": 1777680000,
+     "price": 80159.8602622288
+    },
+    {
+     "time": 1777680000,
+     "price": 79928.20730673871
+    },
+    {
+     "time": 1777852800,
+     "price": 79697.22380216296
+    },
+    {
+     "time": 1777939200,
+     "price": 79466.90781386326
+    },
+    {
+     "time": 1778025600,
+     "price": 79237.2574127932
+    },
+    {
+     "time": 1778112000,
+     "price": 79084.52499589854
+    },
+    {
+     "time": 1778198400,
+     "price": 78932.08697575454
+    },
+    {
+     "time": 1778284800,
+     "price": 78779.94278490216
+    },
+    {
+     "time": 1778457600,
+     "price": 78552.27763528567
+    },
+    {
+     "time": 1778544000,
+     "price": 78400.86553941424
+    },
+    {
+     "time": 1778630400,
+     "price": 78249.74529533165
+    },
+    {
+     "time": 1778716800,
+     "price": 78174.29588028206
+    },
+    {
+     "time": 1778803200,
+     "price": 78174.29588028206
+    },
+    {
+     "time": 1778889600,
+     "price": 78098.91921453284
+    },
+    {
+     "time": 1778976000,
+     "price": 78098.91921453284
+    },
+    {
+     "time": 1779062400,
+     "price": 78400.86553941424
+    },
+    {
+     "time": 1779062400,
+     "price": 78779.94278490216
+    },
+    {
+     "time": 1779062400,
+     "price": 79237.2574127932
+    },
+    {
+     "time": 1779148800,
+     "price": 79774.14306122492
+    },
+    {
+     "time": 1779062400,
+     "price": 80237.22898461031
+    },
+    {
+     "time": 1778976000,
+     "price": 80703.00013461632
+    },
+    {
+     "time": 1778976000,
+     "price": 81015.01734794924
+    },
+    {
+     "time": 1778889600,
+     "price": 81328.23790200187
+    },
+    {
+     "time": 1778803200,
+     "price": 81879.29436106131
+    },
+    {
+     "time": 1778716800,
+     "price": 82434.08461822741
+    },
+    {
+     "time": 1778630400,
+     "price": 83152.91394612596
+    },
+    {
+     "time": 1778544000,
+     "price": 83393.91294912343
+    },
+    {
+     "time": 1778457600,
+     "price": 83635.61043058174
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "previous 80k resistance after about 25% move like the current move that is now on this resistance. important line because its the same move and same resistance.",
+   "author": "owner",
+   "drawn_at": 1788480000
+  },
+  {
+   "id": "f922cf135021",
+   "created": "2026-10-03T12:06:40+00:00",
+   "kind": "freehand",
+   "label": "sketch",
+   "points": [
+    {
+     "time": 1778544000,
+     "price": 58257.23432232158
+    },
+    {
+     "time": 1779148800,
+     "price": 58257.23432232158
+    },
+    {
+     "time": 1779753600,
+     "price": 58257.23432232158
+    },
+    {
+     "time": 1780272000,
+     "price": 58257.23432232158
+    },
+    {
+     "time": 1780876800,
+     "price": 58257.23432232158
+    },
+    {
+     "time": 1781654400,
+     "price": 58131.2363409841
+    },
+    {
+     "time": 1782432000,
+     "price": 58131.2363409841
+    },
+    {
+     "time": 1783036800,
+     "price": 58131.2363409841
+    },
+    {
+     "time": 1783382400,
+     "price": 58131.2363409841
+    },
+    {
+     "time": 1783814400,
+     "price": 58131.2363409841
+    },
+    {
+     "time": 1784419200,
+     "price": 58131.2363409841
+    },
+    {
+     "time": 1785024000,
+     "price": 58131.2363409841
+    },
+    {
+     "time": 1785542400,
+     "price": 58131.2363409841
+    },
+    {
+     "time": 1786147200,
+     "price": 58131.2363409841
+    },
+    {
+     "time": 1786752000,
+     "price": 58131.2363409841
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "we had a down trend overall with lower and lower valleys. after the lowest vally i marked the next vally is higher and at the same hight of the valley below the lowest not surprisingly and i marked that 62k level. you can see the current resistance peaks. also showed you the range which are 2 peaks and 2 valleys about the same size. overall downtrend, valley direction change, and a rangy 2 peaks and 2 valley pipe breakout pattern. it could stay in the pipe or breakout and the next breakout is the previous peak above that point which was 96 or 108. the history can help for determining the importance of the lines. the 56k-72k zone in february -november 24 is probably useful.",
+   "author": "owner",
+   "drawn_at": 1788480000,
+   "purpose": "keep",
+   "group": "gmuscjjs6"
+  },
+  {
+   "id": "c538b4cdc965",
+   "created": "2026-10-03T12:06:40+00:00",
+   "kind": "freehand",
+   "label": "sketch",
+   "points": [
+    {
+     "time": 1775433600,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1776038400,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1776470400,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1777075200,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1777680000,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1778457600,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1779235200,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1779753600,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1780358400,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1780876800,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1781481600,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1782000000,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1782604800,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1783123200,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1783641600,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1784073600,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1784505600,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1785110400,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1785628800,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1786060800,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1786406400,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1786752000,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1787270400,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1787702400,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1788048000,
+     "price": 82554.56162233517
+    },
+    {
+     "time": 1788480000,
+     "price": 82554.56162233517
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "we had a down trend overall with lower and lower valleys. after the lowest vally i marked the next vally is higher and at the same hight of the valley below the lowest not surprisingly and i marked that 62k level. you can see the current resistance peaks. also showed you the range which are 2 peaks and 2 valleys about the same size. overall downtrend, valley direction change, and a rangy 2 peaks and 2 valley pipe breakout pattern. it could stay in the pipe or breakout and the next breakout is the previous peak above that point which was 96 or 108. the history can help for determining the importance of the lines. the 56k-72k zone in february -november 24 is probably useful.",
+   "author": "owner",
+   "drawn_at": 1788480000,
+   "purpose": "keep",
+   "group": "gmuscjjs6"
+  },
+  {
+   "id": "b00f3b3bd7b5",
+   "created": "2026-10-03T12:06:40+00:00",
+   "kind": "freehand",
+   "label": "sketch",
+   "points": [
+    {
+     "time": 1757808000,
+     "price": 129797.8630501428
+    },
+    {
+     "time": 1758067200,
+     "price": 128122.56692302473
+    },
+    {
+     "time": 1758499200,
+     "price": 126468.89900268122
+    },
+    {
+     "time": 1758931200,
+     "price": 124566.55936301772
+    },
+    {
+     "time": 1759276800,
+     "price": 123225.2986106096
+    },
+    {
+     "time": 1759708800,
+     "price": 121898.4848132256
+    },
+    {
+     "time": 1760054400,
+     "price": 121109.26284560778
+    },
+    {
+     "time": 1760313600,
+     "price": 120325.15063234509
+    },
+    {
+     "time": 1760659200,
+     "price": 119029.55891896236
+    },
+    {
+     "time": 1761177600,
+     "price": 117493.25373950931
+    },
+    {
+     "time": 1761609600,
+     "price": 116228.15425593208
+    },
+    {
+     "time": 1761955200,
+     "price": 114976.67663276849
+    },
+    {
+     "time": 1762387200,
+     "price": 114232.25992233084
+    },
+    {
+     "time": 1762560000,
+     "price": 113247.21185209877
+    },
+    {
+     "time": 1762905600,
+     "price": 112270.64877930275
+    },
+    {
+     "time": 1763251200,
+     "price": 111061.78328893086
+    },
+    {
+     "time": 1763596800,
+     "price": 110342.72267652294
+    },
+    {
+     "time": 1764028800,
+     "price": 109154.61598069711
+    },
+    {
+     "time": 1764547200,
+     "price": 107512.72590765294
+    },
+    {
+     "time": 1764892800,
+     "price": 106585.62174934799
+    },
+    {
+     "time": 1765238400,
+     "price": 105209.92080087008
+    },
+    {
+     "time": 1765756800,
+     "price": 103851.98460634799
+    },
+    {
+     "time": 1766361600,
+     "price": 102511.56672086836
+    },
+    {
+     "time": 1766880000,
+     "price": 100969.60890285301
+    },
+    {
+     "time": 1767312000,
+     "price": 100315.88097886043
+    },
+    {
+     "time": 1767657600,
+     "price": 99235.7375221066
+    },
+    {
+     "time": 1767916800,
+     "price": 98593.24369488737
+    },
+    {
+     "time": 1768521600,
+     "price": 96900.18776114739
+    },
+    {
+     "time": 1768867200,
+     "price": 95856.82251577657
+    },
+    {
+     "time": 1769212800,
+     "price": 95030.22174010647
+    },
+    {
+     "time": 1769558400,
+     "price": 94414.95618764947
+    },
+    {
+     "time": 1769990400,
+     "price": 92994.77823236275
+    },
+    {
+     "time": 1770163200,
+     "price": 92192.86529708434
+    },
+    {
+     "time": 1770508800,
+     "price": 91397.85987160784
+    },
+    {
+     "time": 1770940800,
+     "price": 90609.71748896729
+    },
+    {
+     "time": 1771372800,
+     "price": 89828.36399947699
+    },
+    {
+     "time": 1771718400,
+     "price": 89246.77745791378
+    },
+    {
+     "time": 1772150400,
+     "price": 88477.17698981639
+    },
+    {
+     "time": 1772496000,
+     "price": 87904.33860021866
+    },
+    {
+     "time": 1772755200,
+     "price": 87335.20900684828
+    },
+    {
+     "time": 1773360000,
+     "price": 86394.83392718536
+    },
+    {
+     "time": 1774137600,
+     "price": 85649.82658319054
+    },
+    {
+     "time": 1774483200,
+     "price": 85095.29364712369
+    },
+    {
+     "time": 1774828800,
+     "price": 84544.35099009288
+    },
+    {
+     "time": 1775174400,
+     "price": 83996.97536712437
+    },
+    {
+     "time": 1775520000,
+     "price": 83453.13679098182
+    },
+    {
+     "time": 1776038400,
+     "price": 83092.5444588557
+    },
+    {
+     "time": 1776643200,
+     "price": 82376.01370068462
+    },
+    {
+     "time": 1777334400,
+     "price": 81489.0363712394
+    },
+    {
+     "time": 1778371200,
+     "price": 80437.26377096101
+    },
+    {
+     "time": 1778889600,
+     "price": 80089.69609778846
+    },
+    {
+     "time": 1779494400,
+     "price": 79571.16178077763
+    },
+    {
+     "time": 1780099200,
+     "price": 79055.97814304996
+    },
+    {
+     "time": 1780617600,
+     "price": 78714.38547649283
+    },
+    {
+     "time": 1781049600,
+     "price": 78374.2623230758
+    },
+    {
+     "time": 1781481600,
+     "price": 77866.83444450809
+    },
+    {
+     "time": 1782086400,
+     "price": 77195.35372540414
+    },
+    {
+     "time": 1782518400,
+     "price": 77028.40935242058
+    },
+    {
+     "time": 1783036800,
+     "price": 76199.0119373814
+    },
+    {
+     "time": 1783555200,
+     "price": 75869.75765848938
+    },
+    {
+     "time": 1784419200,
+     "price": 75052.83593555792
+    },
+    {
+     "time": 1785110400,
+     "price": 74405.63388159558
+    },
+    {
+     "time": 1785801600,
+     "price": 73604.47699769541
+    },
+    {
+     "time": 1786492800,
+     "price": 72969.7705836633
+    },
+    {
+     "time": 1786838400,
+     "price": 72497.32766569676
+    },
+    {
+     "time": 1787270400,
+     "price": 72340.51944769334
+    },
+    {
+     "time": 1787788800,
+     "price": 71716.71832073477
+    },
+    {
+     "time": 1788134400,
+     "price": 71252.39417705573
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "we had a down trend overall with lower and lower valleys. after the lowest vally i marked the next vally is higher and at the same hight of the valley below the lowest not surprisingly and i marked that 62k level. you can see the current resistance peaks. also showed you the range which are 2 peaks and 2 valleys about the same size. overall downtrend, valley direction change, and a rangy 2 peaks and 2 valley pipe breakout pattern. it could stay in the pipe or breakout and the next breakout is the previous peak above that point which was 96 or 108. the history can help for determining the importance of the lines. the 56k-72k zone in february -november 24 is probably useful.",
+   "author": "owner",
+   "drawn_at": 1788480000,
+   "purpose": "keep",
+   "group": "gmuscjjs6"
+  },
+  {
+   "id": "f0b9f7d63521",
+   "created": "2026-10-03T12:06:40+00:00",
+   "kind": "freehand",
+   "label": "sketch",
+   "points": [
+    {
+     "time": 1770076800,
+     "price": 62707.67863210235
+    },
+    {
+     "time": 1770681600,
+     "price": 62707.67863210235
+    },
+    {
+     "time": 1771718400,
+     "price": 62572.05012017321
+    },
+    {
+     "time": 1772236800,
+     "price": 62572.05012017321
+    },
+    {
+     "time": 1773014400,
+     "price": 62572.05012017321
+    },
+    {
+     "time": 1773360000,
+     "price": 62572.05012017321
+    },
+    {
+     "time": 1774051200,
+     "price": 62572.05012017321
+    },
+    {
+     "time": 1774569600,
+     "price": 62572.05012017321
+    },
+    {
+     "time": 1774915200,
+     "price": 62572.05012017321
+    },
+    {
+     "time": 1775347200,
+     "price": 62572.05012017321
+    },
+    {
+     "time": 1775692800,
+     "price": 62572.05012017321
+    },
+    {
+     "time": 1776124800,
+     "price": 62707.67863210235
+    },
+    {
+     "time": 1776470400,
+     "price": 62707.67863210235
+    },
+    {
+     "time": 1777161600,
+     "price": 62707.67863210235
+    },
+    {
+     "time": 1777593600,
+     "price": 62843.58555503668
+    },
+    {
+     "time": 1778457600,
+     "price": 63116.32018758702
+    },
+    {
+     "time": 1778803200,
+     "price": 63116.32018758702
+    },
+    {
+     "time": 1779580800,
+     "price": 63116.32018758702
+    },
+    {
+     "time": 1780185600,
+     "price": 63116.32018758702
+    },
+    {
+     "time": 1780790400,
+     "price": 63116.32018758702
+    },
+    {
+     "time": 1781395200,
+     "price": 63116.32018758702
+    },
+    {
+     "time": 1781913600,
+     "price": 63116.32018758702
+    },
+    {
+     "time": 1782604800,
+     "price": 63116.32018758702
+    },
+    {
+     "time": 1782950400,
+     "price": 63116.32018758702
+    },
+    {
+     "time": 1783814400,
+     "price": 62979.80783739114
+    },
+    {
+     "time": 1784246400,
+     "price": 62843.58555503668
+    },
+    {
+     "time": 1784592000,
+     "price": 62707.67863210235
+    },
+    {
+     "time": 1785024000,
+     "price": 62707.67863210235
+    },
+    {
+     "time": 1785369600,
+     "price": 62707.67863210235
+    },
+    {
+     "time": 1785715200,
+     "price": 62707.67863210235
+    },
+    {
+     "time": 1786147200,
+     "price": 62707.67863210235
+    },
+    {
+     "time": 1786492800,
+     "price": 62707.67863210235
+    },
+    {
+     "time": 1786838400,
+     "price": 62436.72011190786
+    },
+    {
+     "time": 1787270400,
+     "price": 62436.72011190786
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "we had a down trend overall with lower and lower valleys. after the lowest vally i marked the next vally is higher and at the same hight of the valley below the lowest not surprisingly and i marked that 62k level. you can see the current resistance peaks. also showed you the range which are 2 peaks and 2 valleys about the same size. overall downtrend, valley direction change, and a rangy 2 peaks and 2 valley pipe breakout pattern. it could stay in the pipe or breakout and the next breakout is the previous peak above that point which was 96 or 108. the history can help for determining the importance of the lines. the 56k-72k zone in february -november 24 is probably useful.",
+   "author": "owner",
+   "drawn_at": 1788480000,
+   "purpose": "keep",
+   "group": "gmuscjjs6"
+  },
+  {
+   "id": "1258e60e9b8b",
+   "created": "2026-10-03T12:06:40+00:00",
+   "kind": "freehand",
+   "label": "sketch",
+   "points": [
+    {
+     "time": 1770595200,
+     "price": 63665.31921747717
+    },
+    {
+     "time": 1771027200,
+     "price": 63665.31921747717
+    },
+    {
+     "time": 1771459200,
+     "price": 63665.31921747717
+    },
+    {
+     "time": 1772668800,
+     "price": 64637.589753870336
+    },
+    {
+     "time": 1773273600,
+     "price": 65341.145462871704
+    },
+    {
+     "time": 1773792000,
+     "price": 65766.94829754581
+    },
+    {
+     "time": 1774396800,
+     "price": 66338.99756904668
+    },
+    {
+     "time": 1775692800,
+     "price": 67644.40053439351
+    },
+    {
+     "time": 1776470400,
+     "price": 68677.43228952507
+    },
+    {
+     "time": 1777248000,
+     "price": 69877.38139432033
+    },
+    {
+     "time": 1777852800,
+     "price": 71098.29043468977
+    },
+    {
+     "time": 1778025600,
+     "price": 71716.71832073477
+    },
+    {
+     "time": 1778198400,
+     "price": 72497.32766569676
+    },
+    {
+     "time": 1778457600,
+     "price": 73286.43364802394
+    },
+    {
+     "time": 1778803200,
+     "price": 74405.63388159558
+    },
+    {
+     "time": 1778976000,
+     "price": 75215.51105504783
+    },
+    {
+     "time": 1779148800,
+     "price": 76364.15874979747
+    },
+    {
+     "time": 1779321600,
+     "price": 77362.68547733471
+    },
+    {
+     "time": 1779494400,
+     "price": 78204.74903856375
+    },
+    {
+     "time": 1779667200,
+     "price": 79055.97814304996
+    },
+    {
+     "time": 1779235200,
+     "price": 78374.2623230758
+    },
+    {
+     "time": 1779235200,
+     "price": 76529.68877008813
+    },
+    {
+     "time": 1779235200,
+     "price": 74405.63388159558
+    },
+    {
+     "time": 1779580800,
+     "price": 72184.07424628251
+    },
+    {
+     "time": 1779840000,
+     "price": 70180.62458045308
+    },
+    {
+     "time": 1780012800,
+     "price": 69274.79732050534
+    },
+    {
+     "time": 1780099200,
+     "price": 68380.68424107095
+    },
+    {
+     "time": 1780272000,
+     "price": 67498.09453831964
+    },
+    {
+     "time": 1780444800,
+     "price": 66626.90192657903
+    },
+    {
+     "time": 1780617600,
+     "price": 65909.50193473515
+    },
+    {
+     "time": 1780876800,
+     "price": 65058.807789599414
+    },
+    {
+     "time": 1781049600,
+     "price": 64497.792423618295
+    },
+    {
+     "time": 1781308800,
+     "price": 63665.31921747717
+    },
+    {
+     "time": 1781395200,
+     "price": 62979.80783739114
+    },
+    {
+     "time": 1781568000,
+     "price": 62301.67764783812
+    },
+    {
+     "time": 1781740800,
+     "price": 61630.849172422444
+    },
+    {
+     "time": 1781913600,
+     "price": 60703.805651524875
+    },
+    {
+     "time": 1782259200,
+     "price": 60572.51625785493
+    },
+    {
+     "time": 1782604800,
+     "price": 60572.51625785493
+    },
+    {
+     "time": 1783123200,
+     "price": 60835.37961162737
+    },
+    {
+     "time": 1783296000,
+     "price": 61497.544622499416
+    },
+    {
+     "time": 1783814400,
+     "price": 62979.80783739114
+    },
+    {
+     "time": 1784160000,
+     "price": 64497.792423618295
+    },
+    {
+     "time": 1784419200,
+     "price": 65766.94829754581
+    },
+    {
+     "time": 1784851200,
+     "price": 66626.90192657903
+    },
+    {
+     "time": 1785024000,
+     "price": 67352.11054589559
+    },
+    {
+     "time": 1785456000,
+     "price": 68085.21278664032
+    },
+    {
+     "time": 1785974400,
+     "price": 68826.29456789583
+    },
+    {
+     "time": 1786492800,
+     "price": 69726.24575254243
+    },
+    {
+     "time": 1786838400,
+     "price": 70332.74511443228
+    },
+    {
+     "time": 1787356800,
+     "price": 72027.94952939748
+    },
+    {
+     "time": 1787616000,
+     "price": 72654.46978664536
+    },
+    {
+     "time": 1787961600,
+     "price": 73923.88835829933
+    },
+    {
+     "time": 1788134400,
+     "price": 74566.91236584788
+    },
+    {
+     "time": 1788220800,
+     "price": 75541.91360152153
+    },
+    {
+     "time": 1788307200,
+     "price": 76529.68877008813
+    },
+    {
+     "time": 1788307200,
+     "price": 77362.68547733471
+    },
+    {
+     "time": 1788393600,
+     "price": 78204.74903856375
+    },
+    {
+     "time": 1788480000,
+     "price": 79055.97814304996
+    },
+    {
+     "time": 1788480000,
+     "price": 79916.47255426376
+    },
+    {
+     "time": 1788480000,
+     "price": 80786.33312156325
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "we had a down trend overall with lower and lower valleys. after the lowest vally i marked the next vally is higher and at the same hight of the valley below the lowest not surprisingly and i marked that 62k level. you can see the current resistance peaks. also showed you the range which are 2 peaks and 2 valleys about the same size. overall downtrend, valley direction change, and a rangy 2 peaks and 2 valley pipe breakout pattern. it could stay in the pipe or breakout and the next breakout is the previous peak above that point which was 96 or 108. the history can help for determining the importance of the lines. the 56k-72k zone in february -november 24 is probably useful.",
+   "author": "owner",
+   "drawn_at": 1788480000,
+   "purpose": "keep",
+   "group": "gmuscjjs6"
+  },
+  {
+   "id": "2dfc64d70546",
+   "created": "2026-10-03T12:06:40+00:00",
+   "kind": "freehand",
+   "label": "sketch",
+   "points": [
+    {
+     "time": 1708819200,
+     "price": 72871.96247337175
+    },
+    {
+     "time": 1708560000,
+     "price": 72087.3192772206
+    },
+    {
+     "time": 1708473600,
+     "price": 71003.00257065945
+    },
+    {
+     "time": 1708387200,
+     "price": 69632.80249141535
+    },
+    {
+     "time": 1708387200,
+     "price": 68734.05169456225
+    },
+    {
+     "time": 1708387200,
+     "price": 67993.96313127973
+    },
+    {
+     "time": 1708300800,
+     "price": 67261.8434141106
+    },
+    {
+     "time": 1708300800,
+     "price": 66106.80341805334
+    },
+    {
+     "time": 1708300800,
+     "price": 65395.003546497595
+    },
+    {
+     "time": 1708300800,
+     "price": 64272.042703209816
+    },
+    {
+     "time": 1708387200,
+     "price": 63579.998475122804
+    },
+    {
+     "time": 1708473600,
+     "price": 62759.371238292966
+    },
+    {
+     "time": 1708560000,
+     "price": 61815.357735329824
+    },
+    {
+     "time": 1708732800,
+     "price": 61017.506721946775
+    },
+    {
+     "time": 1708819200,
+     "price": 60360.50545721836
+    },
+    {
+     "time": 1708905600,
+     "price": 59710.578402570565
+    },
+    {
+     "time": 1708992000,
+     "price": 59067.649386995894
+    },
+    {
+     "time": 1708992000,
+     "price": 58179.16119645476
+    },
+    {
+     "time": 1709510400,
+     "price": 57802.4848810319
+    },
+    {
+     "time": 1709942400,
+     "price": 57677.47042581242
+    },
+    {
+     "time": 1710892800,
+     "price": 57428.24258296382
+    },
+    {
+     "time": 1711324800,
+     "price": 57304.03753407053
+    },
+    {
+     "time": 1712102400,
+     "price": 57056.43274244111
+    },
+    {
+     "time": 1712448000,
+     "price": 56933.031838986775
+    },
+    {
+     "time": 1713398400,
+     "price": 56687.020760351945
+    },
+    {
+     "time": 1714348800,
+     "price": 56442.0820340819
+    },
+    {
+     "time": 1715040000,
+     "price": 56198.19237928392
+    },
+    {
+     "time": 1715644800,
+     "price": 56076.64766681312
+    },
+    {
+     "time": 1716249600,
+     "price": 55955.36582964983
+    },
+    {
+     "time": 1716940800,
+     "price": 55955.36582964983
+    },
+    {
+     "time": 1717372800,
+     "price": 55955.36582964983
+    },
+    {
+     "time": 1718409600,
+     "price": 55955.36582964983
+    },
+    {
+     "time": 1718755200,
+     "price": 55955.36582964983
+    },
+    {
+     "time": 1719619200,
+     "price": 55955.36582964983
+    },
+    {
+     "time": 1720051200,
+     "price": 55955.36582964983
+    },
+    {
+     "time": 1720396800,
+     "price": 56076.64766681312
+    },
+    {
+     "time": 1720828800,
+     "price": 56198.19237928392
+    },
+    {
+     "time": 1721606400,
+     "price": 56198.19237928392
+    },
+    {
+     "time": 1722124800,
+     "price": 56442.0820340819
+    },
+    {
+     "time": 1722816000,
+     "price": 56564.41881627985
+    },
+    {
+     "time": 1723766400,
+     "price": 56809.888441029805
+    },
+    {
+     "time": 1724198400,
+     "price": 56809.888441029805
+    },
+    {
+     "time": 1725148800,
+     "price": 56933.031838986775
+    },
+    {
+     "time": 1725667200,
+     "price": 57180.10111422542
+    },
+    {
+     "time": 1726012800,
+     "price": 57180.10111422542
+    },
+    {
+     "time": 1726358400,
+     "price": 57180.10111422542
+    },
+    {
+     "time": 1726876800,
+     "price": 57304.03753407053
+    },
+    {
+     "time": 1727395200,
+     "price": 57428.24258296382
+    },
+    {
+     "time": 1727827200,
+     "price": 57552.72635021449
+    },
+    {
+     "time": 1728345600,
+     "price": 57552.72635021449
+    },
+    {
+     "time": 1729036800,
+     "price": 57802.4848810319
+    },
+    {
+     "time": 1729641600,
+     "price": 57927.77508642229
+    },
+    {
+     "time": 1729987200,
+     "price": 58053.32248089136
+    },
+    {
+     "time": 1730419200,
+     "price": 58179.16119645476
+    },
+    {
+     "time": 1730851200,
+     "price": 58431.64305965226
+    },
+    {
+     "time": 1731196800,
+     "price": 58812.41935424762
+    },
+    {
+     "time": 1731369600,
+     "price": 59452.57028748576
+    },
+    {
+     "time": 1731369600,
+     "price": 60099.689021421924
+    },
+    {
+     "time": 1731542400,
+     "price": 62353.04072016286
+    },
+    {
+     "time": 1731628800,
+     "price": 63305.26022248161
+    },
+    {
+     "time": 1731715200,
+     "price": 64690.8679247646
+    },
+    {
+     "time": 1731715200,
+     "price": 65536.75638504853
+    },
+    {
+     "time": 1731715200,
+     "price": 66393.7000770944
+    },
+    {
+     "time": 1731715200,
+     "price": 67553.73050849284
+    },
+    {
+     "time": 1731715200,
+     "price": 68883.03669874469
+    },
+    {
+     "time": 1731715200,
+     "price": 69783.71829832802
+    },
+    {
+     "time": 1731715200,
+     "price": 70543.28766942436
+    },
+    {
+     "time": 1731715200,
+     "price": 71311.12466573114
+    },
+    {
+     "time": 1731715200,
+     "price": 72087.3192772206
+    },
+    {
+     "time": 1731369600,
+     "price": 72087.3192772206
+    },
+    {
+     "time": 1730937600,
+     "price": 72087.3192772206
+    },
+    {
+     "time": 1730505600,
+     "price": 72087.3192772206
+    },
+    {
+     "time": 1729900800,
+     "price": 72243.57864835675
+    },
+    {
+     "time": 1729555200,
+     "price": 72400.17075373922
+    },
+    {
+     "time": 1729123200,
+     "price": 72400.17075373922
+    },
+    {
+     "time": 1728691200,
+     "price": 72400.17075373922
+    },
+    {
+     "time": 1727827200,
+     "price": 72557.09628869359
+    },
+    {
+     "time": 1727136000,
+     "price": 72871.96247337175
+    },
+    {
+     "time": 1726704000,
+     "price": 73029.92266863947
+    },
+    {
+     "time": 1726272000,
+     "price": 73188.21921984045
+    },
+    {
+     "time": 1725580800,
+     "price": 73188.21921984045
+    },
+    {
+     "time": 1725148800,
+     "price": 73188.21921984045
+    },
+    {
+     "time": 1724630400,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1723852800,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1723334400,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1722816000,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1722211200,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1721865600,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1721433600,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1720828800,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1719705600,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1718928000,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1718409600,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1717804800,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1717459200,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1716854400,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1715731200,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1714867200,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1714262400,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1713830400,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1713312000,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1712620800,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1712016000,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1711584000,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1711065600,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1710460800,
+     "price": 73346.85282986777
+    },
+    {
+     "time": 1710028800,
+     "price": 73188.21921984045
+    },
+    {
+     "time": 1709683200,
+     "price": 73188.21921984045
+    },
+    {
+     "time": 1709251200,
+     "price": 73188.21921984045
+    },
+    {
+     "time": 1708905600,
+     "price": 73188.21921984045
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "we had a down trend overall with lower and lower valleys. after the lowest vally i marked the next vally is higher and at the same hight of the valley below the lowest not surprisingly and i marked that 62k level. you can see the current resistance peaks. also showed you the range which are 2 peaks and 2 valleys about the same size. overall downtrend, valley direction change, and a rangy 2 peaks and 2 valley pipe breakout pattern. it could stay in the pipe or breakout and the next breakout is the previous peak above that point which was 96 or 108. the history can help for determining the importance of the lines. the 56k-72k zone in february -november 24 is probably useful.",
+   "author": "owner",
+   "drawn_at": 1788480000,
+   "purpose": "keep",
+   "group": "gmuscjjs6"
+  },
+  {
+   "id": "93c3f6215943",
+   "created": "2026-10-03T12:06:40+00:00",
+   "kind": "freehand",
+   "label": "sketch",
+   "points": [
+    {
+     "time": 1767398400,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1767830400,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1768348800,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1768780800,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1769126400,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1769558400,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1769904000,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1770249600,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1770681600,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1771027200,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1771372800,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1771977600,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1772496000,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1773187200,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1773964800,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1774569600,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1774915200,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1775347200,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1775865600,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1776211200,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1776816000,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1777248000,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1777852800,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1778284800,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1778716800,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1779321600,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1779667200,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1780185600,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1780876800,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1781222400,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1781568000,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1782000000,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1782691200,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1783209600,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1783555200,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1783987200,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1784419200,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1784764800,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1785110400,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1785542400,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1785974400,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1786406400,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1786752000,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1787270400,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1787616000,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1787961600,
+     "price": 96770.31949207949
+    },
+    {
+     "time": 1788393600,
+     "price": 96770.31949207949
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "we had a down trend overall with lower and lower valleys. after the lowest vally i marked the next vally is higher and at the same hight of the valley below the lowest not surprisingly and i marked that 62k level. you can see the current resistance peaks. also showed you the range which are 2 peaks and 2 valleys about the same size. overall downtrend, valley direction change, and a rangy 2 peaks and 2 valley pipe breakout pattern. it could stay in the pipe or breakout and the next breakout is the previous peak above that point which was 96 or 108. the history can help for determining the importance of the lines. the 56k-72k zone in february -november 24 is probably useful.",
+   "author": "owner",
+   "drawn_at": 1788480000,
+   "purpose": "keep",
+   "group": "gmuscjjs6"
+  },
+  {
+   "id": "39d254a13c41",
+   "created": "2026-10-03T12:06:40+00:00",
+   "kind": "freehand",
+   "label": "sketch",
+   "points": [
+    {
+     "time": 1734566400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1734998400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1735344000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1735776000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1736121600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1736640000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1737158400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1737590400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1738368000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1738713600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1739232000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1739664000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1740096000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1740528000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1741046400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1741478400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1741824000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1742342400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1742860800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1743379200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1743811200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1744156800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1744675200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1745280000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1745712000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1746057600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1746576000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1747353600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1747872000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1748217600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1748649600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1749254400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1749686400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1750377600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1751068800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1751414400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1751846400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1752278400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1752883200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1753228800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1753747200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1754179200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1754697600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1755043200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1755561600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1756080000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1756512000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1756944000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1757376000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1758153600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1758499200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1758931200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1759363200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1759881600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1760400000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1761004800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1761436800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1761868800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1762300800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1762732800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1763078400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1763596800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1764028800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1764374400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1764979200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1765411200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1765756800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1766102400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1766707200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1767225600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1767744000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1768262400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1768694400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1769040000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1769558400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1769990400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1770681600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1771027200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1771372800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1771804800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1772496000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1773100800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1773619200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1773964800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1774483200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1775001600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1775606400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1776038400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1776470400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1777161600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1777507200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1777939200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1778457600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1779062400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1779494400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1779926400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1780358400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1780876800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1781395200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1781740800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1782086400,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1782691200,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1783209600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1783728000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1784073600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1784764800,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1785456000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1785888000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1786320000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1786752000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1787184000,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1787529600,
+     "price": 108772.56222199649
+    },
+    {
+     "time": 1787961600,
+     "price": 108772.56222199649
+    }
+   ],
+   "chart": "btc_1d",
+   "note": "we had a down trend overall with lower and lower valleys. after the lowest vally i marked the next vally is higher and at the same hight of the valley below the lowest not surprisingly and i marked that 62k level. you can see the current resistance peaks. also showed you the range which are 2 peaks and 2 valleys about the same size. overall downtrend, valley direction change, and a rangy 2 peaks and 2 valley pipe breakout pattern. it could stay in the pipe or breakout and the next breakout is the previous peak above that point which was 96 or 108. the history can help for determining the importance of the lines. the 56k-72k zone in february -november 24 is probably useful.",
+   "author": "owner",
+   "drawn_at": 1788480000,
+   "purpose": "keep",
+   "group": "gmuscjjs6"
   }
  ],
  "setups": [
@@ -189,6 +2389,123 @@
    "note": "buy on a breakout of the resistance line (maybe with a retest) based on this strong resistance that stopped it the previous time it reached there and the bullish pattern",
    "members": [],
    "author": "owner"
+  }
+ ],
+ "judgements": [
+  {
+   "id": "b0ce41130f9a",
+   "created": "2026-10-02T23:14:07+00:00",
+   "kind": "level",
+   "verdict": "good",
+   "price": 72799.0,
+   "at": 1788480000,
+   "slope_pct_day": null,
+   "note": "Owner, 2026-10-03, asked directly: real support. It is the rung below the 79,500 the price is standing on, so it is the stop - risk 8.4%, 4.40 R to 106k. Claude had read it as noise (old 2024 highs, bars passing through); overruled - the rule is the flip, a broken resistance is support without needing a retest first.",
+   "chart": "btc_1d",
+   "settings": {
+    "mode": "owner",
+    "sizesText": "7",
+    "tolPct": 1.5,
+    "minTouches": 3,
+    "top": 6,
+    "anchorDays": 120,
+    "maxHistory": 2,
+    "mergePct": 1.5,
+    "targets": 2,
+    "minVisits": 3,
+    "prefer": "recent",
+    "preset": "tuned lines 2026-09-24"
+   }
+  },
+  {
+   "id": "72dbb933dea2",
+   "created": "2026-10-03T06:47:24+00:00",
+   "kind": "level",
+   "verdict": "good",
+   "price": 79499.99999999997,
+   "at": 1788480000,
+   "slope_pct_day": null,
+   "note": "",
+   "chart": "btc_1d",
+   "settings": {
+    "targetDays": 14,
+    "sizesText": "7",
+    "show": true,
+    "drawLines": true,
+    "mode": "owner",
+    "tolPct": 1.5,
+    "minTouches": 3,
+    "maxSlope": "",
+    "top": 6,
+    "lookback": "",
+    "anchorDays": 120,
+    "maxHistory": 2,
+    "mergePct": 1.5,
+    "targets": 2,
+    "minVisits": 3,
+    "prefer": "recent"
+   },
+   "replacement": null
+  },
+  {
+   "id": "b91fcee51c97",
+   "created": "2026-10-03T06:51:51+00:00",
+   "kind": "level",
+   "verdict": "good",
+   "price": 62510.28000000001,
+   "at": 1788480000,
+   "slope_pct_day": null,
+   "note": "",
+   "chart": "btc_1d",
+   "settings": {
+    "targetDays": 14,
+    "sizesText": "7",
+    "show": true,
+    "drawLines": true,
+    "mode": "owner",
+    "tolPct": 1.5,
+    "minTouches": 3,
+    "maxSlope": "",
+    "top": 6,
+    "lookback": "",
+    "anchorDays": 120,
+    "maxHistory": 2,
+    "mergePct": 1.5,
+    "targets": 2,
+    "minVisits": 3,
+    "prefer": "recent"
+   },
+   "replacement": null
+  },
+  {
+   "id": "7704288177a5",
+   "created": "2026-10-03T06:52:56+00:00",
+   "kind": "level",
+   "verdict": "good",
+   "price": 66956.15000000002,
+   "at": 1788480000,
+   "slope_pct_day": null,
+   "note": "but only short term. this was the previous short term resistance apart from the current resistance which is the 80k line and was the resistance of a bigger peak. if you look backwards it isnt related to big peaks or valleys. the earlier it is the bigger the move it has to relate to. i woudnt draw it from that long before. so technically the line is good and relevant to the trade but you didnt get it right. its a weak short term support. in the current state the move is huge powered by 3 huge candles which is rare but the move is about 30% which got us from previous resistance to the current level so we need to look at similar moves. the move this line resisted was about 10%.",
+   "chart": "btc_1d",
+   "settings": {
+    "targetDays": 14,
+    "sizesText": "7",
+    "show": true,
+    "drawLines": true,
+    "mode": "owner",
+    "tolPct": 1.5,
+    "minTouches": 3,
+    "maxSlope": "",
+    "top": 6,
+    "lookback": "",
+    "anchorDays": 120,
+    "maxHistory": 2,
+    "mergePct": 1.5,
+    "targets": 2,
+    "minVisits": 3,
+    "prefer": "recent"
+   },
+   "replacement": null
   }
  ]
 }

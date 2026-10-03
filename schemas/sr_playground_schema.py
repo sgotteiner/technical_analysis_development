@@ -32,7 +32,7 @@ class LinesConfig(BaseModel):
     """Lines through the swing points: how close is a touch, and how many touches a line needs.
     mode "owner": levels from the recent points + their history, and trend lines from the recent
     points only. mode "touches": any line through two points, ranked by touches."""
-    mode: Literal["owner", "touches"] = "owner"
+    mode: Literal["owner", "touches", "moves"] = "owner"
     tol_pct: float = Field(1.5, gt=0, le=20)
     min_touches: int = Field(3, ge=2, le=20)
     max_slope_pct: Optional[float] = Field(None, ge=0, le=20, description="%/day; omit for any slope")
@@ -49,6 +49,10 @@ class LinesConfig(BaseModel):
     target_scale: float = Field(2.5, ge=1, le=6, description="targets use swings this much bigger")
     targets_each_way: int = Field(0, ge=0, le=5,
                                   description="levels above and below price that nothing recent touches; 0 = off")
+    age_scale: float = Field(700, ge=30, le=5000,
+                             description="mode 'moves': at this age a touch must match the move running now")
+    band_pct: Optional[float] = Field(None, gt=0, le=30,
+                                      description="mode 'moves': blank = half the swing size, his own rule")
 
 
 class PointsRequest(BaseModel):
@@ -92,20 +96,36 @@ class Point(BaseModel):
 Author = Literal["owner", "claude"]      # only the owner's drawings are ground truth
 
 
+MAX_SKETCH_POINTS = 500          # a freehand path is thinned on the way in; this is the hard cap
+
+# Why a sketch exists (owner, 2026-10-03: "i want to decide if i sketch to communicate with you and
+# forget or to really save it"). "ask" is a throwaway explanation and can be cleared in one go;
+# "keep" is his, and is never cleared for him.
+Purpose = Literal["keep", "ask"]
+
+
 class AnnotationIn(BaseModel):
-    kind: Literal["line", "box"]
+    """A line, a pattern box, or a freehand sketch. The sketch is for EXPLAINING (owner,
+    2026-10-03: "i want to be able to explain to you better") - it is never scored as a line."""
+    kind: Literal["line", "box", "freehand"]
     label: str = Field(min_length=1, max_length=60)
-    points: List[Point] = Field(min_length=2, max_length=2)
+    points: List[Point] = Field(min_length=2, max_length=MAX_SKETCH_POINTS)
     chart: str = "btc_1d"
     note: str = ""
     author: Author = "owner"
     drawn_at: Optional[int] = Field(None, description="the playground's 'now' when it was drawn")
+    purpose: Purpose = "keep"
+    group: Optional[str] = Field(None, max_length=40,
+                                 description="several strokes explaining one thing share this")
 
     @model_validator(mode="after")
-    def _box_has_area(self):
-        a, b = self.points
-        if self.kind == "box" and (a.time == b.time or a.price == b.price):
-            raise ValueError("a box needs two different times and prices")
+    def _shape_is_whole(self):
+        if self.kind != "freehand" and len(self.points) != 2:
+            raise ValueError(f"a {self.kind} is two points, got {len(self.points)}")
+        if self.kind == "box":
+            a, b = self.points
+            if a.time == b.time or a.price == b.price:
+                raise ValueError("a box needs two different times and prices")
         return self
 
 
@@ -113,6 +133,30 @@ class AnnotationPatch(BaseModel):
     model_config = {"extra": "forbid"}
     label: Optional[str] = Field(None, min_length=1, max_length=60)
     note: Optional[str] = None
+
+
+class JudgementIn(BaseModel):
+    """The owner's verdict on a line the code drew (2026-10-03: "if you want me to see and judge
+    tell me"). A verdict is about the LINE — a price, at a date — not about the settings that
+    produced it, so a later search with other settings is scored against it too. The settings are
+    kept only as provenance."""
+    kind: Literal["level", "trend"]
+    verdict: Literal["good", "bad"]
+    price: float = Field(gt=0, description="the line's price at `at`, so trends compare too")
+    at: int = Field(description="unix seconds of the 'now' candle it was judged at")
+    slope_pct_day: Optional[float] = Field(None, description="trends only")
+    note: str = ""
+    chart: str = "btc_1d"
+    settings: Dict = Field(default_factory=dict, description="provenance: what produced the line")
+    replacement: Optional[str] = Field(None, description="id of the line he drew instead of this one")
+
+
+class JudgementPatch(BaseModel):
+    """Why he rejected it, and the line he'd draw instead (owner, 2026-10-03: "if i click x i would
+    like to have the option to note why or even draw a replacement")."""
+    model_config = {"extra": "forbid"}
+    note: Optional[str] = None
+    replacement: Optional[str] = None
 
 
 class SetupIn(BaseModel):

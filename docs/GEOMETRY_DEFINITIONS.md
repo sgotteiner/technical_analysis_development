@@ -57,6 +57,38 @@ event now. The number of lines is whatever the chart has — "limiting it to 2 p
 **Ladder** [owner]: the levels above are the targets ("current / next / next next resistance"), the
 ones below are support; far ones still count.
 
+## What a setup is (owner, 2026-10-03, confirmed: "thats correct")
+The answer to one question, asked from where price is now. Not a list of prices.
+
+**The move running now** is the yardstick: its size is what every line is measured against.
+
+**The lines - about five to seven, not twenty:**
+- the trend
+- current support and current resistance
+- next support and next resistance
+- maybe one rung beyond that ("maybe a bit more not a lot more")
+
+**Every line says two things:**
+1. **what it is** - its role in the trade, not just a price;
+2. **how it was found** - the previous time price was at that level, after a move of comparable
+   size. Found by walking back from now and STOPPING at the match: "you found something similar
+   like i did and described you stop. you dont check the entire history."
+
+**And the trade that falls out of it:** buy the break of the current resistance (maybe on the
+retest); the stop is the previous support, the rung below the one price is standing on ("the
+previous support obviously its not rocket science"); the targets are the rungs above in order,
+which are the previous peaks above ("the next breakout is the previous peak above that point which
+was 96 or 108"). With R, because that is what decides whether the trade is worth taking.
+
+**Plus the state** - what the structure is doing: the overall trend, whether the valleys have
+turned, whether price is in a pipe that may hold or break.
+
+**What a setup is NOT:** 723 peaks and valleys, nine years of chart, lines with no reason attached,
+or a list of prices with no roles. Those are what made it "too messy" to read.
+
+Open, his call: whether "a bit more" means one extra rung each way, or also the structure objects -
+the range / pipe as a named thing rather than two lines.
+
 ## Events (layer 4, not now)
 Breakout / retest / fakeout / confluence, all defined by a move rather than a single candle [owner].
 Measured examples to test against later: the owner's fakeout (May 2026: runs of 2, 4 and 1 closes
@@ -147,12 +179,8 @@ His likes (58, 67) are in, his dislikes (59, 64, 70) are out, and 80k / 106k are
 sat 0.2% from his own line. "Most recent wins" matches his eye.
 
 ## Next session (owner, 2026-09-24, end of session)
-1. **Stepping "now" looks broken and is really slow.** Measured: one `/api/points` call takes ~4 s
-   (94 s on the first call after a restart), so pressing "7d" a few times queues tens of seconds of
-   work while the panel keeps showing the old lines with no sign it is busy. The server is right -
-   at 2026-06-12 it returns different lines - the page just shows a stale answer. Needed: profile
-   and speed up (the big-swing target search and `price_zones` are the suspects), cancel superseded
-   requests, and show "computing" in the panel, not only in the top bar.
+1. ~~**Stepping "now" looks broken and is really slow.**~~ Done 2026-10-02, see
+   [Stepping "now": what the time was actually going on](#stepping-now-what-the-time-was-actually-going-on).
 2. **Show the configuration on the chart.** He cannot see the clusters: which dots belong to which
    line, where the band is, where the visits are. The zone bands were rejected as a replacement for
    his lines, but something light (dots coloured by cluster, ticks at visits) is still wanted.
@@ -163,6 +191,73 @@ sat 0.2% from his own line. "Most recent wins" matches his eye.
    setup is draw -> run -> read the table (today's search was hand-run on one date).
 5. Then events (breakout / retest / fakeout, by a move), then strategies and backtests.
 6. A pass over the code and these docs together.
+
+## Stepping "now": what the time was actually going on (profiled 2026-10-02)
+The suspects in the note above were wrong. Profiled (cProfile, BTC daily 3,306 bars, the tuned
+preset at 7%, `now` = 2026-09-04): **`trend_lines` was 94% of the call** (31.8 s of 33.8 s);
+`price_zones` was 1.2 s and the big-swing target search was not on the list.
+
+Why it was slow: every pair of same-kind turning points (284k pairs at 7%) was scored against
+every point one pair at a time, and the visit grouping ran for all 140k pairs that survived the
+slope filter. Two of the owner's own rules are cheap filters that were being applied last:
+- a trend must **still be touched now**, so it must hit one of the few points inside the recent
+  window — testing the pair against those alone first carries 8k of the 142k pairs;
+- grouping touches into visits only ever **drops** bars, so a pair with fewer raw hits than
+  `min_touches` can never pass.
+With those first, and the remaining work batched as one matrix per point instead of per pair, the
+answer is **unchanged**: verified identical over 90 `price_zones` cases, 90 `trend_lines` cases and
+60 whole-answer cases (10 dates x 3 sizes x 2 settings), and the tuned preset still returns
+58,000 / 62,510 / 66,956 / 72,799 / 79,500 / 108,969 plus one falling resistance trend.
+`price_zones` got the same treatment (one band membership matrix, visits as rising edges).
+
+Measured over real HTTP, pristine server, quiet machine:
+
+| | before | after |
+|---|---|---|
+| `/api/points` alone, first call after start | 9.0 s | **0.72 s** |
+| `/api/points` alone, ten -7d steps | 7.4 s mean (max 10.0) | **0.77 s mean (max 1.4)** |
+| in the page, one -7d step | 6.7 s | **0.58 s** |
+| in the page, four -7d steps pressed quickly | **113 s**, all four computed | **4.7 s**, three cancelled |
+
+The page now aborts a superseded `/api/points` (`AbortController`) and the panel says
+`computing… (the lines below are the previous answer)` with the `points` panel marked busy, so a
+stale answer can no longer look like the current one; when the answer lands the panel shows how
+long it took. Browser-checked end to end (10 checks: the busy line appears on the click, 3 of 4
+requests are cancelled, the kept answer is the one for the date on screen).
+
+### Two findings that are the owner's call
+1. **The 94 s cold start is `/api/setup-detections`, not the lines.** On a pristine server the
+   setup detector runs over all of 2017-2026 on the page's first load and holds the interpreter for
+   16-22 s (measured 16.6 s and 21.6 s on two single loads); `/api/points` is fired at the same
+   moment and waits behind it (19-22 s) although its own work is 0.7 s. Reload before the first run
+   finishes and two of them overlap: 53 s measured. Nothing in the fix touches that endpoint - it
+   could be computed lazily, in a worker, or only when the detections panel is opened.
+2. **Cancelling in the browser does not stop the server.** The fetch is aborted, but the request's
+   thread keeps computing to the end, so four quick steps still cost 4.7 s instead of 0.6 s: the
+   last request shares the CPU with three abandoned ones. Stopping them needs the server to know a
+   request is superseded (a request id plus a check between stages) - not built, not asked for.
+
+## Next session (2026-10-03, end of session)
+His read, in his words: "the setup is correct and shows nicely. i can see it got there using
+parameter tuning and not geometrically like me so it may overfit but thats a start because it is
+correct... need to see it on other graphs." A quick look at another date: "partially good. not like
+this setup. it means its not generic."
+
+1. **Make it generic.** It is tuned, not derived. The knobs that are still Claude's guesses and have
+   never been searched: the swing size (the page still defaults to **7%**, though he has twice said
+   9% is better and 9% is the only size where his own two numbers agree), the band, the "same move"
+   similarity window (0.7-1.45x), and what makes a cluster "good" (currently >= 2 dots, which filters
+   almost nothing).
+2. **The supports are still the weak side.** The resistance comes from his search; the supports come
+   from the nearest good cluster, which lands near his 72,799 and 66,659 but not on 59,906 or 56,932.
+3. **Targets:** walking back gives 97,924 (his "96") and then 116,400, where he said 108. His own
+   phrasing was "96 or 108", so this may be looser than it looked - but it is unresolved.
+4. **At 9% the rule returns no resistance at all** - every line is below price. The size decides
+   whether the trade even has a target.
+5. Then the structure objects he described but Claude has not built: the range / pipe as a named
+   thing, and the valley-direction change that ends a downtrend.
+6. Scoring the ✓/✗ verdicts: they are recorded but nothing reads them yet, so false positives are
+   still uncounted (`ground_truth_score.py` returns `extra` and ignores the verdicts).
 
 ## Open questions (the owner's call)
 1. Sizes: a fixed set (5 / 10 / 20%), or calibrated from recent data to the trade horizon (~12% for
