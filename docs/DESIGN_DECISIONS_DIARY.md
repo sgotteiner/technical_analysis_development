@@ -427,3 +427,18 @@ median drops from 0.75x to 0.73x of the move running now, so the age filter had 
 verdict the rest of the rule did not earn on its own. That is a finding worth having - a knob that
 flatters the result is worse than no knob, and it only became visible once it was gone.
 **Links:** [[Clean is one thing per file, not a line count]]
+
+### Nothing is built on the lines until the lines are generic
+tags: kind=decision · attribution=your-design · portable=yes · signature=no · importance=high
+anchor: 2026-10-03 · bb8c559 · (chat, no commit)
+**Idea:** Items 5 of his own list - events (breakout / retest / fakeout), then strategies, then
+backtests - are deferred, and the next session goes back to improving the line algorithm. His
+words: "we still cant build on that events strategies and backtests. next we will continue
+improving the lines algorithm. we have more tools to do it."
+**Why:** His own measurement is the reason: the setup is right at 2026-09-04 and only "partially
+good" seven days back, so the layer is tuned, not derived. Every stage above it reads the lines, so
+a backtest run now would be scoring a strategy and a line layer at once and could not tell which
+one was wrong - the result would look like evidence while being unattributable. The second half of
+the sentence is the plan as much as the first: the visibility layer built this session is what makes
+the improvement possible, so this is not "wait", it is "use the tools".
+**Links:** [[Tools to explain with, not only to annotate with]] · [[A setup is a short roster that explains itself]]

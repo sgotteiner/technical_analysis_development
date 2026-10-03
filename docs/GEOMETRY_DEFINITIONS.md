@@ -254,6 +254,13 @@ design corrections in this session.
 | the build stamp | the page says when its own files changed, so a cached page can never be mistaken for a bug |
 
 ## Next session (2026-10-03, end of session)
+**The order is decided (owner, end of session): keep improving the LINE algorithm. Events,
+strategies and backtests wait** - "we still cant build on that ... we have more tools to do it."
+Everything downstream reads the lines, so a line layer that is only "partially good" on a second
+date would be measured by a backtest that cannot tell a bad strategy from a bad line. The tools
+built this session (his verdicts on each line, notes, "draw instead", sketches, the boxes, one line
+at a time, the explanation card) are the means to do it.
+
 His read, in his words: "the setup is correct and shows nicely. i can see it got there using
 parameter tuning and not geometrically like me so it may overfit but thats a start because it is
 correct... need to see it on other graphs." A quick look at another date: "partially good. not like
