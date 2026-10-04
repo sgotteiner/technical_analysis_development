@@ -56,10 +56,11 @@ def ui_build(ui_dir: str = UI_DIR) -> str:
 def create_app(df: pd.DataFrame, ground_truth_path: str = GROUND_TRUTH, presets_path=PRESETS) -> FastAPI:
     app = FastAPI(title="S/R Playground")
     doc = JsonDoc(ground_truth_path)          # one file, three collections over it
-    app.include_router(make_setup_router(df, SetupStore(doc)))
+    setups = SetupStore(doc)
+    app.include_router(make_setup_router(df, setups))
     app.include_router(make_preset_router(PresetStore(presets_path)))
     app.include_router(make_view_router(df))
-    app.include_router(make_ground_truth_router(df, DrawingStore(doc), VerdictStore(doc)))
+    app.include_router(make_ground_truth_router(df, DrawingStore(doc), VerdictStore(doc), setups))
     app.mount("/ui", StaticFiles(directory=UI_DIR), name="ui")
 
     @app.middleware("http")

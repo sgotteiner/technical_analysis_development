@@ -9,6 +9,7 @@ layer is driven by.
 from typing import Dict, List
 import numpy as np
 
+SCORED_KIND = "line"           # the only kind this scorer reads: boxes and sketches explain, never score
 FLAT_PCT_PER_DAY = 0.02        # below this a drawn line counts as horizontal
 SLOPE_TOL = 0.08               # %/day: how close a trend's slope must be to the drawn one
 
@@ -26,7 +27,7 @@ def score_against_drawings(drawings: List[Dict], found: Dict, price_now: float, 
     zones, trends = list(found.get("zones", [])), list(found.get("trends", []))
     used_zone, used_trend, lines = set(), set(), []
     for d in drawings:
-        if d.get("kind") != "line":
+        if d.get("kind") != SCORED_KIND:
             continue
         drawn = _drawn_line(d)
         match, kind = None, None

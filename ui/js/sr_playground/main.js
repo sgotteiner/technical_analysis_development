@@ -5,7 +5,7 @@ import { initialState, renderSettings, toRequest } from './settings_panel.js';
 import { createSrChart } from './sr_chart.js';
 import { createDrawings } from './drawings.js';
 import { renderResults } from './results_panel.js';
-import { createAnnotations } from './annotations_controller.js';
+import { createGroundTruth } from './ground_truth_controller.js';
 import { createSetupsController } from './setups_controller.js';
 import { createPointsController } from './points_controller.js';
 import { createLayers } from './layers.js';
@@ -28,38 +28,49 @@ const drawings = createDrawings({ chart: srChart.chart, series: srChart.series, 
     // a sketch is several strokes explaining one thing: it waits in the sketchpad until he says
     // what it shows and whether to keep it. Nothing is saved here, so nothing to cancel.
     if (shape.kind === 'freehand') return sketchpad.add(shape.points);
+    // a redraw was armed: this shape REPLACES one he already has, instead of adding another
+    if (await groundTruth.replaced(shape)) return;
     try {
       const ann = await api.addAnnotation({ ...shape,
         label: $('label').value.trim() || 'unlabelled',
         chart: defaults.chart, drawn_at: candles[now].time });
-      annotations.add(ann);
+      groundTruth.add(ann);
       setups.reload();
       // if it was drawn to answer a rejected line, it belongs to that verdict, not to nothing
       if (!points.linkDrawing(ann.id)) status(`saved ${ann.kind} "${ann.label}"`);
     } catch (e) { status(`not saved: ${e.message}`, 'err'); }
   } });
 
-const annotations = createAnnotations({ root: $('annotations'), count: $('gt-count'), drawings, status,
-  saved, getSetups: () => setups.setups(), centerOn,
-  onAssign: (a, setupId) => setups.assign(a, setupId),
-  onReload: () => setups.reload() });
+const setups = createSetupsController({ drawings, setNow: i => setNow(i), status,
+  onChange: () => groundTruth.refresh() });
+const groundTruth = createGroundTruth({ root: $('annotations'), drawings, status, saved, candles,
+  setNow: i => setNow(i), getNow: () => now, centerOn, setups,
+  armTool: kind => tools.setTool(kind),
+  getVerdicts: () => points.verdicts.all(),
+  verdictHandlers: {
+    onUnjudge: id => points.verdicts.handlers.onUnjudge(id),
+    onNote: (id, note) => points.verdicts.handlers.onNote(id, note),
+    onShowReplacement: id => points.verdicts.handlers.onShowReplacement(id),
+  } });
 const sketchpad = createSketchpad({ root: $('sketchpad'), status, chart: drawings,
   getNow: () => now, getCandles: () => candles,
-  onSaved: () => annotations.reloadFromServer() });
-const setups = createSetupsController({ drawings, getAnnotations: () => annotations.all(),
-  setNow: i => setNow(i), status, onChange: () => annotations.refresh() });
+  // the one card that can save the strokes must not be shut while they are waiting in it
+  onPending: () => cards && cards.show('sketchpad'),
+  onSaved: () => groundTruth.reloadFromServer() });
 const points = createPointsController({ root: $('points'), srChart, drawings, status,
   getCandles: () => candles, getNow: () => now,
-  getDrawings: () => annotations.all(),
+  getDrawings: () => groundTruth.all(),
   armLineTool: () => tools.setTool('line'),
+  onVerdictChange: () => groundTruth.refresh(),
   showDrawing: id => {
-    const a = annotations.all().find(x => x.id === id);
-    if (a) { annotations.select(a.id); centerOn(a); }
+    const a = groundTruth.all().find(x => x.id === id);
+    if (a) { groundTruth.select(a.id); centerOn(a); }
   } });
 const zones = createZonesController({ root: $('zones'), drawings, getNow: () => now, status,
   getTrends: () => points.trends() });
 const layers = createLayers({ root: $('layers'), onChange: applyLayers });
-const tools = createTools({ drawings, status, sketchpad, step: d => setNow(now + d) });
+const tools = createTools({ drawings, status, sketchpad, step: d => setNow(now + d),
+  onCancel: () => groundTruth.cancelRedraw() });
 
 function applyLayers(show) {
   drawings.setVisible({ drawings: show.drawings, detections: show.detections });
@@ -103,6 +114,7 @@ function setNow(i, refocus = true) {
   compute();
   points.refresh();
   zones.refresh();
+  groundTruth.onNowMoved();   // the drawings follow the date, and an armed redraw does not
 }
 
 ['back7', 'back1', 'fwd1', 'fwd7'].forEach((id, i) => $(id).onclick = () => setNow(now + [-7, -1, 1, 7][i]));
@@ -115,7 +127,7 @@ $('labels').innerHTML = defaults.labels.map(l => `<option value="${l}">`).join('
 $('build').textContent = defaults.build ? `ui ${defaults.build}` : '';
 
 renderSettings($('settings'), state, defaults, compute);
-annotations.refresh();
+groundTruth.start();            // the list, and what the server says it reads of it
 setups.reload();
 const hash = location.hash.slice(1);
 const start = /^\d{4}-\d{2}-\d{2}$/.test(hash) ? candles.findIndex(c => c.time >= Date.parse(hash + 'T00:00:00Z') / 1000) : -1;
@@ -124,6 +136,6 @@ applyLayers(layers.state());        // honour the boxes that were left unticked 
 // the sidebar as cards. The guide first, so the page says what it is before it shows anything
 renderGuide($('guide'));
 const cards = createCards({ root: $('side'), open: ['guide', 'story', 'points'] });
-window.__srPlayground = { state: () => ({ now, view, request, annotations: annotations.all(),
+window.__srPlayground = { state: () => ({ now, view, request, annotations: groundTruth.all(),
   setups: setups.setups(), layers: layers.state(), drawn: srChart.drawn() }),
   setNow, compute, srChart };   // for automated checks

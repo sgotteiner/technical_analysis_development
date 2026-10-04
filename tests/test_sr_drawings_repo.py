@@ -29,7 +29,8 @@ def test_add_assigns_id_and_persists(tmp_path):
     assert json.loads(path.read_text(encoding="utf-8"))["annotations"] == again
 
 
-def test_update_changes_label_and_note_only(tmp_path):
+def test_update_changes_label_and_note_and_nothing_unknown(tmp_path):
+    # the shape is editable too, and keeps what hangs off the drawing: test_ground_truth_crud.py
     store = GroundTruth(tmp_path / "gt.json")
     a = store.add(LINE)
     b = store.update(a["id"], {"label": "resistance", "note": "flipped"})

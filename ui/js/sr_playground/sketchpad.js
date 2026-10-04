@@ -6,8 +6,11 @@
 // is also why cancelling can no longer leave trash behind.
 import { api } from './api.js';
 
-export function createSketchpad({ root, status, getNow, getCandles, chart, onSaved }) {
-  let strokes = [], note = '';
+export function createSketchpad({ root, status, getNow, getCandles, chart, onSaved,
+                                  onPending = () => {} }) {
+  let strokes = [], note = '', at = null;      // `at` is the date of the FIRST stroke, not of "keep"
+
+  const day = t => new Date(t * 1000).toISOString().slice(0, 10);
 
   const render = () => {
     if (!strokes.length) {
@@ -16,7 +19,8 @@ export function createSketchpad({ root, status, getNow, getCandles, chart, onSav
       return;
     }
     root.innerHTML = `<div class="card sketchpad">
-        <div class="t">${strokes.length} stroke${strokes.length > 1 ? 's' : ''} — what are you showing?</div>
+        <div class="t">${strokes.length} stroke${strokes.length > 1 ? 's' : ''} drawn on ${day(at)} —
+          what are you showing? <span class="warn">not saved yet</span></div>
         <textarea id="sk-note" rows="2" placeholder="one note for all of them">${note.replace(/</g, '&lt;')}</textarea>
         <div class="row">
           <button id="sk-keep" title="save it with my drawings">keep it</button>
@@ -33,13 +37,14 @@ export function createSketchpad({ root, status, getNow, getCandles, chart, onSav
   };
 
   async function commit(purpose) {
-    const candles = getCandles(), now = getNow();
+    // the date he DREW at, not the date he happens to be standing on when he answers: stepping the
+    // chart between the stroke and "keep it" used to stamp the sketch with the wrong day
     const group = 'g' + Date.now().toString(36);
     const items = strokes.map(points => ({ kind: 'freehand', label: 'sketch', points, note,
-      purpose, group, drawn_at: candles[now].time }));
+      purpose, group, drawn_at: at }));
     try {
       const saved = await api.addAnnotationGroup(items);
-      strokes = []; note = '';
+      strokes = []; note = ''; at = null;
       render(); chart.setPending([]);
       status(`${saved.length} stroke${saved.length > 1 ? 's' : ''} saved${purpose === 'ask' ? " (I'll clear them later)" : ''}`);
       onSaved(saved);
@@ -47,7 +52,7 @@ export function createSketchpad({ root, status, getNow, getCandles, chart, onSav
   }
 
   function discard() {
-    strokes = []; note = '';
+    strokes = []; note = ''; at = null;
     render(); chart.setPending([]);
     status('sketch discarded');
   }
@@ -63,8 +68,18 @@ export function createSketchpad({ root, status, getNow, getCandles, chart, onSav
 
   render();
   return {
-    /** A finished stroke joins the open sketch; nothing is saved yet. */
-    add(points) { strokes.push(points); chart.setPending(strokes); render(); },
+    /** A finished stroke joins the open sketch; NOTHING IS SAVED until he answers the card, so the
+     *  card is opened and said out loud - a stroke held silently reads as a stroke lost
+     *  (owner, 2026-10-04: "i drew but dont know if it saved"). */
+    add(points) {
+      if (!strokes.length) at = getCandles()[getNow()].time;
+      strokes.push(points);
+      chart.setPending(strokes);
+      render();
+      onPending();
+      status(`${strokes.length} stroke${strokes.length > 1 ? 's' : ''} on ${day(at)} — NOT saved yet:`
+             + ' say what you are showing in the Sketch card, then "keep it"', 'warn');
+    },
     pending: () => strokes.length,
     discard,
   };

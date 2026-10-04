@@ -54,9 +54,14 @@ class AnnotationIn(BaseModel):
 
 
 class AnnotationPatch(BaseModel):
+    """What can be fixed after the fact (owner, 2026-10-04: "what if i want to edit and fix it?").
+    The SHAPE is editable too: a line drawn 2% off used to mean deleting it and drawing again,
+    which lost its label, its note, its setup and the verdict pointing at it. The shape is checked
+    against the drawing's own kind in the store, which is where the kind is known."""
     model_config = {"extra": "forbid"}
     label: Optional[str] = Field(None, min_length=1, max_length=60)
     note: Optional[str] = None
+    points: Optional[List[Point]] = Field(None, min_length=2, max_length=MAX_SKETCH_POINTS)
 
 
 class JudgementIn(BaseModel):

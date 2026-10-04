@@ -7,7 +7,7 @@ Setups: the owner's drawn setups (ground truth) against the detector.
                           their union in time (Claude's tolerances)
   detection_episodes      every run of detections over the whole history, ready to draw
 """
-from typing import Dict, List
+from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 from modules.setups.resistance_flag import setup_at, scan, episodes
@@ -16,11 +16,20 @@ from modules.shapes.strong_resistance import line_value
 LINE_TOL, MIN_OVERLAP = float(np.log(1.02)), 0.5
 
 
+def detector_members(setup: Dict) -> Optional[Dict]:
+    """The two drawings this detector would actually read: the resistance line and the flag box.
+    One place, so "which of my drawings does the system rely on" has a single answer (owner,
+    2026-10-04: "i could see the ground truth the system relies on")."""
+    def first(kind, word):
+        return next((d for d in setup["drawings"]
+                     if d["kind"] == kind and word in d["label"].lower()), None)
+    line, box = first("line", "resistance"), first("box", "flag")
+    return None if line is None or box is None else {"line": line, "box": box}
+
+
 def resistance_flag_setups(store) -> List[Dict]:
-    def has(s, kind, word):
-        return any(d["kind"] == kind and word in d["label"].lower() for d in s["drawings"])
     return [s for s in store.setups_with_members()
-            if s.get("author", "owner") == "owner" and has(s, "line", "resistance") and has(s, "box", "flag")]
+            if s.get("author", "owner") == "owner" and detector_members(s) is not None]
 
 
 def _bar(df: pd.DataFrame, t: int) -> int:
@@ -29,8 +38,8 @@ def _bar(df: pd.DataFrame, t: int) -> int:
 
 
 def evaluate_setup(df: pd.DataFrame, setup: Dict) -> Dict:
-    line = next(d for d in setup["drawings"] if d["kind"] == "line" and "resistance" in d["label"].lower())
-    box = next(d for d in setup["drawings"] if d["kind"] == "box" and "flag" in d["label"].lower())
+    members = detector_members(setup)
+    line, box = members["line"], members["box"]
     now = _bar(df, max(d.get("drawn_at") or 0 for d in setup["drawings"]))
     res = {"name": setup["name"], "date": str(df.index[now].date()), "found": False, "line_gap": None, "flag_overlap": None}
     det = setup_at(df, now)

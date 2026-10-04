@@ -16,7 +16,7 @@ const DEFAULTS = { targetDays: 14, sizesText: '7', show: true, drawLines: true, 
 
 export function createPointsController({ root, srChart, drawings, getCandles, getNow, status,
                                          getDrawings = () => [], armLineTool = () => {},
-                                         showDrawing = () => {} }) {
+                                         showDrawing = () => {}, onVerdictChange = () => {} }) {
   let state = { ...DEFAULTS }, info = null, seq = 0, presets = [];
   let busy = false, secs = null, inflight = null;      // what the panel says while it is working
   let focus = null;                                    // one line of the setup, alone
@@ -32,7 +32,9 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
     ? (g.lines || [])
     : (g.levels || []).map(asLine).concat(g.trends || []);   // "owner" and "moves" both give levels
 
-  const verdicts = createVerdicts({ status, redraw: () => draw(), armLineTool, showDrawing,
+  // a verdict is ground truth, so the ground truth card has to hear about it too
+  const verdicts = createVerdicts({ status, redraw: () => { draw(); onVerdictChange(); },
+    armLineTool, showDrawing,
     getNowTime: () => getCandles()[getNow()].time,
     getSettings: () => { const { presetName, ...settings } = state; return settings; } });
 
@@ -111,8 +113,12 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
     drawings.setSwings(!show.boxes ? []
       : focus ? groups.flatMap(g => picked(g).flatMap(l => l.boxes || []))
               : groups.flatMap(g => g.boxes || []));
-    drawings.setUsed(groups.flatMap(g => picked(g).flatMap(l =>
-      (l.times || []).map(t => ({ time: t, price: l.price, role: l.role })))));
+    // the touch points are the dots a CALCULATED LINE was built from, so they belong to that layer:
+    // unticking "calculated lines" and still seeing them is the line without the line (owner,
+    // 2026-10-04: "i unchecked the calculated lines but still see the touch points")
+    drawings.setUsed(!(show.lines && state.drawLines) ? []
+      : groups.flatMap(g => picked(g).flatMap(l =>
+          (l.times || []).map(t => ({ time: t, price: l.price, role: l.role })))));
     const lines = focus
       ? groups.map(g => ({ color: g.color, lines: picked(g).map(l => ({
           x1: Math.min(...(l.points || [getNow()])), y1: Math.log(l.price), slope: 0,
@@ -144,5 +150,6 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
   const trends = () => (info ? info.sizes : []).flatMap(g => (g.trends || []).map(t => ({
     at_now: Math.exp(t.y1 + t.slope * (getNow() - t.x1)), slope_pct_day: Math.expm1(t.slope) * 100 })));
 
-  return { refresh, trends, linkDrawing: verdicts.linkDrawing, setVisible(layers) { Object.assign(show, layers); paint(); } };
+  return { refresh, trends, verdicts, linkDrawing: verdicts.linkDrawing,
+    setVisible(layers) { Object.assign(show, layers); paint(); } };
 }

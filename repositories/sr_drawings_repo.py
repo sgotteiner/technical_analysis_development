@@ -31,10 +31,24 @@ class DrawingStore:
         return self.doc.append(SECTION, items)
 
     def update(self, ann_id: str, raw: Dict) -> Dict:
-        return self.doc.patch(SECTION, ann_id, AnnotationPatch(**raw).model_dump(exclude_none=True))
+        """Label, note, or a new shape. A new shape is validated by the rule that accepted the
+        drawing in the first place (AnnotationIn), against the kind it already has - so a box
+        cannot be patched into something that is not a box."""
+        patch = AnnotationPatch(**raw).model_dump(exclude_none=True)
+        if "points" in patch:
+            now = next((a for a in self.list() if a["id"] == ann_id), None)
+            if now is None:
+                raise KeyError(ann_id)
+            AnnotationIn(**{**now, **patch})                           # ValueError when invalid
+        return self.doc.patch(SECTION, ann_id, patch)
 
     def delete(self, ann_id: str) -> bool:
         return self._drop({ann_id}) == 1
+
+    def delete_group(self, group: str) -> int:
+        """All the strokes of one explanation, in one write: he drew it as one thing, so he
+        removes it as one thing (owner, 2026-10-04: "read add remove edit easily")."""
+        return self._drop({a["id"] for a in self.list() if a.get("group") == group})
 
     def clear_asked(self) -> int:
         """Drop the sketches he only drew to explain something. His own drawings are untouched."""

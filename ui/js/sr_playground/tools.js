@@ -10,7 +10,7 @@ const HOW = {
 
 const KEY_TOOL = { l: 'line', b: 'box', s: 'sketch' };
 
-export function createTools({ drawings, status, sketchpad, step }) {
+export function createTools({ drawings, status, sketchpad, step, onCancel = () => {} }) {
   function setTool(t) {
     drawings.setTool(t);
     document.querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === t));
@@ -23,6 +23,7 @@ export function createTools({ drawings, status, sketchpad, step }) {
     if (e.key === 'ArrowRight') return step(e.shiftKey ? 7 : 1);
     if (e.key === 'Escape') {
       if (sketchpad.pending()) sketchpad.discard();     // an undecided sketch goes first
+      onCancel();                                       // and an armed "redraw this one" is off
       drawings.cancel();
       return setTool('pan');
     }

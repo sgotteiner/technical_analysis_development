@@ -1,25 +1,18 @@
 // Setups and detections: keeps the setup list and its detector verdicts in sync with the server,
 // and steps the chart through the detector's setups.
+// The setups are DRAWN by the ground truth card (one surface for everything he recorded); this
+// file owns the data and the one rule that a drawing belongs to at most one setup.
 import { api } from './api.js';
-import { renderSetups } from './setups_panel.js';
 import { renderDetections } from './detections_panel.js';
 
-export function createSetupsController({ drawings, getAnnotations, setNow, status, onChange }) {
+export function createSetupsController({ drawings, setNow, status, onChange }) {
   let setups = [], evaluation = {}, episodes = null, current = null;
   const $ = id => document.getElementById(id);
   const fail = verb => e => status(`not ${verb}: ${e.message}`, 'err');
 
   async function reload() {
     [setups, evaluation] = await Promise.all([api.setups(), api.evaluation()]);
-    render(); onChange();
-  }
-
-  function render() {
-    renderSetups($('setups'), setups, getAnnotations(), evaluation, {
-      onCreate: name => api.addSetup({ name }).then(reload, fail('saved')),
-      onPatch: (s, patch) => api.patchSetup(s.id, patch).then(reload, fail('saved')),
-      onDelete: s => confirm(`Delete setup "${s.name}"? Its drawings stay.`) && api.deleteSetup(s.id).then(reload, fail('deleted')),
-    });
+    onChange();
   }
 
   async function assign(drawing, setupId) {       // a drawing belongs to at most one setup
@@ -49,5 +42,5 @@ export function createSetupsController({ drawings, getAnnotations, setNow, statu
 
   renderDet();
   api.detections().then(eps => { episodes = eps; renderDet(); }, fail('loaded'));
-  return { reload, assign, setups: () => setups };
+  return { reload, assign, setups: () => setups, evaluation: () => evaluation };
 }

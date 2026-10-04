@@ -442,3 +442,72 @@ one was wrong - the result would look like evidence while being unattributable. 
 the sentence is the plan as much as the first: the visibility layer built this session is what makes
 the improvement possible, so this is not "wait", it is "use the tools".
 **Links:** [[Tools to explain with, not only to annotate with]] · [[A setup is a short roster that explains itself]]
+
+### The channel is repaired before the algorithm it feeds
+tags: kind=decision · attribution=your-design · portable=yes · signature=no · importance=high
+anchor: 2026-10-04 · (chat, no commit)
+**Idea:** The session was to record ground truth at a second date. It stopped before it started:
+"i was gonna add a draw on another date but couldnt because of what i told you im missing." So the
+drawing and verdict tools are fixed first - "i want a good development environment. these things are
+for hour communication so i could tell you what i want more easily. it has holes" - and the line
+search waits.
+**Why:** His eye is the only oracle for a correct line; no dataset or indicator can say it. That
+makes his drawings and his ✓/✗ the measuring instrument the algorithm is scored against, not
+feedback about a page. The holes were measured, not felt: the list dated his 2026-09-04 work as
+2024 (it rendered `points[0].time`, never `drawn_at`), every date's drawings painted at once,
+clicking a row only scrolled the chart instead of moving "now", a drawing's shape could not be
+edited at all, and the one explanation he drew as eight strokes rendered as eight identical rows.
+Fixing the algorithm through a channel like that means guessing at his words - which is exactly
+where the two mechanisms he threw out (age/fade, era-normalising) came from.
+**Links:** [[Tools to explain with, not only to annotate with]] · [[Nothing is built on the lines until the lines are generic]]
+
+### The ground truth is grouped by the date he drew at, because that is his unit
+tags: kind=decision · attribution=your-design · portable=no · signature=yes · importance=high
+anchor: 2026-10-04 · (chat, no commit)
+**Idea:** One card replaces the two that split his work ("My setups" and "My drawings"), grouped by
+`drawn_at`: the setups of that date with his note, the drawings inside them, the loose ones, and the
+verdicts recorded there - with ⤒ the date putting "now" back, so the code recomputes the setup as it
+was. His unit: "a setup draw is not a single sketch its a collection of them with a note that i
+explain."
+**Why:** He has to come back to work he will not remember ("if i drew something a week ago about a
+certain date i already forgot this"), and a flat list in save order cannot be come back to. Two
+consequences fell out of the same unit: several strokes under one group are ONE row with one note
+(and one delete), and a drawing's shape is patched in place rather than deleted and redrawn, because
+delete-and-redraw silently dropped its label, its note, its setup and the verdict pointing at it -
+four links that are themselves ground truth.
+**Links:** [[The channel is repaired before the algorithm it feeds]]
+
+### What the system relies on is answered by the readers, never by the page
+tags: kind=decision · attribution=claude-proposed · portable=yes · signature=no · importance=medium
+anchor: 2026-10-04 · (chat, no commit)
+**Idea:** "i could see the ground truth the system relies on" is served by one endpoint
+(`/api/ground-truth/usage`) built from the code that actually reads a drawing: the scorer's own
+`SCORED_KIND`, and `detector_members`, extracted so the setup detector and the usage answer cannot
+drift apart. The page prints the answer and decides nothing.
+**Why:** The alternative - a rule in JavaScript about which drawings count - is how the sidebar once
+became a second level-finder showing different numbers from the chart ("what is this joke"). The
+answer is also worth having: of his 18 drawings only 7 are read by anything, his one named setup
+holds no members so the detector evaluates nothing, and his 4 verdicts are read by no business logic
+at all - none of which the page could tell him before.
+**Links:** [[The ground truth is grouped by the date he drew at, because that is his unit]]
+
+### He does not suspect it is not generic - he has seen it, and now it is measurable
+tags: kind=lesson · attribution=your-correction · portable=yes · signature=yes · importance=high
+anchor: 2026-10-04 · (chat, no commit)
+**Idea:** On the day the ground-truth tools were repaired he recorded his second date, 2025-10-03:
+a three-stroke sketch with one note claiming four things - a long up trend; peaks not getting
+higher, price standing ON that flat resistance; a support line with two recent valleys that had
+been a resistance for previous peaks; and no next resistance at all, because price is at an
+all-time high. The tuned rule at that date (7%, the page's preset) answers: a rising trend
+(+0.35%/day), supports at 108,969 and 107,241 and 73,777, and **no resistance whatsoever**. One of
+his four claims found, the headline missed, one line counted twice (the two supports are 1.6%
+apart, kept by a hair over the 1.5% band), and the trend drawn at 138,120 - 13% ABOVE a price of
+122,232, because "still touched now" lets a line extrapolate 61 days past its last touch. At 9% the
+supports fall to 74,142 and 64,927, 39% and 47% below price, and there is still no resistance.
+**Why:** his correction is the point - *"i didnt suspect i saw it. in my eyes and just now finally
+have a way to show that to you."* The failure was never unknown to him; it was unTRANSMITTABLE.
+What changed today is not knowledge but evidence: a date, a command and three numbers that any
+future session can reproduce without him in the room. That is the whole return on repairing the
+channel first, earned within hours of finishing it - and it is why his read of a chart is never to
+be written down as a hunch.
+**Links:** [[The channel is repaired before the algorithm it feeds]] · [[Nothing is built on the lines until the lines are generic]]

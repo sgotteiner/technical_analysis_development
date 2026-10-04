@@ -9,16 +9,23 @@ from typing import Dict
 import pandas as pd
 from fastapi import APIRouter, HTTPException
 from business_logic_services.ground_truth_score import score_against_drawings
+from business_logic_services.ground_truth_use import usage
 from business_logic_services.zone_service import zone_view
 from repositories.sr_drawings_repo import DrawingStore
+from repositories.sr_setups_repo import SetupStore
 from repositories.sr_verdicts_repo import VerdictStore
 from schemas.sr_view_schema import ZonesRequest
 
 
-def make_ground_truth_router(df: pd.DataFrame, drawings: DrawingStore,
-                             verdicts: VerdictStore, chart: str = "btc_1d") -> APIRouter:
+def make_ground_truth_router(df: pd.DataFrame, drawings: DrawingStore, verdicts: VerdictStore,
+                             setups: SetupStore, chart: str = "btc_1d") -> APIRouter:
     router = APIRouter(prefix="/api", tags=["S/R Ground Truth"])
     cache: Dict = {}
+
+    @router.get("/ground-truth/usage")
+    def ground_truth_usage():
+        """Which of his drawings the system actually reads, answered by the readers themselves."""
+        return usage(drawings.list(), setups.setups_with_members())
 
     @router.post("/score")
     def post_score(req: ZonesRequest):
@@ -80,6 +87,14 @@ def make_ground_truth_router(df: pd.DataFrame, drawings: DrawingStore,
     @router.delete("/annotations/asked")
     def clear_asked():
         return {"deleted": drawings.clear_asked()}
+
+    @router.delete("/annotations/group/{group}")
+    def delete_group(group: str):
+        """One explanation drawn as several strokes is removed as one thing."""
+        gone = drawings.delete_group(group)
+        if not gone:
+            raise HTTPException(404, "no such group")
+        return {"deleted": gone, "group": group}
 
     @router.patch("/annotations/{ann_id}")
     def patch_annotation(ann_id: str, raw: Dict):
