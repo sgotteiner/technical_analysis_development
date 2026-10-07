@@ -67,9 +67,15 @@ export function renderPointsPanel({ root, state, info, colors, candles, answered
   // the explanation has its own card, and a line in it can be clicked to see only that line
   const story = document.getElementById('story');
   if (story) {
-    story.innerHTML = ((info && info.sizes) || []).map(g => theStory(g, focus)).join('');
+    story.innerHTML = ((info && info.sizes) || [])
+      .map(g => theStory(g, focus, { candles, info, judgements, drawings })).join('');
+    bindFound(story, { candles, info, judgements, ...verdict });   // the same verdicts, in this card
     story.querySelectorAll('.line[data-role]').forEach(row => {
-      row.onclick = () => onFocus(row.dataset.role === focus ? null : row.dataset.role);
+      // the marks and the note box live inside the row: clicking them must not also focus the line
+      row.onclick = e => {
+        if (e.target.closest('.judge, .why')) return;
+        onFocus(row.dataset.role === focus ? null : row.dataset.role);
+      };
     });
     const all = story.querySelector('#st-all');
     if (all) all.onclick = e => { e.preventDefault(); onFocus(null); };

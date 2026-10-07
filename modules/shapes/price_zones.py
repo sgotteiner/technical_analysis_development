@@ -45,39 +45,56 @@ def _visits(inside: np.ndarray) -> int:
     return int(inside[0]) + int(np.count_nonzero(inside[1:] & ~inside[:-1]))
 
 
+def _cluster(y: np.ndarray, band: float) -> List[np.ndarray]:
+    """Group log prices so that no cluster is wider than `band`, by repeatedly merging the CLOSEST
+    neighbouring pair that still fits.
+
+    Not "a band around whichever point came first", which is what this used to be: that split two
+    peaks 1.02% apart while the band was nominally 1.5%, because the band was halved around a
+    centre and the centre was the earlier point. The owner saw the result before the cause -
+    "2 lines too close in a way that doesnt align with the move size ... takes the first next peak
+    even if its just noise" (2026-10-05). Merging the closest pair is order-independent: the same
+    points give the same clusters whatever order they arrive in.
+    """
+    order = np.argsort(y)
+    groups: List[List[int]] = [[int(i)] for i in order]
+    while len(groups) > 1:
+        lo = np.array([y[g[0]] for g in groups])        # each group is sorted, and groups are too
+        hi = np.array([y[g[-1]] for g in groups])
+        width = hi[1:] - lo[:-1]                        # width if neighbours i and i+1 merged
+        fits = np.flatnonzero(width <= band)
+        if not len(fits):
+            break
+        j = int(fits[np.argmin(width[fits])])           # the closest pair that still fits
+        groups[j:j + 2] = [groups[j] + groups[j + 1]]
+    return [np.array(sorted(g)) for g in groups]
+
+
 def price_zones(x: np.ndarray, y: np.ndarray, kind: np.ndarray, band_pct: float,
                 now_price: float, now_bar: float, tol_now_pct: float = 1.5) -> List[Dict]:
     """`x` bars, `y` log prices of the turning points, `kind` peak/valley. Returns ranked zones.
 
-    Every point's price is a candidate centre (plus the current price); the fullest band is taken
-    first and the ones it already covers drop out. Which point falls in which band is worked out
-    once, as a matrix, rather than per candidate."""
+    `band_pct` is the widest a level may be, end to end - not a radius. Two dots within it are one
+    level; the clusters come out the same whatever order the dots arrive in.
+    """
     x, y = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
     if not len(x):
         return []
-    band = np.log(1 + band_pct / 100) / 2          # half a band each side of the centre
+    band = np.log(1 + band_pct / 100)
     order = np.argsort(x)
     x, y, kind = x[order], y[order], np.asarray(kind)[order]
-    centres = np.append(y, float(np.log(now_price)))   # the current price is always a candidate
-    near_all = np.abs(y[:, None] - centres[None, :]) <= band       # (point, candidate)
-    # fullest band first; ties keep the order the points came in (sort is stable)
-    ranked = sorted(range(len(centres)), key=lambda c: -near_all[:, c].sum())
+    tol_now = np.log(1 + tol_now_pct / 100)
     zones: List[Dict] = []
-    taken = np.empty(len(centres))                 # the y of each zone already accepted
-    for c in ranked:
-        centre = float(centres[c])
-        if len(zones) and (np.abs(taken[:len(zones)] - centre) <= band).any():
-            continue                                # already covered by a stronger zone
-        near = near_all[:, c]
-        if not near.any():
-            continue
+    for idx in _cluster(y, band):
+        near = np.zeros(len(y), dtype=bool)
+        near[idx] = True
         touched, zone_y = x[near], float(np.median(y[near]))
-        taken[len(zones)] = zone_y
         zones.append({"y": zone_y, "price": float(np.exp(zone_y)),
-                      "low": float(np.exp(centre - band)), "high": float(np.exp(centre + band)),
+                      "low": float(np.exp(float(np.min(y[near])))),
+                      "high": float(np.exp(float(np.max(y[near])))),
                       "touches": int(near.sum()), "visits": _visits(near),
                       "first_visit": float(touched[0]), "last_visit": float(touched[-1]),
                       "points": touched.tolist(),
-                      "at_price_now": bool(abs(np.log(now_price) - centre) <= np.log(1 + tol_now_pct / 100))})
+                      "at_price_now": bool(abs(np.log(now_price) - zone_y) <= tol_now)})
     zones.sort(key=lambda z: (z["visits"], z["last_visit"]), reverse=True)
     return zones

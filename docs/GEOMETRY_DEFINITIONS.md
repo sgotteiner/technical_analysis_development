@@ -282,6 +282,144 @@ this setup. it means its not generic."
 6. Scoring the ✓/✗ verdicts: they are recorded but nothing reads them yet, so false positives are
    still uncounted (`ground_truth_score.py` returns `extra` and ignores the verdicts).
 
+## His rules, stated and NOT in the code (collected 2026-10-04/05)
+Ideas he has said out loud that the code either contradicts or has never implemented. Written here
+because they were living in the chat only - "all the ideas are documented well?" - and the answer
+was no.
+
+| # | his rule, in his words | what the code does |
+|---|---|---|
+| 1 | **"higher highs up trend, lower lows down trend, same hight horizontal range"** | nothing. Trend is a geometric line fit; the structure of the peaks and valleys is never read. The "valleys turned" state in his own setup definition is also unbuilt. |
+| 2 | **"up trend lines are marked by candle lows meaning below them and downtrend by highs meaning above them"** | HALF done. A peak's price is its HIGH and a valley's its LOW (`sr_turning_points.py`), so the touch points are right. But the containment check (`trend_lines.py`) only asks that no *turning point of the same kind* pokes past the line - never that no CANDLE low sits below a rising support. And past its last touch the line is extrapolated with no containment at all, which is how 2025-10-03 draws a "support" at 138,120 with price at 122,232 - above the candles, the wrong side entirely. |
+| 3 | **"lines can use both peaks and valleys"** (2026-09-22: "a single line can touch both peaks and valleys and split the graph") | contradicted. `trend_lines` fits falling lines on peaks ONLY and rising on valleys ONLY. His separate rule - that a rising line ABOVE the graph is noise - was merged into this one and the "both kinds" half was lost. |
+| 4 | **"its not the time its the shape level and size"** - walk back to the last move at a similar level and size, learn from the important parts of history and only them | built as the EXPLANATION only (`precedents.py` writes "how it was found"). The lines themselves are still chosen by clustering plus a most-recent tie-break, so his search explains an answer it did not pick. |
+| 5 | **"my drawings are less sensitive than yours… look at your touch points boxes, its based on nothing"** | the swing size and the cluster floor (>= 2 dots) are unsearched guesses; at 7% the chart carries 1,013-1,067 points, and the dots a line is built from are not turning points to his eye. |
+| 7 | **"i want only the related boxes to the calculated lines. now i see a million boxes"** (2026-10-05) | DONE: boxes are the touch zones of the lines the code drew, not one per dot (one box per turning point put 1,012 on the chart at 7%). |
+| 8 | **"and those boxes dont look like what i wanted"** - a box is a TOUCH ZONE, a stretch of bars as tall as the band, with the line through it | DONE: `modules/shapes/touch_zones.py`, reproducing his own 2023 example to 2.84% against his 2.85% / 2.72%, and telling a touch from a break by which side price leaves on. |
+| 6 | **the trade mindset: "what this setup leads to with plans - what if it goes up and what if down, where do we expect the move to reach"** | the roster names roles and the diary records the plan (buy the break, stop at the rung below, targets up the ladder, in R), but the card does not state the two branches or where the move is expected to reach. |
+
+## Drawn, not written: the two pictures he made to show the base (2026-10-05)
+Two "just showing you" sketches in `data/ground_truth/sr_annotations.json`, drawn at "now" =
+2024-12-06. They are the spec for what a box and a touch are. Measured from the saved strokes:
+
+**A. The range** (group `gmuubw57d`, 2 strokes) - a box around the whole 2024 consolidation:
+2024-02-21 -> 2024-11-09, **50,301 - 74,593** outer and **53,589 - 71,174** inner. Nine months,
+holding many peaks AND valleys. In his words: *"look how i showed the range inside. the peaks and
+valleys i saw. the ones i ignored because its too sensitive. overall i looked at moves that are
+from line to line or at least close without small spikes between. there was a candle who broke the
+support in a tail but got back and i ignored this spike."*
+
+**B. The line and its touch zones** (group `gmuuca0qu`, 3 strokes): a flat line at **~30,800**
+running 2023-04-03 -> 2023-11-03 (0.5% drift in seven months), with two zones drawn ON it -
+**2023-04-09 -> 04-21, 29,947-30,800 (12 days, 2.85% tall)** and **2023-06-19 -> 07-18,
+30,409-31,236 (29 days, 2.72% tall)**. His note: *"here is another example of a line and the boxes
+with touch zones. not touch dots like you do. touch zones. when you draw lines and explain to me
+based on what you drew them i expect to see things like"*.
+
+### The rules those two pictures state
+1. **A box is one of three things** [owner]: one turning point's journey (support -> resistance ->
+   support); a **flat zone**, several same-kind extremes at one height; or a **range**, a flat top
+   and a flat bottom holding together over time. Only the first exists in the code.
+2. **A turning point counts when its move runs from line to line, or close** [owner]. The swings he
+   ignored inside the range are not smaller than some percentage - they are the ones that do not
+   cross the range. This is what "too sensitive" means, and it makes the swing size RELATIVE to the
+   structure instead of a constant.
+3. **A spike through a boundary that comes back is not a break and not a turning point** [owner] -
+   a tail broke his support and he ignored it. The code has no such rule: a wick that exceeds the
+   threshold creates a point.
+4. **A touch is a ZONE, not a dot** [owner]: a span of time and a band of price where price worked
+   the level. His two are 12 and 29 days wide and ~2.8% tall. The code marks single bars.
+5. **Everything drawn must show what it was drawn from, inside it** [owner]: *"when you show me
+   your boxes i want to see what you did in them."*
+
+## C. The pipe, the trend and the sizes (drawn 2026-10-05, group `gmuv72nhv`, at "now" = 2026-02-13)
+Eight strokes and a note, measured off the saved points:
+
+- **the pipe**: a flat top at **72,500** and a flat bottom at **54,450**, both running 2024 -> 2026
+  - 25% tall. "i would consider the pipe top as resistance for the current price and bottom as
+  support but the trend is also kind of resistance."
+- **the down trend**: lower peaks at **-0.205%/day** (2025-09-17 130,558 -> 2026-06-18 74,507) and
+  lower valleys at **-0.355%/day**. "this is a downtrend. i sketched the lower and lower peaks and
+  valleys."
+- **two arrows, which is what a size means**: the pipe's height **71,255 -> 55,311 = 22%**, and the
+  descent running now **94,935 -> 67,071 = 29%**. He calls both "about 20%" - the point is that
+  they are THE SAME SIZE, which is why that pipe is the relevant one: "i also drew the last similar
+  20% size pipe which i saw at the current price".
+- "you can also see the peaks and valley i used and noises i ignored."
+
+## The order he works in (owner, 2026-10-05)
+> "i look what happens now, which price, latest peak or valley, current move from it including its
+> size, trend, and then look for support and resistance from the history. thats it."
+
+1. price now 2. the latest peak or valley 3. the move from it, and its size 4. the trend
+5. the support and resistance, searched in history **by the relation to that move**.
+
+The code narrates in this order but is not built in it: it clusters all of history by price first
+and computes the trend separately, so the trend influences nothing and the move only sets a band.
+
+## The roster: three lines, four if price is on a level (owner, 2026-10-05)
+> "i dont want no next and i want the last trend. should be 3 or 4 if price is on the level" /
+> "if we are not on a level i want the above and below sr lines and if we are i want that level too
+> which based on the trend you classify it."
+
+- **the trend** (one line)
+- **the level above** and **the level below**
+- **the level price is on**, when it is on one, named by the trend: resistance in a down trend,
+  support in an up one.
+
+## The trend, as he defines it (owner, 2026-10-05)
+> "i want a last trend line which is the last line with at least 2 peaks and valleys at changing
+> levels. it possible we already broke it and dont have 2 peaks and valleys yet so we didnt change
+> the trend yet ... if it horizontal thats a trend too." / "if its a horizontal move with same
+> hight peaks and valley ok but if not you need to find the last trend that had it."
+
+- **up**: the peaks are higher AND the valleys are higher. **down**: both lower.
+- **horizontal**: the peaks are at one height AND the valleys are at one height - a range is a trend.
+- **unchanged**: when they disagree, nothing has replaced the old trend yet; walk back to the last
+  one that had two peaks and two valleys.
+
+> [!warning] Refined 2026-10-07 - see the counted version below. The four states above stay true;
+> what changed is how many steps it takes to start or end a trend.
+
+## The trend, counted in steps (owner, 2026-10-07, at 2023-03-24)
+> "up trend is 2 higher highs and 2 higher lows. downtrend is the opposite. there is no trend change
+> if not at least 2 such. as you can see sometimes there are spikes and noises but the rule applies
+> here. can also be higher high higher low lower high higher low which is a closing triangle. here
+> is the opposite which is forming an opening triangle and i didnt draw it because we dont care
+> about those because there is no breakout in them."
+
+His sketch at 2023-03-24 (note: "two higher highs but not two higher lows only one and than a lower
+low but not another lower low after that so no change to downtrend and then came a higher high so a
+continue of the trend"): zigzag 16,657 -> 23,777 -> 21,547 -> 25,092 -> 19,836 -> 28,689.
+
+| state | the steps | what it means |
+|---|---|---|
+| **up** | 2 higher highs AND 2 higher lows | a trend |
+| **down** | 2 lower highs AND 2 lower lows | a trend |
+| **unchanged** | anything less than 2 opposite steps | one lower low in an up trend is noise (2023-03-10) |
+| **closing triangle** | higher high, higher low, then lower high, higher low | converging - it can break out, so it matters |
+| **opening triangle** | higher highs with lower lows | widening - no breakout, ignored ("we dont care about those") |
+
+- "Higher" is relative: a step smaller than "the same level" (a share of the move) is no step.
+- The rule is only as good as the zigzag it counts: at 2023-03-24 the algorithm's zigzag carries
+  one wiggle he ignored (26,387 -> 23,897 on 03-14/15, a wick) and otherwise matches his to ~2%.
+- OPEN (asked 2026-10-07): the trend LINE. His line here runs from the low that started the trend
+  (16,657) to the latest high (28,538), crossing the candles; his down lines at 2026-02-13 and
+  2026-09-04 run over the highs. Not yet decided which rule draws the line.
+- Status: written here, not yet in the code (trend_state.last_trend still compares one step).
+
+## No magic numbers: every threshold is a share of the move (owner, 2026-10-05)
+> "flat 2% what if we traded scalping? the threshold will be meaningless. its relative to the move.
+> no flat magic numbers. its structural/geometrical. we talked about it. compare it to the move
+> size." / "i dont care about 3% when the move is 10%, so dont write shity code."
+
+Bounded by his own dates rather than chosen:
+
+| what | share of the move running now | what bounds it |
+|---|---|---|
+| how wide one level is (`MOVE_BAND`) | **0.25** | > 0.11 merges his two supports at 2025-10-03; < 0.56 keeps his two lines 7.1% apart at 2026-09-04 |
+| "the same level" for the trend (`FLAT_SHARE`) | **0.45** | >= 0.35 makes 2026-04-10 horizontal as he reads it; < 0.57 keeps 2026-09-04 a trend |
+
 ## Open questions (the owner's call)
 1. Sizes: a fixed set (5 / 10 / 20%), or calibrated from recent data to the trade horizon (~12% for
    2 weeks)? One size, two (trade + structure), or a sweep over many with a ranking?
@@ -301,3 +439,109 @@ The playground's **Swing points** panel draws the peaks and valleys on the candl
 - Points are those confirmed by "now", so stepping back in time removes the later ones.
 - Code: `modules/shapes/swing_calibration.py`, `/api/points`, `ui/js/sr_playground/points_controller.js`.
   12 tests. The line layer will be built on the points that look right here.
+
+## The line layer as it stands (2026-10-07) - the current WHAT
+> [!warning] Supersedes "The line layer as it stands (2026-09-24)" and "The roster: three lines,
+> four if price is on a level" above as the description of the code. Their why stays in the diary.
+
+Built over 2026-10-06/07 from his reports at his own dates, each change measured at every date he
+had reviewed before it was kept. In his order:
+
+1. **Peaks and valleys (the dots).** A zigzag on candle highs and lows; a point is confirmed only by
+   a LATER candle, never its own (`modules/shapes/sr_turning_points.py`). The old "drop the second
+   point on one candle" fix kept a fake 70,000 peak at 2026-08-19; "9 is better" was measured on it.
+2. **The move running now** - from the latest peak or valley to today's close
+   (`modules/shapes/swing_moves.py`). Matches him at 2026-09-04 (30.2% off his 62k valley) and
+   2026-02-13 (29.7%).
+3. **The yardstick** - what "relative" is measured against (`business_logic_services/structure_scale.py`):
+   the move running now, unless the leg into the latest peak or valley, read at its own scale, finds
+   a RANGE price is inside - then that range's size (2024-08-02: 25.7%, his "about 25%"). Never in a
+   trend: there every larger scale finds a larger leg (2024-01-19 ran away to 77.6%).
+4. **The structure** - peaks and valleys at the yardstick's scale: a swing counts when it is "the
+   same move" (`precedents.SIMILAR_LO`, 0.7 of it). This is the zigzag drawn by the **zigzag** checkbox,
+   and his 2023-03-24 zigzag matches it to ~2% but for one wick.
+5. **The trend** (`business_logic_services/trend_structure.py`, `trend_state.py`):
+   - up / down / horizontal from the last peaks and valleys; a range PRICE IS INSIDE is horizontal;
+   - sideways also reads **the previous trend** - before the range's first peak or valley;
+   - the line runs over the highs (down) / under the lows (up) from where the trend began, through
+     the point that keeps the later ones on the far side, allowing a poke of a level's width; a line
+     steeper than one swing per "same level" is one leg, so the trend began earlier;
+   - a trend line further than the move can reach (1.45x) is drawn DOTTED and said so, never hidden;
+   - each trend says its size: start -> furthest point, % and days.
+   - NOT YET IN THE CODE: the counted rule ("2 higher highs and 2 higher lows", see "The trend,
+     counted in steps") and the start-to-end line - the open question above.
+6. **Support and resistance** from the same structure's dots (targets still from the 2.5x zigzag -
+   moving them broke 2026-05-15). Then, in `business_logic_services/setup_roster.py`:
+   - a level comes from a PREVIOUS support or resistance: dots of the move running now don't count
+     (2022-07-22: 24,286 -> his ~29k);
+   - the level price is on must be where the move running now turned, not one price passes through
+     (2024-10-25: 66,867 dropped);
+   - in an up trend the resistance above is the latest peak (2023-04-21: his ~31,400);
+   - inside a range the levels are its walls, built from its two peaks and two valleys;
+   - the card and the chart share one answer to "is price on it".
+7. **What is shown** (his definition, 2026-10-06): support and resistance always; the trend if it is
+   up or down (the previous trend if sideways); the level price is on plus the next one past it;
+   at most 4 lines.
+8. **Strength** of each level, measured - see "Line strength, measured" below.
+
+Visibility added with it: close-only line chart, close dots, zigzag, and his checkbox state printed
+in the server's VIEW line (`on: ...`).
+
+**The frozen zigzag (2026-10-07)** - "i want the before 7d to be roughly like the date im looking".
+Read at today's scale, the whole history was redrawn daily (a date shared a median 71% of its
+zigzag with the date 7 days earlier, 44% in the worst quarter). Now every peak and valley is decided
+at the scale of the day it was confirmed and stays (`business_logic_services/frozen_zigzag.py`):
+100% / 96%. The drawn zigzag, the support and resistance, and their strength use it; 2025-04-25 is
+back on his lines (103,404 / 88,878). The TREND is still read at today's scale, because on the
+frozen zigzag it lost four of his readings (2023-08-11, 2025-07-04, 2026-05-15, 2026-09-04) - so the
+trend line's points need not be on the drawn zigzag. One approved line moved: 2026-09-04 support
+69,000 against his 72,799 (was 72,396).
+
+Tried and not kept: a steady ruler (the size capped to keep 2 peaks + 2 valleys in the move) - steady
+only because it sat at the 7% floor on 93% of dates; and the counted trend rule as first built -
+requiring two lower highs AND two lower lows in a row never ends a trend on a zigzag with small
+swings in it ("up" everywhere since 2020, 3 of 10 of his readings). The rule is right; "2 such" needs
+a reading that a single small bounce cannot interrupt. Still to build.
+
+## Line strength, measured (2026-10-07)
+His ideas: closer = stronger; held a long time = stronger; the move afterwards; many flips = weak;
+broken many times = weak, never broken = strong - "a strength score based on both?". Each became a
+feature and was measured rather than weighted by hand (`business_logic_services/level_strength.py`):
+
+- Every level within the move's reach, weekly 2018-06 -> 2026-07: 2,419 levels. Outcome: at the next
+  visit, did price turn (a touch) or go through (a break)? Base rate **50.3%**.
+- Alone, every idea is weak (AUC 0.46-0.54): recent, long-lived and a big move afterwards each help
+  a little; **levels broken before turned slightly MORE often** - the flip, not weakness.
+- Together, fitted on 2018-2022, tested on 2023-2026: AUC **0.568**; the strongest quarter turned
+  **61%** of the time, the other three quarters **47-48%**.
+- So the card labels a level **strong** (top quarter) or **ordinary**, with that measured rate. It
+  does not choose the lines: an effect this size is a label and a tie-breaker, not a rule.
+- Each line also says how often price held at it and how often it broke through - "dont count only
+  how many times they were respected but also broken" (2026-10-07).
+
+## Highs and lows, or closes? (measured 2026-10-07)
+His question: "highs and lows have the most noise, open close less, close only has the minimum noise."
+True of the noise. Measured through the whole pipeline at his dates, closes (and candle bodies) do
+worse - at the same threshold they also drop real swings (258 dots against 619), and at a matched
+scale they still lose his approved lines (2022-07-22, 2024-10-25, 2026-02-13, 2026-09-04) - because
+his lines sit where the wicks reached. The dots stay on highs and lows; the wick noise is for the
+tail rule and the scale. The close-only line chart and the close dots are in the page to look at.
+His friend's habit of 1 year of history was measured too: better at 2 dates, broke 4 (his old flips).
+
+## His ideas not yet built (found in the conversations, 2026-10-06)
+- **The trend from the timeframe above** (2026-09-23): "swing trades that take about 10 days ... we
+  use the daily and hourly graphs to manage the trades it makes sense to understand the trend from
+  the weekly for example."
+- **Speed in a turning point** (2026-09-22): "peak as minimum 10% up in a couple of candles and then
+  down" - the "couple of candles" part was never answered and dropped. Claude's read: it belongs to
+  events (how fast a breakout runs), not to the dots.
+- **Searching the size by profit, later** (2026-09-23): "its just one setting ... when we get to the
+  strategy stage ... we could backtest to see the most profitable setting." Behind it: 3 days / 7%
+  shows the peak in the middle of the small pipe but the rest is noisy; 14 days is clean.
+- **Pick the structure that is there** (2026-10-05, at 2025-10-03): "maybe horizontal pipe is not
+  the right tool here because there is no horizontal move with 2 peaks and valleys at the same
+  hight" - and the pipe should be about as tall as the move. (Partly built since: the range rule.)
+- **The counted trend rule** and **the start-to-end trend line** - see above.
+- **The tail rule on the dots** (2026-10-05): a wick through a level that comes back is not a turning
+  point - still makes dots (2020-12-20, 2023-03-14).
+- **Strength as a tie-breaker** between close candidates - measured, not wired.

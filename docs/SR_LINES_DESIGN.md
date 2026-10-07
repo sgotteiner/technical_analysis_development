@@ -1,5 +1,11 @@
 # S/R Lines & Pipes — current design (the WHAT)
 
+> [!warning] Superseded as the description of the line layer by "The line layer as it stands
+> (2026-10-07)" in `docs/GEOMETRY_DEFINITIONS.md`. Below is the 2026-09-22 pipe design (4 lines,
+> 400/100-day windows, fixed 10%/20% sizes), which still drives the page's separate "pipes" layer.
+> What still holds from it as his rule: a line can touch peaks and valleys; a small overshoot does
+> not move a line; pipes never widen and are neither too wide nor too narrow.
+
 Why each rule exists: `docs/DESIGN_DECISIONS_DIARY.md` (F4–F5). Claude's own choices and known
 problems: `docs/DIARY_FLAGS.md`. This file is edited freely to match the code.
 

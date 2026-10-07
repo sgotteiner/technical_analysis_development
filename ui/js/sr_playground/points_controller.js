@@ -7,20 +7,24 @@ import { renderPointsPanel } from './points_panel.js';
 import { createVerdicts } from './verdicts.js';
 
 const COLORS = ['#29b6f6', '#ffca28', '#ab47bc', '#66bb6a'];
-const KEY = 'sr_playground_points_v6';
-// measured against the owner's own lines (2026-09-24): 7% swings, a 1.5% band, 3 visits and
-// "the most recently visited cluster wins" reproduce his 58 and 67 and drop his 59, 64 and 70.
+const KEY = 'sr_playground_points_v7';      // v7: the band comes from the move, 2 visits is a level
+// mergePct 0 = the band is taken from the MOVE RUNNING NOW (a quarter of it). A fixed 1.5% band
+// was measured leaving two lines 3% apart inside a 12.7% move - "i dont care about 3% when the
+// move is 10%" (owner, 2026-10-05).
+// minVisits 2, because a flat top IS two peaks at the same height: at 3 the rule could never
+// return the thing he described, and 2 also takes 2026-09-04 from 4 of his 6 lines to 5.
 const DEFAULTS = { targetDays: 14, sizesText: '7', show: true, drawLines: true, mode: 'owner',
   tolPct: 1.5, minTouches: 3, maxSlope: '', top: 6, lookback: '', anchorDays: 120, maxHistory: 2,
-  mergePct: 1.5, targets: 2, minVisits: 3, prefer: 'recent' };
+  mergePct: 0, targets: 2, minVisits: 2, prefer: 'recent' };
 
 export function createPointsController({ root, srChart, drawings, getCandles, getNow, status,
                                          getDrawings = () => [], armLineTool = () => {},
+                                         getLayers = () => ({}),
                                          showDrawing = () => {}, onVerdictChange = () => {} }) {
   let state = { ...DEFAULTS }, info = null, seq = 0, presets = [];
   let busy = false, secs = null, inflight = null;      // what the panel says while it is working
-  let focus = null;                                    // one line of the setup, alone
-  const show = { dots: true, lines: true, boxes: true };
+  let focus = null, focusAt = null;    // one line of the setup, alone - at the date it was picked
+  const show = { dots: true, lines: true, boxes: true, closedots: false, zigzag: false };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
   const parseSizes = () => state.sizesText.split(/[,\s]+/).filter(Boolean)
@@ -42,6 +46,10 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
     if (inflight) inflight.abort();        // its answer is already superseded: stop waiting for it
     inflight = null;
     const now = getNow();
+    // one line shown alone belongs to the date it was picked at. Carrying it to another date left
+    // the chart empty - the role may not exist there, and the setup is a different setup
+    // (owner, 2026-10-05: "went some 7d and it doesnt show").
+    if (focus !== null && focusAt !== now) { focus = null; focusAt = null; }
     if (!state.show) {
       info = null;
       busy = false; secs = null;
@@ -52,6 +60,10 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
     }
     busy = true;
     draw();                                // say "computing…" BEFORE the wait, not after it
+    // and say it at the TOP as well: the lines are the slow part, and the panel saying so is no
+    // use when he is looking at the chart (owner, 2026-10-05: "if its calculating i would like to
+    // see it on the top not only inside the swing points card")
+    status('computing the lines…', 'warn');
     const sizes = parseSizes(), mine = ++seq;
     const body = {
       end: now, sizes, target_days: sizes.length ? null : +state.targetDays,
@@ -64,6 +76,9 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
         targets_each_way: state.targets === '' ? 0 : +state.targets,
         min_visits: +state.minVisits, prefer: state.prefer,
       } : null,
+      // what is switched on in his window, so the server log can say it (owner, 2026-10-07:
+      // "pipes is not checked do you see my fucking window?")
+      layers: getLayers(),
     };
     const ctrl = new AbortController(), t0 = performance.now();
     inflight = ctrl;
@@ -74,6 +89,7 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
       busy = false; inflight = null;
       paint();
       draw(mine);
+      status(`lines in ${secs.toFixed(2)} s`);
     } catch (e) {
       if (e.name === 'AbortError') return;          // a newer "now" took over; it owns the panel
       if (mine === seq) {
@@ -108,11 +124,16 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
     const picked = g => storyLines(g).filter(l => !focus || l.role === focus);
     // focused on one line: show that line, the points it was built from, and nothing else - the
     // answer to "i want to click a line and see only whats related to it"
-    srChart.setPointMarkers(show.dots && !focus ? groups : []);
-    // focused: the boxes the line was actually built from, so the journey behind it shows
+    // the close-measured dots, beside the high/low ones: yellow squares (owner, 2026-10-07)
+    const closeDots = show.closedots && !focus
+      ? groups.map(g => ({ color: '#ffca28', shape: 'square', points: g.close_points || [] })) : [];
+    srChart.setPointMarkers((show.dots && !focus ? groups : []).concat(closeDots));
+    drawings.setZigzag(show.zigzag && !focus ? groups.flatMap(g => g.zigzag || []) : []);
+    // the boxes of the LINES, not of every dot: where price worked each level, as zones
+    // (owner, 2026-10-05: "i want only the related boxes to the calculated lines")
     drawings.setSwings(!show.boxes ? []
-      : focus ? groups.flatMap(g => picked(g).flatMap(l => l.boxes || []))
-              : groups.flatMap(g => g.boxes || []));
+      : groups.flatMap(g => picked(g).flatMap(l =>
+          (l.zones || []).map(z => ({ ...z, role: l.role, detail: !!focus })))));
     // the touch points are the dots a CALCULATED LINE was built from, so they belong to that layer:
     // unticking "calculated lines" and still seeing them is the line without the line (owner,
     // 2026-10-04: "i unchecked the calculated lines but still see the touch points")
@@ -133,7 +154,7 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
   function draw(answered) {
     renderPointsPanel({ root, state, info, colors: COLORS, candles: getCandles(), answered, presets, busy, secs,
       judgements: verdicts.all(), drawings: getDrawings(), verdictError: verdicts.failed(),
-      focus, onFocus: role => { focus = role; paint(); draw(); },
+      focus, onFocus: role => { focus = role; focusAt = role === null ? null : getNow(); paint(); draw(); },
       onChange: (key, value) => {
         state[key] = value;
         if (key === 'targetDays') state.sizesText = '';      // a typed size would silently win
@@ -151,5 +172,6 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
     at_now: Math.exp(t.y1 + t.slope * (getNow() - t.x1)), slope_pct_day: Math.expm1(t.slope) * 100 })));
 
   return { refresh, trends, verdicts, linkDrawing: verdicts.linkDrawing,
+    busy: () => busy,          // the lines are the slow part: nothing else may claim the top bar
     setVisible(layers) { Object.assign(show, layers); paint(); } };
 }

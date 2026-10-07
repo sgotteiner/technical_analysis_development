@@ -103,15 +103,17 @@ def test_matches_slow_reference_implementation():
 
 
 def test_huge_candle_that_is_both_peak_and_valley_is_handled():
-    """One bar with a +-12% range can be a valley and a peak on the same day: no line may be
-    drawn through two points of the same bar (infinite slope)."""
+    """One bar with a +-12% range spans the threshold on its own. It must not become a peak and a
+    valley on the same day (one candle cannot be both - the bar does not say which came first), and
+    no line may come out with an infinite slope."""
     close = _channel(slope=0.0)
     df = _df(close)
     big = 12 * 5 + 6
     df.iloc[big, df.columns.get_loc("High")] = close[big] * 1.12
     df.iloc[big, df.columns.get_loc("Low")] = close[big] * 0.88
     tp = turning_points(df, X / 2)
-    assert (np.diff(tp["idx"]) == 0).any(), "fixture must contain a same-bar peak and valley"
+    assert (np.diff(tp["idx"]) > 0).all(), "never two turning points on one bar"
+    assert (tp["conf"] > tp["idx"]).all(), "an extreme is confirmed by a later bar, not its own"
     with np.errstate(divide="raise", invalid="raise"):
         lines = candidate_lines(df, end=199, period=200, magnitude=X)
     assert all(np.isfinite(l["slope"]) for l in lines)

@@ -2,7 +2,7 @@
 // chart. What each thing looks like is overlay.js; chart <-> pixels is chart_coords.js.
 // Tools: pan (default), line (click two points), box (click two corners), sketch. Esc cancels.
 import { createCoords } from './chart_coords.js';
-import { band, shape, swingBox, usedPoint, STYLE } from './overlay.js';
+import { band, shape, swingBox, touchZone, usedPoint, zigzagLine, STYLE } from './overlay.js';
 
 const TWO_POINT_TOOLS = ['line', 'box'];     // what a click-click actually builds
 const SKETCH_STEP = 4;        // px between kept points: a thinned path, not every mouse sample
@@ -13,6 +13,7 @@ export function createDrawings({ chart, series, svg, container, onCreate }) {
   let pending = [];                 // strokes drawn but not yet kept, asked or discarded
   let swings = [];                  // each peak/valley as the journey it is
   let used = [];                    // the few points the answer was built from
+  let zigzag = [];                  // the zigzag the trend is read from
   const show = { drawings: true, detections: true };
   let down = null, sketch = null;   // own click detection: the library drops a quick second click
 
@@ -67,11 +68,13 @@ export function createDrawings({ chart, series, svg, container, onCreate }) {
   });
 
   function frame() {
-    const parts = swings.map(b => swingBox(b, co))     // the structure, under everything else
+    // a touch zone belongs to a line; a swing box is one point's journey
+    const parts = swings.map(b => (b.touching_bars === undefined ? swingBox : touchZone)(b, co))
       .concat(pending.map(p => shape('freehand', p, 'pending', '', co)))
       .concat(zones.map(z => band(z, co)))
       .concat((show.detections ? detected : []).map(it => shape(it.kind, it.points, 'det', it.label, co)))
       .concat((show.drawings ? items : []).map(it => shape(it.kind, it.points, it.id === selected ? 'sel' : 'user', it.label, co)));
+    parts.push(zigzagLine(zigzag, co));
     parts.push(...used.map(u => usedPoint(u, co)));
     if (sketch && sketch.length > 1) parts.push(shape('freehand', sketch, 'preview', '', co));
     else if (anchor && hover) parts.push(shape(tool, [anchor, hover], 'preview', '', co));
@@ -93,6 +96,7 @@ export function createDrawings({ chart, series, svg, container, onCreate }) {
     setPending(list) { pending = list; },
     setSwings(list) { swings = list; },
     setUsed(list) { used = list; },
+    setZigzag(list) { zigzag = list; },
     select(id) { selected = id; },
     setDetected(list) { detected = list; },
     setZones(list) { zones = list; },

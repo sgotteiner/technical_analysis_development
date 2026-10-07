@@ -75,15 +75,23 @@ export function foundRows({ state, info, colors, candles, judgements = [], drawi
 
 /** The setup in words: what each line is and how it was found, with the points it used, so the
     ones it actually used can be told apart from the hundreds on the chart (owner, 2026-10-03). */
-export function theStory(g, focus = null) {
+export function theStory(g, focus = null, { candles = [], info = null, judgements = [], drawings = [] } = {}) {
   const st = g.story;
   if (!st || !st.lines || !st.lines.length) return '';
-  const rows = st.lines.map(l =>
-    '<div class="m line' + (focus === l.role ? ' on' : '') + '" data-role="' + esc(l.role) + '"'
-    + ' title="click to see only this line">'
-    + '<b>' + esc(l.role) + '</b> ' + num(l.price)
-    + (l.dates && l.dates.length ? ' <span class="used">from ' + l.dates.join(', ') + '</span>' : '')
-    + '<div class="how">' + esc(l.how) + '</div></div>').join('');
+  // his ✓/✗ and his note belong HERE too (owner, 2026-10-05: "were can i write notes about your
+  // calculated lines? would like to do that in the setup explained"). Same key as the found-lines
+  // card - a line at a date - so one verdict is one verdict wherever he records it.
+  const at = info && candles[info.end] ? candles[info.end].time : 0;
+  const rows = st.lines.map(l => {
+    const kind = l.kind || 'level';
+    const v = verdictFor(judgements, at, kind, l.price);
+    const extra = l.slope_pct_day == null ? '' : ` data-js="${l.slope_pct_day}"`;
+    return '<div class="m line' + (focus === l.role ? ' on' : '') + '" data-role="' + esc(l.role) + '"'
+      + ' title="click to see only this line">'
+      + '<b>' + esc(l.role) + '</b> ' + num(l.price) + marks(kind, l.price, v, extra)
+      + (l.dates && l.dates.length ? ' <span class="used">from ' + l.dates.join(', ') + '</span>' : '')
+      + '<div class="how">' + esc(l.how) + '</div></div>' + reason(v, drawings);
+  }).join('');
   return '<div class="card story"><div class="t">the setup \u00b7 price ' + num(st.price_now)
     + ', the move running now +' + st.current_move.toFixed(1) + '% from ' + esc(st.move_from)
     + (focus ? ' \u00b7 <a href="#" id="st-all">show all</a>' : '')

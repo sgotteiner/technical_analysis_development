@@ -60,6 +60,7 @@ const sketchpad = createSketchpad({ root: $('sketchpad'), status, chart: drawing
 const points = createPointsController({ root: $('points'), srChart, drawings, status,
   getCandles: () => candles, getNow: () => now,
   getDrawings: () => groundTruth.all(),
+  getLayers: () => layers.state(),
   armLineTool: () => tools.setTool('line'),
   onVerdictChange: () => groundTruth.refresh(),
   showDrawing: id => {
@@ -74,9 +75,11 @@ const tools = createTools({ drawings, status, sketchpad, step: d => setNow(now +
 
 function applyLayers(show) {
   drawings.setVisible({ drawings: show.drawings, detections: show.detections });
-  points.setVisible({ dots: show.dots, lines: show.lines, boxes: show.boxes });
+  points.setVisible({ dots: show.dots, lines: show.lines, boxes: show.boxes, closedots: !!show.closedots,
+    zigzag: !!show.zigzag });
   zones.setVisible(show.zones);
   srChart.drawView(show.pipes ? view : null, candles, now);
+  srChart.setCloseLine(!!show.closeline);
 }
 
 function centerOn(a) {
@@ -99,7 +102,12 @@ function compute() {
       srChart.drawView(layers.state().pipes ? view : null, candles, now);
       renderResults($('results'), view, request, candles);
       const partial = Object.values(view.levels).some(l => !l.complete);
-      status(`${((performance.now() - t0) / 1000).toFixed(2)} s${partial ? ' · search incomplete, see results' : ''}`, partial ? 'warn' : 'hint');
+      // the pipe view finishes in hundredths of a second and used to stamp its own time over
+      // "computing the lines…" while the lines were still running, so the top bar flashed and went
+      // quiet (owner, 2026-10-05: "the computing on top was shown for a second and not until it
+      // finished computing"). The slow thing owns the bar until it is done.
+      if (!points.busy())
+        status(`${((performance.now() - t0) / 1000).toFixed(2)} s${partial ? ' · search incomplete, see results' : ''}`, partial ? 'warn' : 'hint');
     } catch (e) { if (mine === seq) status(e.message, 'err'); }
   }, 120);
 }

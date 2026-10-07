@@ -511,3 +511,258 @@ future session can reproduce without him in the room. That is the whole return o
 channel first, earned within hours of finishing it - and it is why his read of a chart is never to
 be written down as a hunch.
 **Links:** [[The channel is repaired before the algorithm it feeds]] · [[Nothing is built on the lines until the lines are generic]]
+
+### He supplies ground truth and ideas; turning them into a tested algorithm is Claude's job
+tags: kind=principle · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-05 · (chat, no commit)
+**Idea:** *"at the end of the day we get a collection of ideas for generic rules but its on you to
+make an algorithm out of them and test it. all i can do is provide ground truth and ideas but i
+cant write such an algorithm. too many things to check i cant do it."* The division is explicit:
+his side is the ground truth and the rules in words; Claude's side is composing them into one
+mechanism, searching whatever has to be searched, and proving it against his dates.
+**Why:** It is not a softening of "he designs, I implement" - the design is still his, and inventing
+a mechanism he did not ask for is still out of bounds. What it settles is who does the WORK of
+making the stated rules into something that runs: the checking is combinatorial ("too many things
+to check"), which is exactly the part a person should not be doing by hand. It also means a report
+that hands him a knob to judge by eye is a failure of this split, not a consultation.
+**Links:** [[The mission is a generic algorithm, not a fit to my drawings]] · [[What he likes and dislikes about a drawn result is ground truth too]]
+
+### A trend line is drawn on the candles: lows under an up trend, highs over a down trend
+tags: kind=decision · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-05 · (chat, no commit)
+**Idea:** *"up trends lines are marked by candle lows meaning below them and downtrend by highs
+meaning above them."* The line is not a fit through abstract points - it is a boundary the CANDLES
+respect: a rising support sits under the lows, a falling resistance over the highs.
+**Why:** Half of this already holds and was never stated as the reason: a peak's price is its high
+and a valley's its low, so the touch points are already the right extremes. The half that does not
+hold is containment - `trend_lines` only requires that no turning point OF THE SAME KIND pokes past
+the line between its first and last touch, which says nothing about the candles in between, and
+nothing at all beyond the last touch. Measured consequence at 2025-10-03: a rising "support" drawn
+at 138,120 while price is 122,232, i.e. 13% above the candles it is supposed to sit under, because
+the rule extrapolates 61 days past its last touch and the containment test does not look at price.
+**Links:** [[Peaks and valleys by magnitude; a line shows the trend]] · [[Wrong-side and stale lines are noise; a touch is a visit everywhere]]
+
+### A turning point is a move from line to line; a touch is a zone, not a dot
+tags: kind=decision · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-05 · (chat, no commit)
+**Idea:** He drew two pictures instead of writing it. (A) A range box around the whole 2024
+consolidation - 2024-02-21 to 2024-11-09, 53,589-71,174 inside and 50,301-74,593 outside - with the
+swings he accepts traced inside it: *"the peaks and valleys i saw. the ones i ignored because its
+too sensitive. overall i looked at moves that are from line to line or at least close without small
+spikes between. there was a candle who broke the support in a tail but got back and i ignored this
+spike."* (B) A flat line at ~30,800 across seven months of 2023 with two boxes drawn ON it -
+2023-04-09 to 04-21 (12 days, 2.85% tall) and 2023-06-19 to 07-18 (29 days, 2.72% tall): *"boxes
+with touch zones. not touch dots like you do."*
+**Why:** These replace a constant with a relation. A turning point is not "a move of at least N
+percent" - it is a move that CROSSES THE STRUCTURE, from one boundary to the other or close to it,
+which is why the same chart can be read without a size knob at all and why his drawings are less
+sensitive than the code's at any setting. A wick through a boundary that comes straight back is
+neither a break nor a point, which the magnitude zigzag cannot express: it sees the wick and makes
+a point. And a touch is an area in time and price, so "how many touches" stops being a count of
+bars and becomes a count of occasions - which is what `visits` was reaching for with a time gap,
+without the price band or the ability to be drawn.
+**Links:** [[A level is a cluster of good dots, never a single one]] · [[Levels are zones: cluster by percentage, judge by the moves' time]] · [[Peaks and valleys by magnitude; a line shows the trend]]
+
+### No magic numbers: every threshold is a share of the move running now
+tags: kind=principle · attribution=your-correction · portable=yes · signature=yes · importance=high
+anchor: 2026-10-05 · (chat, no commit)
+**Idea:** *"flat 2% what if we traded scalping? the threshold will be meaningless. its relative to
+the move. no flat magic numbers. its structural/geometrical. we talked about it. compare it to the
+move size."* Every constant in the line layer becomes a share of the move: how wide a level is, how
+far apart two lines must be to be two, and how far two peaks may differ and still be "the same
+level". The shares are bounded by his own dates, not picked - the band must exceed 0.11 of the move
+(so his two supports 1.6% apart at 2025-10-03 are one line) and stay under 0.56 (so his two lines
+7.1% apart at 2026-09-04 are two); "the same level" must reach 0.35 (2026-04-10 is horizontal to
+him) and stop below 0.57 (2026-09-04 is a trend).
+**Why:** a constant encodes a timeframe. 2% is a whole trend to a scalper and noise to a swing
+trader, so a rule built on one cannot be generic by construction - and this project's whole problem
+is that the rule is not generic. It also ended an argument that had been running all day: with a
+fixed 1.5% band the answer still held two lines 3.0% apart inside a 12.7% move, and no amount of
+tuning that number fixes both of his dates at once.
+**Links:** [[The mission is a generic algorithm, not a fit to my drawings]] · [[A line is worth the size of the move that ran into it]]
+
+### The trend is read off the structure, and a range is a trend
+tags: kind=decision · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-05 · (chat, no commit)
+**Idea:** *"i want a last trend line which is the last line with at least 2 peaks and valleys at
+changing levels. it possible we already broke it and dont have 2 peaks and valleys yet so we didnt
+change the trend yet ... if it horizontal thats a trend too"* and *"if its a horizontal move with
+same hight peaks and valley ok but if not you need to find the last trend that had it."* Up = higher
+peaks AND higher valleys; down = both lower; horizontal = both at one height; and when they
+disagree the trend is still the previous one - breaking a line does not make a new trend.
+**Why:** it replaces a fitted line with a reading of the structure, which is what he actually does,
+and it fixes two failures at once: a line fitted by touch count put a rising "support" at 126,806
+with price at 68,854, and ranking by reach put a line anchored on the 2020 COVID low ahead of his
+own trend. Measured on his four dated readings, the structural rule gets 3 of 4 (2026-04-10
+horizontal, 2026-02-13 down, 2025-10-03 up); 2026-09-04 still comes out horizontal where he reads a
+broken down trend.
+**Links:** [[No magic numbers: every threshold is a share of the move running now]] · [[The setup is three lines, four when price is on a level]]
+
+### The setup is three lines, four when price is on a level
+tags: kind=decision · attribution=your-design · portable=no · signature=yes · importance=high
+anchor: 2026-10-05 · (chat, no commit)
+**Idea:** *"i dont want no next and i want the last trend. should be 3 or 4 if price is on the
+level"* - the trend, the level above, the level below, and the level price is standing on, named by
+the trend. No "next resistance", no "next next support", no ladder.
+**Why:** the roster had grown to eight lines and he could not read it ("i dont want a million
+lines"). The ladder was Claude's reading of "current / next / next next" from an earlier session,
+kept after it stopped being what he asked for. Three lines are what a trade needs: what you buy the
+break of, where you are wrong, and which way the structure is going.
+**Links:** [[A setup is a short roster where every line says what it is and how it was found]]
+
+### One candle cannot be both a peak and a valley
+tags: kind=bug-lesson · attribution=your-correction · portable=yes · signature=no · importance=high
+anchor: 2026-10-05 · (chat, no commit)
+**Idea:** A bar wide enough to satisfy the zigzag on its own produced a peak at its high AND a
+valley at its low on the same date - 253 times on BTC daily at 7%. One of them (2026-08-21: 73,027
+to 79,500, 8.9% in a day) supplied both "a higher peak" and "a higher valley" by itself, which is
+how his down trend at 2026-09-04 was classified as up. A turning point is now never emitted on the
+bar the previous one sits on.
+**Why:** he found it by reading the output rather than the code - *"the trend you drew is not even
+the same direction as mine from the gt and doesnt have 2 peaks and valleys"*. The defect had been
+in the base since the zigzag was written, invisible while nothing counted peaks and valleys as a
+SEQUENCE; the moment the trend rule did, one candle could fabricate a trend. Removing them also
+moved two of his own anchor cases, which is the next thing to check - a base fix that shifts
+recorded ground truth is not finished until those numbers are re-read.
+**Links:** [[The trend is read off the structure, and a range is a trend]] · [[Ground truth is the real problem, and errors cascade]]
+
+### What counts as delivered, and in whose units
+tags: kind=principle · attribution=your-correction · portable=yes · signature=yes · importance=high
+anchor: 2026-10-05 · (chat, no commit)
+**Idea:** Four corrections he made in one session, all about handing work back:
+1. **Measuring something as bad is not a deliverable.** *"dont write shity code and tell me you
+   tested it and found out is shit and youre done."* A variant that reproduces the defect he already
+   named is not an option to present - it is work that is not finished.
+2. **Never hand him a knob to judge by eye.** *"all i can do is provide ground truth and ideas but i
+   cant write such an algorithm. too many things to check i cant do it."* Bring a mechanism and its
+   measurement against his dates; ask only what a rule MEANS.
+3. **Speak in his units.** *"you mention numbers i dont know what you mean like 0.25, 0.11, 0.36x."*
+   Percentages, prices and dates - internal ratios are Claude's bookkeeping. And when he says he
+   does not know how the algorithm works, the mechanism in plain words comes BEFORE any number.
+4. **Score everything he drew.** *"for february 13 2026 i have 3 lines i dont know what youre
+   talking about"* - the scoreboard was counting horizontal levels only while his picture also held
+   a trend line. Grading against a subset Claude chose flatters the result.
+**Why:** each of these turned a report that sounded like progress into one he could not use. The
+common root is the same as rule 14 in his CLAUDE.md: an answer is written for his state and his
+vocabulary, not for the one Claude happens to be holding. The measured cost that session: three of
+his reports were answered against a date Claude picked rather than his, and one of those was
+declared "could not reproduce".
+**Links:** [[He supplies ground truth and ideas; turning them into a tested algorithm is Claude's job]] · [[The mission is a generic algorithm, not a fit to my drawings]]
+
+### A trend is counted in steps: two up, two down, and one is noise
+tags: kind=decision · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-07 · (chat, no commit)
+**Idea:** An up trend is two higher highs and two higher lows; a down trend the opposite; and the
+trend does not change on fewer than two opposite steps. A higher high and higher low followed by a
+lower high and higher low is a closing triangle, which can break out and matters; higher highs with
+lower lows is an opening triangle, which has no breakout and is ignored.
+**Why:** He drew it at 2023-03-24 as a zigzag with a note: two higher highs, one higher low, then
+one lower low (2023-03-10) - "so no change to downtrend and then came a higher high so a continue of
+the trend". A single opposite step had been flipping the code's trend, and the noise that makes it
+("sometimes there are spikes and noises but the rule applies here") is exactly what one step cannot
+survive and two can. It also names the shapes that matter for a breakout trade and drops the one
+that never gives one.
+**Replaces:** the one-step comparison of 2026-10-05 (the last two peaks against each other, the last
+two valleys against each other), which a single spike could turn.
+**Links:** [[The trend is read off the structure, and a range is a trend]] · [[One candle cannot be both a peak and a valley]]
+
+### What a setup draws: support and resistance, the trend if there is one, at most four lines
+tags: kind=decision · attribution=your-design · portable=no · signature=yes · importance=high
+anchor: 2026-10-06 · (chat, no commit)
+**Idea:** "minimum 2 lines - support and resistance. if there is a trend up or down draw that too.
+if the price itself is on an important level draw it as support or resistance like you do and draw
+another line which would be the next. so maximum 4 lines." Sideways draws no trend line - the
+range's walls are its support and resistance - and also the trend that came before the range ("if
+currently its a sideways range pipe and there is no up or down trend i want the previous trend").
+**Why:** at 2024-08-02 the page drew a near-flat 1% "trend" along a 25% pipe's ceiling: "its
+sideways. draw only whats there". And a picture of two flat lines with no trend says neither how
+price got there nor where it is going - "my point is i want to know how we got to this price".
+**Replaces:** "three lines, four if price is on a level" (2026-10-05), which always drew a trend.
+**Links:** [[The setup is three lines, four when price is on a level]]
+
+### Relative to what: the structure price is in, not only the last bounce
+tags: kind=principle · attribution=your-correction · portable=yes · signature=yes · importance=high
+anchor: 2026-10-06 · (chat, no commit)
+**Idea:** "the pipe is about 25% im not talking about 1% lower lows. we already said moves are
+relative. even if the pipe is not perfectly horizontal because of a 1% decrease its noise compared
+to 25%." Inside a range, "relative" is measured against the range, and a trend is read from swings
+the size of the move - not from every wiggle. A range price is still inside IS the trend.
+**Why:** measured against a 12% bounce at 2024-08-02, every 8-11% step of his 25% pipe read as a
+down trend and every 4% gap as two lines. The same blindness made the March 2023 and summer 2026
+wiggles read as horizontal trends inside clear trends.
+**Links:** [[No magic numbers: every threshold is a share of the move running now]]
+
+### A level comes from a previous support or resistance, and the level price is on is where the move turned
+tags: kind=decision · attribution=your-correction · portable=yes · signature=no · importance=high
+anchor: 2026-10-06/07 · (chat, no commit)
+**Idea:** A line has to be built from where price turned before, never from the move running now or
+from a wick price ran through - "the current resistance is not from a previous resistance at all.
+the point it touched wasnt a resistance" (2022-07-22). A level price only passes through is not the
+one it is on - "i dont think its on a line i would remove it" (2024-10-25). In an up trend the
+resistance above is the latest peak - "should have been at the peak of about 31400" (2023-04-21).
+**Why:** each was a level built from 7% wiggles or from the move's own high, and each sat between
+price and the line he would draw. Every one was confirmed against the lines he had already approved
+at other dates before it was kept; the broader versions that moved those lines were reverted.
+**Links:** [[A level is a cluster of good dots, never a single one]]
+
+### A trend line is never hidden: drawn better, or drawn and marked far
+tags: kind=decision · attribution=your-correction · portable=no · signature=no · importance=normal
+anchor: 2026-10-07 · (chat, no commit)
+**Idea:** A trend line too far from price to matter to the trade is still drawn - dotted, with the
+card saying how far - and every trend says its size (start -> furthest point, % and days: "would be
+nice to know the trend size").
+**Why:** hiding it (after "the trend is so far it is not related to the trade so either draw it
+better ... or dont draw it", 2023-04-21) left two flat lines that read as a pipe with no trend:
+"dont you see there are only lines and no trend" (2023-03-24). The better line he points to is the
+one that crosses candles ("maybe one that crosses candles?") - from the low that started the trend
+to the one that ended it - and that rule is written down but not built yet.
+**Links:** [[A trend line is drawn on the candles: lows under an up trend, highs over a down trend]]
+
+### Strength is measured, not weighted by hand - and a rare move is not something to fit
+tags: kind=principle · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-07 · (chat, no commit)
+**Idea:** His ideas for a line's strength - closer, held longer, the move afterwards, how often it
+was broken - each became a feature, and what they are worth was measured across 2018-2026 (does
+price turn at the level next time?), fitted on 2018-2022 and tested on 2023-2026. The score labels a
+level strong or ordinary with the measured rate. Alongside it: "rare is dont overfit on that" - the
+3 huge candles of 2026 are not something to fit the rule to.
+**Why:** "i offer ideas you do the algorithm" - and his ideas pull against each other (closer vs
+longer-held, flips vs breaks), so any hand-set weights would be the tuning that went in circles.
+The measurement answered what argument could not: each idea alone is weak, broken levels turn
+slightly MORE often (the flip), and together the strongest quarter turns 61% against 47-48%.
+**Links:** [[He supplies ground truth and ideas; turning them into a tested algorithm is Claude's job]]
+
+### A trend line has a sane slope: steeper than a swing is one leg, not a trend
+tags: kind=idea · attribution=your-design · portable=yes · signature=no · importance=normal
+anchor: 2026-10-06 · (chat, no commit)
+**Idea:** "consider integrating slope logic to the algorithm. here its too big sometimes too small
+and horizontal." A trend line may not climb (or fall) more in one swing of the structure than "the
+same level" allows; steeper, it runs through the pullbacks of one leg, and the trend began earlier.
+**Why:** at 2023-04-21 the March 2023 huge candles gave a line of +1.81%/day, 52% over price - "i
+think the huge candles confused you". Re-anchored at the low that leg started from, it lands 0.9%
+from his own line. The "too small / horizontal" side is the near-flat line inside a range, which the
+range rule removes.
+
+### The past is not redrawn when "now" moves
+tags: kind=principle · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-07 · (chat, no commit)
+**Idea:** "i want the before 7d to be roughly like the date im looking." Stepping a week back must
+show the same history; only the newest, still-forming part may differ. So every peak and valley is
+decided at the scale of the day it was confirmed, and stays.
+**Why:** he saw the zigzag "between single candles" one day and "not enough at all" a week earlier,
+with points appearing and vanishing as he stepped. Measured: the scale followed the move running
+now, which flipped between a rally and the dip inside it (54% one day, 7% the next), and a date
+shared a median 71% of its zigzag with the date 7 days earlier. Frozen: 100% (96% in the worst
+quarter). It is also simply how a chart is read: last month's swings are not redrawn because of
+today's move. Steady rulers measured instead either collapsed to every wiggle or lost his dates.
+**Links:** [[Relative to what: the structure price is in, not only the last bounce]]
+
+### A line need not touch the wicks - close is enough, and how close is relative
+tags: kind=idea · attribution=your-design · portable=yes · signature=no · importance=normal
+anchor: 2026-10-07 · (chat, no commit)
+**Idea:** "it doesnt have to touch it should be close (how close is another question) to them."
+His lines sit near where price actually went - the wicks - without having to pass through them.
+**Why:** said while weighing highs and lows against closes: his lines are drawn where the wicks
+reached (his 2023 touch zones are 2.8% tall because they include the wicks), so the dots stay on
+highs and lows, and a level is a zone around that, not a hairline that must be hit.
+**Links:** [[A turning point is a move from line to line; a touch is a zone, not a dot]]

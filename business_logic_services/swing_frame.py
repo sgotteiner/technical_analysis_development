@@ -33,6 +33,7 @@ class SwingFrame:
     kinds: np.ndarray           # +1 peak, -1 valley
     now_move: float             # the leg running now, in %, the yardstick everything is read against
     now_from_bar: float         # where that leg started
+    now_direction: int          # +1 the leg is rising (price came UP to where it is), -1 falling
     price_now: float
     price_before: float         # ten days back, which is what names a level support or resistance
     moves: np.ndarray           # the leg that ran INTO each point - what a touch is worth
@@ -44,6 +45,12 @@ class SwingFrame:
 
     def __len__(self) -> int:
         return len(self.bars)
+
+    def turned_at(self) -> float:
+        """Where the move running now has got to: its high if rising, its low if falling - the
+        level it ran INTO, which is what "came up to it" means."""
+        seg = slice(int(self.now_from_bar), self.end + 1)
+        return float(self.high[seg].max() if self.now_direction > 0 else self.low[seg].min())
 
     def day(self, bar: float) -> str:
         return self.index[int(bar)].strftime("%Y-%m-%d")
@@ -58,13 +65,13 @@ def swing_frame(df: pd.DataFrame, end: int, size: float, cache: Optional[Dict] =
     close = df["Close"].to_numpy()
     known = (tp["conf"] <= end) & (tp["idx"] <= end)
     idx = tp["idx"][known]
-    now_move, now_from, _ = running_move(tp, high, low, end)
+    now_move, now_from, now_dir = running_move(tp, high, low, end, float(close[end]), close)
     return SwingFrame(
         end=int(end), size=float(size),
         bars=idx.astype(float),
         prices=np.where(tp["kind"][known] == PEAK, high[idx], low[idx]).astype(float),
         kinds=tp["kind"][known],
         moves=leg_moves(tp, high, low)[known],
-        now_move=float(now_move), now_from_bar=float(now_from),
+        now_move=float(now_move), now_from_bar=float(now_from), now_direction=int(now_dir),
         price_now=float(close[end]), price_before=float(close[max(0, end - 10)]),
         index=df.index, tp=tp, high=high, low=low, known=known)

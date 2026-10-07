@@ -42,10 +42,11 @@ class LinesConfig(BaseModel):
     max_history: Optional[int] = Field(None, ge=0, le=50,
                                        description="keep only a level's last N visits; None = all of them")
     merge_pct: float = Field(0.0, ge=0, le=30,
-                             description="levels within this %% of each other become one line; 0 = off")
+                             description="how wide a level may be, in %%; 0 = take it from the move running now")
     trends_per_side: int = Field(1, ge=1, le=5, description="how many trend lines per side")
     prefer: Literal["recent", "visits"] = Field("recent", description="which cluster wins a crowded area")
-    min_visits: int = Field(3, ge=1, le=10, description="visits a cluster needs to be a line")
+    min_visits: int = Field(2, ge=1, le=10,
+                            description="visits a cluster needs to be a line; a flat top is two peaks")
     target_scale: float = Field(2.5, ge=1, le=6, description="targets use swings this much bigger")
     targets_each_way: int = Field(0, ge=0, le=5,
                                   description="levels above and below price that nothing recent touches; 0 = off")
@@ -60,6 +61,7 @@ class PointsRequest(BaseModel):
     target_days: Optional[int] = Field(None, ge=1, le=365)
     lookback_days: Optional[int] = Field(None, ge=30, le=5000)
     lines: Optional[LinesConfig] = None
+    layers: Optional[Dict[str, bool]] = Field(None, description="what is switched on in his window - logged only")
 
     @field_validator("sizes")
     @classmethod

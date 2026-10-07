@@ -65,11 +65,15 @@ def test_levels_are_clusters_of_dots_shown_when_recent_or_a_target(client, df):
                                                    "anchor_days": 120, "merge_pct": 5, "targets_each_way": 2}}
     group = client.post("/api/points", json=body).json()["sizes"][0]
     assert "lines" not in group and group["levels"] and "trends" in group
+    # inside a range the levels are its walls (setup_roster._range_walls): two peaks "at the same
+    # level" are judged against the move, not the cluster band, so only clusters are held to it
+    clusters = [lv for lv in group["levels"] if not lv.get("wall")]
     for lv in group["levels"]:
         assert lv["last"] >= 550 - 120 + 1 or lv["from_history"], "shown = touched recently, or a target"
         assert lv["visits"] >= 2 and lv["high"] > lv["price"] > lv["low"]
+    for lv in clusters:
         assert lv["history"] == sum(1 for p in lv["points"] if p < 550 - 120 + 1)
-    band = max(lv["high"] / lv["low"] for lv in group["levels"])
+    band = max((lv["high"] / lv["low"] for lv in clusters), default=1.0)
     assert band <= 1.051, f"no cluster may be wider than the band: {band:.3f}"
     for t in group["trends"]:
         assert t["last"] >= 550 - 120 + 1        # still touched now, but it may start much earlier
@@ -100,8 +104,15 @@ def test_a_lookback_limits_the_points_used(client):
     assert all(p["bar"] >= 550 - 120 for p in short["points"])
 
 
-def test_too_many_points_for_the_touch_rule_is_refused_with_a_reason(client):
-    body = {"end": 550, "sizes": [0.02], "lines": {"mode": "touches", "tol_pct": 2.0, "min_touches": 2}}
+def test_too_many_points_for_the_touch_rule_is_refused_with_a_reason(tmp_path):
+    # long enough to exceed the touch rule's point limit: a bar can no longer confirm its own
+    # extreme, so the 600-bar chart tops out below it
+    n = 2000
+    c = 100 * np.exp(np.cumsum(np.random.default_rng(11).normal(0, 0.025, n)))
+    idx = pd.date_range("2020-01-01", periods=n, freq="D", tz="UTC")
+    long_df = pd.DataFrame({"Open": c, "High": c * 1.01, "Low": c * 0.99, "Close": c}, index=idx)
+    client = TestClient(create_app(long_df, tmp_path / "gt.json"))
+    body = {"end": n - 1, "sizes": [0.02], "lines": {"mode": "touches", "tol_pct": 2.0, "min_touches": 2}}
     res = client.post("/api/points", json=body)
     assert res.status_code == 422 and "size" in res.json()["detail"].lower()
 

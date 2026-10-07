@@ -13,11 +13,23 @@ export function createSrChart(el) {
     rightPriceScale: { borderColor: '#2a2e39', mode: LightweightCharts.PriceScaleMode.Logarithmic },
     timeScale: { borderColor: '#2a2e39' },
   });
-  const past = chart.addCandlestickSeries({ upColor: '#089981', downColor: '#f23645', borderUpColor: '#089981',
-    borderDownColor: '#f23645', wickUpColor: '#089981', wickDownColor: '#f23645', priceLineVisible: false });
+  const CANDLES = { upColor: '#089981', downColor: '#f23645', borderUpColor: '#089981',
+    borderDownColor: '#f23645', wickUpColor: '#089981', wickDownColor: '#f23645' };
   const fade = 'rgba(120,123,134,0.35)';
-  const future = chart.addCandlestickSeries({ upColor: fade, downColor: fade, borderVisible: false, wickUpColor: fade,
-    wickDownColor: fade, priceLineVisible: false, lastValueVisible: false });
+  const FUTURE = { upColor: fade, downColor: fade, wickUpColor: fade, wickDownColor: fade };
+  const HIDDEN = { upColor: 'rgba(0,0,0,0)', downColor: 'rgba(0,0,0,0)', borderUpColor: 'rgba(0,0,0,0)',
+    borderDownColor: 'rgba(0,0,0,0)', wickUpColor: 'rgba(0,0,0,0)', wickDownColor: 'rgba(0,0,0,0)' };
+  const past = chart.addCandlestickSeries({ ...CANDLES, priceLineVisible: false });
+  const future = chart.addCandlestickSeries({ ...FUTURE, borderVisible: false, priceLineVisible: false,
+    lastValueVisible: false });
+  // the close-only line chart (owner, 2026-10-07: "id like to be able to see the close only graph
+  // (line graph) like trading view allows it"). The candles stay as the anchor - transparent, not
+  // removed - so the dots, his drawings and click-to-draw keep the same series and price scale.
+  const closePast = chart.addLineSeries({ color: '#2962ff', lineWidth: 2, priceLineVisible: false,
+    lastValueVisible: false, visible: false });
+  const closeFuture = chart.addLineSeries({ color: fade, lineWidth: 2, priceLineVisible: false,
+    lastValueVisible: false, visible: false });
+  const closes = cs => cs.map(c => ({ time: c.time, value: c.close }));
 
   function makePool() {          // one pool per feature, so they never fight over the same series
     const series = [];
@@ -34,7 +46,7 @@ export function createSrChart(el) {
     };
   }
   const viewPool = makePool(), pointPool = makePool();
-  const drawn = { markers: 0, pointLines: 0, viewLines: 0 };      // what is on the chart (for checks)
+  const drawn = { markers: 0, pointLines: 0, viewLines: 0, closeLine: false };   // what is on the chart (for checks)
   let pool = viewPool;
   const segment = (points, color, width, style) => pool.segment(points, color, width, style);
 
@@ -49,6 +61,16 @@ export function createSrChart(el) {
   function setNow(candles, now) {
     past.setData(candles.slice(0, now + 1));
     future.setData(candles.slice(now + 1));
+    closePast.setData(closes(candles.slice(0, now + 1)));
+    closeFuture.setData(closes(candles.slice(now + 1)));
+  }
+
+  function setCloseLine(on) {
+    past.applyOptions(on ? HIDDEN : CANDLES);
+    future.applyOptions(on ? HIDDEN : FUTURE);
+    closePast.applyOptions({ visible: on });
+    closeFuture.applyOptions({ visible: on });
+    drawn.closeLine = on;
   }
 
   function drawView(view, candles, now) {
@@ -75,9 +97,11 @@ export function createSrChart(el) {
     pool.start();
     groups.forEach(g => g.lines.forEach((ln, i) => {
       const at = x => ({ time: candles[x].time, value: Math.exp(ln.y1 + ln.slope * (x - ln.x1)) });
-      const width = i === 0 ? 2 : 1, xEnd = Math.min(now + AHEAD, candles.length - 1);
-      if (ln.last > ln.first) segment([at(ln.first), at(ln.last)], g.color, width, LightweightCharts.LineStyle.Solid);
-      if (xEnd > ln.last) segment([at(ln.last), at(xEnd)], g.color, width, LightweightCharts.LineStyle.Dashed);
+      const width = ln.far ? 1 : (i === 0 ? 2 : 1), xEnd = Math.min(now + AHEAD, candles.length - 1);
+      // a trend further than the move can reach is drawn dotted: there, but not a line in play
+      const S = LightweightCharts.LineStyle, solid = ln.far ? S.Dotted : S.Solid, after = ln.far ? S.Dotted : S.Dashed;
+      if (ln.last > ln.first) segment([at(ln.first), at(ln.last)], g.color, width, solid);
+      if (xEnd > ln.last) segment([at(ln.last), at(xEnd)], g.color, width, after);
     }));
     pool.end();
     drawn.pointLines = groups.reduce((n, g) => n + g.lines.length, 0);
@@ -90,10 +114,12 @@ export function createSrChart(el) {
 
   function setPointMarkers(groups) {
     const markers = groups.flatMap(g => g.points.map(p => ({
-      time: p.time, position: p.kind === 'peak' ? 'aboveBar' : 'belowBar', color: g.color, shape: 'circle', size: 0.6 })));
+      time: p.time, position: p.kind === 'peak' ? 'aboveBar' : 'belowBar', color: g.color,
+      shape: g.shape || 'circle', size: 0.6 })));
     past.setMarkers(markers.sort((a, b) => a.time - b.time));
     drawn.markers = markers.length;
   }
 
-  return { chart, series: past, setNow, drawView, focus, setPointMarkers, drawPointLines, drawn: () => ({ ...drawn }) };
+  return { chart, series: past, setNow, setCloseLine, drawView, focus, setPointMarkers, drawPointLines,
+    drawn: () => ({ ...drawn }) };
 }

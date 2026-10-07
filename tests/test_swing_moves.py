@@ -57,17 +57,24 @@ def test_his_own_case_the_may_peak_and_now_are_the_same_move():
     df = load_daily()
     last = len(df) - 1
     high, low = df["High"].to_numpy(), df["Low"].to_numpy()
-    tp = turning_points(df, 0.09)                     # the size he picked: "9 is better"
+    # 7%, the page's size. "9 is better" was measured on the same-candle artifact: 2026-08-19 was
+    # both a fake peak (70,000) and a valley (64,166), and the move ran from that valley. Without it
+    # his two numbers agree at 7% (27.5% / 30.2%) and not at 9% (27.5% / 40.3% from the July low).
+    tp = turning_points(df, 0.07)
     moves = leg_moves(tp, high, low)
     days = df.index.strftime("%Y-%m-%d")
     may = [j for j, i in enumerate(tp["idx"]) if days[i] == "2026-05-06"]
-    assert may, "the May 2026 peak is a 9% turning point"
+    assert may, "the May 2026 peak is a turning point"
     may_move = moves[may[0]]
-    now_move, start, direction = running_move(tp, high, low, last)
+    # measured TO PRICE NOW, which is where his arrow ends (2026-02-13: 94,935 -> 67,071, drawn to
+    # today, not to the low); "about 25%" and "about 30%" are his two readings of this same move.
+    now_move, start, direction = running_move(tp, high, low, last, float(df["Close"].to_numpy()[last]))
     assert may_move == pytest.approx(27.5, abs=1.0), f"his 'about 25%' = {may_move:.1f}%"
-    assert now_move == pytest.approx(28.3, abs=1.0), f"the move running now = {now_move:.1f}%"
+    assert now_move == pytest.approx(30.2, abs=1.0), f"his 'about 30%' = {now_move:.1f}%"
     assert abs(may_move - now_move) < 3, "the same move, which is his whole point"
-    assert direction == 1 and days[start] == "2026-08-19", "off the valley that turned the downtrend"
+    # his sketch note: "after the lowest vally i marked the next vally is higher ... i marked that
+    # 62k level" - the move runs off that higher valley
+    assert direction == 1 and days[start] == "2026-08-01", "off his 62k higher valley"
 
 
 def test_no_turning_points_is_not_a_crash():

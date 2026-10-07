@@ -88,4 +88,8 @@ def trend_lines(x: np.ndarray, y: np.ndarray, kind: np.ndarray, anchor_from: flo
                 out.setdefault(key, {"x1": first, "y1": float(ys[i] + slope * (first - xs[i])),
                                      "slope": slope, "role": role, "touches": len(touched),
                                      "first": first, "last": last, "points": touched})
-    return sorted(out.values(), key=lambda l: (l["touches"], l["last"] - l["first"], l["last"]), reverse=True)
+    # Ranked by touches, then by how RECENTLY the trend started - "for diagonal lines its the
+    # recent trend not history" (owner, 2026-09-23). Ranking by reach instead put a line anchored
+    # on the 2020 COVID low first at 2026-02-13, ahead of his own trend (-0.25%/day off the peaks
+    # of 2025-10-06 and 2026-01-14), because six years of reach beat four months.
+    return sorted(out.values(), key=lambda l: (l["touches"], l["first"], l["last"]), reverse=True)

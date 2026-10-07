@@ -8,11 +8,12 @@ drawing a line from touches he said he would never draw from.
 import numpy as np
 import pytest
 from business_logic_services.move_lines import ladder_by_move, lines_by_move
+from business_logic_services.precedents import similar_move
 from modules.shapes.sr_turning_points import turning_points, PEAK
 from modules.shapes.swing_moves import leg_moves, running_move
 from scripts.sr_playground import load_daily
 
-SIZE = 0.09          # the size he picked: "9 is better"
+SIZE = 0.07          # the size at which his anchor readings come out (see test_swing_moves.py)
 BAND = SIZE * 100 / 2    # "band width from the swing size, about half a swing" (his rule)
 
 
@@ -60,7 +61,9 @@ def test_the_line_he_called_important_ranks_first(chart):
     top = lines[0]
     assert abs(top["price"] / 82000 - 1) < 0.04, f"expected the ~82k resistance, got {top['price']:,.0f}"
     assert top["at_price_now"], "price is standing on it, so it is the first rung"
-    assert top["biggest_move"] >= 0.9 * chart["now_move"], (
+    # "the same move" is whatever the backward search counts as one - not a second threshold here.
+    # At 7% the touch is 25.0% against 30.8% running: his own "about 25%" and "about 30%".
+    assert similar_move(top["biggest_move"], chart["now_move"]), (
         f"a touch of it turned back a move the size of the one running now: "
         f"{top['biggest_move']:.1f}% vs {chart['now_move']:.1f}%")
 

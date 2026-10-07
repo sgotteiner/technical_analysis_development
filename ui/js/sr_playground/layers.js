@@ -9,10 +9,14 @@ export const LAYERS = [
   ['lines', 'calculated lines'],
   ['pipes', 'pipes'],
   ['detections', 'detected setups'],
+  ['closeline', 'close-only line'],
+  ['closedots', 'close dots'],
+  ['zigzag', 'zigzag'],
 ];
+const OFF_BY_DEFAULT = ['closeline', 'closedots', 'zigzag'];     // a different way to see the chart, not a layer to hide
 
 export function createLayers({ root, onChange }) {
-  let state = Object.fromEntries(LAYERS.map(([key]) => [key, true]));
+  let state = Object.fromEntries(LAYERS.map(([key]) => [key, !OFF_BY_DEFAULT.includes(key)]));
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
 
   function render() {
