@@ -541,7 +541,15 @@ His friend's habit of 1 year of history was measured too: better at 2 dates, bro
 - **Pick the structure that is there** (2026-10-05, at 2025-10-03): "maybe horizontal pipe is not
   the right tool here because there is no horizontal move with 2 peaks and valleys at the same
   hight" - and the pipe should be about as tall as the move. (Partly built since: the range rule.)
-- **The counted trend rule** and **the start-to-end trend line** - see above.
+- **The counted trend rule** and **the start-to-end trend line** - see above. Second build
+  (2026-10-07, a step back the trend's way cancels a noisy one): lost 6 of his readings and was
+  reverted. Cause, measured: at the scale that gets his dates right there are not enough points for
+  "2 such" - at 2026-02-13 only one lower high (126.2k -> 97.9k) and one lower low (80.6k -> 60k)
+  exist, so the 2023-2025 up trend never ends. The rule needs a finer zigzag than the one his levels
+  and trend lines are matched on.
 - **The tail rule on the dots** (2026-10-05): a wick through a level that comes back is not a turning
-  point - still makes dots (2020-12-20, 2023-03-14).
+  point - still makes dots. His two examples do not share a cut: 2020-12-20 fell 10.2% on the wick
+  and 6.5% on closes; 2023-03-14 fell 9.4% on the wick and 8.0% on closes. Any line between them is
+  fitted to two cases, and the blanket close-confirmed version broke four approved dates. Needs more
+  of his marked tails before it can be a rule.
 - **Strength as a tie-breaker** between close candidates - measured, not wired.
