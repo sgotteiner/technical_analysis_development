@@ -28,11 +28,23 @@ class ViewRequest(BaseModel):
         return v
 
 
+class ConceptFlags(BaseModel):
+    """mode "concepts": the line concepts, each switched on or off (business_logic_services/line_concepts.py)."""
+    swings: Literal["zigzag", "pivots", "atr"] = "zigzag"
+    group: Literal["channels", "off"] = "channels"
+    band: Literal["move", "range"] = "move"
+    parts: List[Literal["pivots", "bars", "sweeps", "round", "measured"]] = ["pivots", "bars", "sweeps"]
+    trend: Literal["protected1", "protected2", "window", "off"] = "protected1"
+    pick: Literal["roster", "nearest", "strongest"] = "roster"
+    per_side: int = Field(1, ge=1, le=5)
+
+
 class LinesConfig(BaseModel):
     """Lines through the swing points: how close is a touch, and how many touches a line needs.
     mode "owner": levels from the recent points + their history, and trend lines from the recent
     points only. mode "touches": any line through two points, ranked by touches."""
-    mode: Literal["owner", "touches", "moves"] = "owner"
+    mode: Literal["owner", "touches", "moves", "channels", "concepts", "zigzag"] = "owner"
+    concepts: Optional[ConceptFlags] = None
     tol_pct: float = Field(1.5, gt=0, le=20)
     min_touches: int = Field(3, ge=2, le=20)
     max_slope_pct: Optional[float] = Field(None, ge=0, le=20, description="%/day; omit for any slope")

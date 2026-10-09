@@ -20,6 +20,7 @@ from repositories.sr_drawings_repo import DrawingStore
 from repositories.sr_setups_repo import SetupStore
 from repositories.sr_verdicts_repo import VerdictStore
 from routes.sr_view_routes import make_view_router
+from routes.event_routes import make_event_router
 from routes.sr_ground_truth_routes import make_ground_truth_router
 from routes.setup_routes import make_setup_router
 from routes.preset_routes import make_preset_router
@@ -59,7 +60,29 @@ def create_app(df: pd.DataFrame, ground_truth_path: str = GROUND_TRUTH, presets_
     setups = SetupStore(doc)
     app.include_router(make_setup_router(df, setups))
     app.include_router(make_preset_router(PresetStore(presets_path)))
-    app.include_router(make_view_router(df))
+    shared: dict = {}           # one cache for the lines, events and trades: the zigzag of each day once
+    app.include_router(make_view_router(df, cache=shared))
+    app.include_router(make_event_router(df, shared))
+
+    @app.on_event("startup")
+    def warm_up():
+        """Build the zigzag lines and the trades once, in the background, as soon as the server starts -
+        after a restart the first lines request used to take 20-150 s and the page looked empty."""
+        import threading
+        import time
+
+        def run():
+            t0 = time.time()
+            try:
+                from business_logic_services.zigzag_view import zigzag_page
+                from business_logic_services.trade_view import trades_view
+                zigzag_page(df, len(df) - 1, 0.07, shared)
+                print(f"WARM lines ready in {time.time() - t0:.0f}s", flush=True)
+                trades_view(df, "zigzag", shared)
+                print(f"WARM trades ready in {time.time() - t0:.0f}s", flush=True)
+            except Exception as e:                    # warming is a convenience; a request still computes
+                print(f"WARM failed: {e}", flush=True)
+        threading.Thread(target=run, daemon=True).start()
     app.include_router(make_ground_truth_router(df, DrawingStore(doc), VerdictStore(doc), setups))
     app.mount("/ui", StaticFiles(directory=UI_DIR), name="ui")
 

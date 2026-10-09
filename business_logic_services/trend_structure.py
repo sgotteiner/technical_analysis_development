@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 from business_logic_services.frozen_zigzag import frozen_points
 from business_logic_services.precedents import SIMILAR_LO
+from business_logic_services.protected_trend import BREAKS, protected_trend
 from business_logic_services.line_rules import MOVE_BAND
 from business_logic_services.structure_scale import yardstick
 from business_logic_services.swing_frame import turning_points_cached
@@ -112,6 +113,18 @@ def _line(idx, kinds, prices, confirmed: int, first_bar: float, down: bool,
     return line
 
 
+def _as_state(trend: Optional[Dict], state: Dict, idx, kinds, prices, confirmed: int) -> Dict:
+    """The direction from the protected-low state (protected_trend); the line starts at the
+    confirmed peak (down) / valley (up) nearest the bar that trend began at."""
+    down = state["direction"] == DOWN
+    side = [i for i in range(confirmed) if kinds[i] == (PEAK if down else VALLEY)]
+    start = min(side, key=lambda i: abs(idx[i] - state["began"])) if side else None
+    base = trend or {"peaks": [], "valleys": [], "peak_prices": [], "valley_prices": []}
+    return {**base, "direction": state["direction"],
+            "role": "resistance" if down else "support", "still_forming": False,
+            "start_bar": float(idx[start]) if start is not None else -1.0}
+
+
 def _previous(idx, kinds, prices, confirmed: int, rng: Dict, now_move: float,
               size: float) -> Optional[Dict]:
     """The trend before the range: "maybe if current is sideways calculate also the previous trend
@@ -129,8 +142,11 @@ def _previous(idx, kinds, prices, confirmed: int, rng: Dict, now_move: float,
 
 
 def structural_trend(df: pd.DataFrame, end: int, now_move: float, floor_size: float,
-                     cache: Optional[Dict] = None, tp: Optional[Dict] = None) -> Optional[Dict]:
-    """The trend at `end`: direction from swings the size of the move, line over / under them."""
+                     cache: Optional[Dict] = None, tp: Optional[Dict] = None,
+                     breaks: int = BREAKS) -> Optional[Dict]:
+    """The trend at `end`: direction from swings the size of the move, line over / under them.
+    `breaks`: how many breaks of the protected low change it (protected_trend); 0 = the window of
+    the last peaks and valleys alone (trend_state.last_trend), the rule before 2026-10-08."""
     if now_move <= 0:
         return None
     # rounded so the turning-point cache is shared between nearby dates, not one entry per day
@@ -144,12 +160,15 @@ def structural_trend(df: pd.DataFrame, end: int, now_move: float, floor_size: fl
         return {**inside, "size": size,
                 "previous": _previous(idx, kinds, prices, confirmed, inside, now_move, size)}
     trend = last_trend(idx.astype(float), prices, kinds, flat_for(now_move))
+    state = protected_trend(df, end, size, cache, breaks) if breaks else None
+    if state is not None:
+        trend = _as_state(trend, state, idx, kinds, prices, confirmed)
     if trend is None:
         return None
     if trend["direction"] in (DOWN, UP):
         down = trend["direction"] == DOWN
-        line = _line(idx, kinds, prices, confirmed,
-                     trend["peaks"][0] if down else trend["valleys"][0], down,
+        start = trend.get("start_bar", trend["peaks"][0] if down else trend["valleys"][0])
+        line = _line(idx, kinds, prices, confirmed, start, down,
                      poke=np.log(1 + now_move * MOVE_BAND / 100), flat_pct=flat_for(now_move))
         if line is not None:
             trend = {**trend, **line}
@@ -181,7 +200,7 @@ def readable_move(df: pd.DataFrame, end: int, now_move: float, floor_size: float
 
 
 def read_structure(df: pd.DataFrame, end: int, now_move: float, floor_size: float,
-                   cache: Optional[Dict] = None, frozen: bool = False):
+                   cache: Optional[Dict] = None, frozen: bool = False, breaks: int = BREAKS):
     """(the trend, the move everything is measured against) at `end`.
 
     The structure's own yardstick (structure_scale) only replaces the move running now when it
@@ -196,10 +215,10 @@ def read_structure(df: pd.DataFrame, end: int, now_move: float, floor_size: floa
     tp = frozen_points(df, end, floor_size, cache) if frozen else None
     yard = yardstick(df, end, now_move, floor_size, cache)
     if yard > now_move:
-        wide = structural_trend(df, end, yard, floor_size, cache, tp)
+        wide = structural_trend(df, end, yard, floor_size, cache, tp, breaks)
         if wide is not None and wide.get("inside"):
             return wide, yard
-    return structural_trend(df, end, now_move, floor_size, cache, tp), now_move
+    return structural_trend(df, end, now_move, floor_size, cache, tp, breaks), now_move
 
 
 def zigzag(df: pd.DataFrame, end: int, size: float, cache: Optional[Dict] = None,

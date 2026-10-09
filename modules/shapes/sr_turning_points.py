@@ -33,7 +33,8 @@ def turning_points(df: pd.DataFrame, threshold: float, on_closes: bool = False) 
         swing_hi = swing_lo = np.log(df["Close"].to_numpy())
     else:
         swing_hi, swing_lo = high, low
-    th = np.log(1 + threshold)
+    # a threshold per bar is allowed too (an ATR zigzag): the reversal is judged at the bar it happens
+    th = np.broadcast_to(np.log(1 + np.asarray(threshold, dtype=float)), high.shape)
     # An extreme is never confirmed by its own candle: a daily bar does not say whether its high or
     # its low came first, so a bar wide enough to span the threshold would otherwise "reverse" from
     # its own high to its own low. That made a peak AND a valley on one date - 253 times at 7% - and
@@ -47,17 +48,17 @@ def turning_points(df: pd.DataFrame, threshold: float, on_closes: bool = False) 
         if direction == 0:
             hi_i = i if swing_hi[i] > swing_hi[hi_i] else hi_i
             lo_i = i if swing_lo[i] < swing_lo[lo_i] else lo_i
-            if swing_hi[hi_i] - swing_lo[lo_i] >= th:
+            if swing_hi[hi_i] - swing_lo[lo_i] >= th[i]:
                 # The first extreme only anchors the direction: nothing before it proves the
                 # opposite move, so it is not a turning point itself.
                 direction = 1 if hi_i > lo_i else -1
         elif direction == 1:
             hi_i = i if swing_hi[i] > swing_hi[hi_i] else hi_i
-            if hi_i < i and swing_hi[hi_i] - swing_lo[i] >= th:
+            if hi_i < i and swing_hi[hi_i] - swing_lo[i] >= th[i]:
                 out.append((hi_i, PEAK, i)); direction, lo_i = -1, i
         else:
             lo_i = i if swing_lo[i] < swing_lo[lo_i] else lo_i
-            if lo_i < i and swing_hi[i] - swing_lo[lo_i] >= th:
+            if lo_i < i and swing_hi[i] - swing_lo[lo_i] >= th[i]:
                 out.append((lo_i, VALLEY, i)); direction, hi_i = 1, i
     idx = np.array([p[0] for p in out], dtype=int)
     kind = np.array([p[1] for p in out], dtype=int)

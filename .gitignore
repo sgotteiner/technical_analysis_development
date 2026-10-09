@@ -28,3 +28,5 @@ ENV/
 # Generated regime viewer (scripts/export_regimes.py)
 ui/regime_viewer.html
 ui/sr_viewer.html
+
+data/cache/
