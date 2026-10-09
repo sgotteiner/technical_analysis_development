@@ -766,3 +766,128 @@ His lines sit near where price actually went - the wicks - without having to pas
 reached (his 2023 touch zones are 2.8% tall because they include the wicks), so the dots stay on
 highs and lows, and a level is a zone around that, not a hairline that must be hit.
 **Links:** [[A turning point is a move from line to line; a touch is a zone, not a dot]]
+
+### Lines are fine enough; the backtest judges - so every concept is a switch
+tags: kind=principle · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-08 · (chat, no commit)
+**Idea:** "im not sure about my own rules. at the end of the day the real way to test it is the next
+stage which adds events and strategies and backtests it. i just didnt want to continue with complete
+garbage lines but fine lines that i can work with are enough even if i can optimize them later. by
+the way implementing these concepts with flags will help in testing it." Every way of making a line
+(where the swing points come from, grouping, band, strength parts, trend rule, which lines are shown)
+becomes a switch; later the events and strategies get switches too, and the backtest tries them alone
+and together. And every line says what made it: "i wanna know what made the algorithm draw each line.
+which peaks and valleys it used, scores, whatever".
+**Why:** the line rules - his own included - cannot be proven by eye; only trades can prove them.
+Hand-tuning one rule set to his dates was converging on a few charts he remembers. Switches turn the
+open questions (1 break or 2, how many lines, which band) into variables the backtest answers.
+Measured on the way in: the literature's concepts (S/R Channels grouping, protected-low trend) found
+18 of his 20 lines at his reviewed dates in the best combination, against 12 for the hand-tuned rule
+- with more lines drawn (54 against 28), so not yet a like-for-like win.
+**Links:** [[The past is not redrawn when "now" moves]]
+
+### The trend changes on a break of the protected low, not on a window of the last swings
+tags: kind=decision · attribution=collaborative · portable=yes · signature=no · importance=normal
+anchor: 2026-10-08 · (chat, no commit)
+**Idea:** from Dow and the market-structure indicators (BOS / CHoCH): an up trend lasts until a CLOSE
+under the low that launched the latest higher high; small bounces never move that low.
+**Why:** his counted rule ("2 higher highs and 2 higher lows") was built twice on a window of the last
+swings and reverted twice - a single small bounce interrupted the count. A running state does not
+have that problem. 1 break matches all 7 of his up/down dates but turns 2022-07-22 up (his 29,000
+resistance lost); his "2 such" keeps 29,000 but loses 2026-02-13. Not settled by eye: both are a
+switch (protected1 / protected2), and the old window stays as a third.
+**Links:** [[Lines are fine enough; the backtest judges - so every concept is a switch]]
+
+### No ground truth to borrow: his eye, the literature, then the backtest
+tags: kind=principle · attribution=your-design · portable=yes · signature=no · importance=high
+anchor: 2026-10-08 · (chat, no commit)
+**Idea:** "ok so we do what we can and by eye and theoretical literature and make it configurable and
+backtest winrate and profit. thats the only thing we can do." Lines are judged in three ways only:
+his eye at his dates, what the literature and the most-used indicators do, and - the one that
+decides - win rate and profit in a backtest over the switches.
+**Why:** he asked whether S/R ground truth exists on the internet. Searched: one human-labelled set
+(Kaggle, one analyst, SYNTHETIC prices), the banks' levels in Osler's NY Fed study (never published),
+and TradingView ideas (lines only as chart images, scraping against its terms). Research labels
+levels by outcome - did price turn - which is what the backtest measures anyway. So no external
+truth to tune lines to; tuning to his few dates by hand was already rejected.
+**Links:** [[Lines are fine enough; the backtest judges - so every concept is a switch]]
+
+### Events are judged against the lines of their own day, and come out as strategy blocks
+tags: kind=decision · attribution=collaborative · portable=yes · signature=no · importance=high
+anchor: 2026-10-08 · (chat, no commit)
+**Idea:** "make sure its well separated so we could choose the specific breakout pattern or patterns
+with flags and assemble full strategies ... and make sure its visible." The lines are computed for
+every day and kept; each event detector looks at one line and only backwards from its day; patterns
+are peaks and valleys plus a neckline, completed by a breakout of it; candles only confirm. Every
+event type and pattern is a switch, and each comes out as a block the existing ComposableStrategy
+already combines (ALL / ANY / N-of-M) through its one no-lookahead aligner.
+**Why:** an event against a line drawn later is lookahead, and a backtest built on it would lie - so
+the lines of each day had to exist first (measured: cut at 2024-06-30, 845 = 845 events). Blocks,
+because the strategy layer already had that contract; a second way to wire signals would be a second
+place for lookahead to slip in. Candles only confirm because, alone, the research finds them worthless
+(Marshall, Young & Rose 2006). Patterns because "at the end of the day its sr lines" - they reuse the
+same breakout rule on their neckline instead of a detector of their own. Seeing them: events are rare,
+so besides a letter on each candle, the card jumps from event to event across history.
+**Links:** [[Lines are fine enough; the backtest judges - so every concept is a switch]]
+
+### On the chart, only what happened at today's lines in the move running now
+tags: kind=decision · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-08 · (chat, no commit)
+**Idea:** "just for the support and resistance and trend lines show a breakout or retest or whatever is
+important for trades ... maybe events related to the lines mark in gold or same color but a star
+shape ... lets think more simply about whats related to the current price and current lines." The
+chart shows breakout / retest / fakeout at the lines on the screen, since the move running now began,
+as gold stars on those lines; every name has a picture ("i dont know the names").
+**Why:** the events of every line of every day were noise to look at. Checked one by one at his
+2025-12-28: 5 of 20 made sense, all at lines that had stood for weeks; 8 were chop at lines a few days
+old with two labels on one candle; of 47 dots in view, 3 were at a line he could see. A trader reads
+the chart at the lines in front of him. The events over history stay as switches - the backtest
+needs them - but they are not what the chart shows.
+**Links:** [[Events are judged against the lines of their own day, and come out as strategy blocks]]
+
+### Events belong to his setup's lines, and lines are kept like the zigzag's points
+tags: kind=principle · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-08 · (chat, no commit)
+**Idea:** "if i said i care about a line in the sr algorithm i want to see the breakout of this line.
+not a breakout for an invented line. and some patterns should work together on the same line. for
+example a breakout and a retest. and the strategy buys only after the retest." Then: "if we dont keep
+what we drew previously how are we gonna find a breakout or retest on that? ... remember in the zigzag
+how we saved and built on?" ... "i like the zigzag use that for the lines." One source of lines - what
+the S/R algorithm draws - read by the page, the events and the strategy alike; and lines made from
+the frozen zigzag's points, kept: a level is a zigzag point from the day it was confirmed, a trend
+line is drawn through two lower peaks (higher valleys) and stays until a close breaks it.
+**Why:** the events and the backtest had read their own line sets, so a "breakout" was of a line he
+never saw. And the lines were recomputed daily: 47% of levels survived a week, and the trend line
+disappeared 424 times without price crossing it - at his 2025-04 example it vanished three days before
+the break he trades. A breakout and its retest need the same line to still be there. Measured after:
+the trend line never vanishes (0); it leaves only when broken, and stays on screen for its retest.
+**Links:** [[The past is not redrawn when "now" moves]]
+
+### Strength belongs to the components, measured against the trend they sit in
+tags: kind=principle · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-08 · (chat, no commit)
+**Idea:** "the horizontal sr lines are really weak not supported by 2 peaks and valleys only one that
+is weak and small especially comparing to the trend which is 10 times bigger. you really need to add
+strengths of everything. from dots to lines to sizes to touches to duration. its not even part of the
+strategy its part of its components." Every zigzag dot, level and trend line carries its strength -
+swing, touches, duration, age - and a level is compared with the trend it sits in.
+**Why:** looking at a losing trade (2022-07-28) he saw the line it broke rested on one small point
+inside a bear trend ten times its size; nothing in the lines or the strategy knew that. A strategy can
+only weigh a line if the line says what it is worth - so strength is the line's own property, not a
+filter written inside one strategy.
+**Links:** [[Events belong to his setup's lines, and lines are kept like the zigzag's points]]
+
+### A trend ends by its dots, not by a close; its line starts where it began
+tags: kind=principle · attribution=your-design · portable=yes · signature=yes · importance=high
+anchor: 2026-10-09 · (chat, no commit)
+**Idea:** "a trend is not over with a close above its with 2 zigzag dots that get higher and higher. not
+same height. before that its noise" - and its line rides the trend's own zigzag dots from where it began.
+A close beyond the line is a breakout of it, an event; the trend and its line go on until the counted
+rule (2 higher highs AND 2 higher lows, or 2 lower) replaces it.
+**Why:** his 2022-03-04 sketch ("its a huge downtrend that wasnt broken and missing it make you buy in a
+downtrend and lose trades. we talked about it so many times") - our lines broke on the first close above
+and were redrawn from small peaks, so the 2021-11 -> 2022 bear trend was never on screen and the strategy
+bought inside it. Six geometric rules for the line were tried against his six drawn lines and none was
+his; the counted rule plus "from where the trend began, over the highs" matches three, by his own dots.
+Also: the direction is the trend's - one source, not a second algorithm reading the line's slope.
+**Links:** [[Strength belongs to the components, measured against the trend they sit in]]
