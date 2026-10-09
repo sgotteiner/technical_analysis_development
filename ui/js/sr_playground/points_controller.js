@@ -5,6 +5,8 @@
 import { api } from './api.js';
 import { renderPointsPanel } from './points_panel.js';
 import { createVerdicts } from './verdicts.js';
+import { CONCEPT_DEFAULTS, conceptFlags } from './concepts_panel.js';
+import { createLineDots } from './line_dots.js';
 
 const COLORS = ['#29b6f6', '#ffca28', '#ab47bc', '#66bb6a'];
 const KEY = 'sr_playground_points_v7';      // v7: the band comes from the move, 2 visits is a level
@@ -13,19 +15,24 @@ const KEY = 'sr_playground_points_v7';      // v7: the band comes from the move,
 // move is 10%" (owner, 2026-10-05).
 // minVisits 2, because a flat top IS two peaks at the same height: at 3 the rule could never
 // return the thing he described, and 2 also takes 2026-09-04 from 4 of his 6 lines to 5.
-const DEFAULTS = { targetDays: 14, sizesText: '7', show: true, drawLines: true, mode: 'owner',
+const DEFAULTS = { targetDays: 14, sizesText: '7', show: true, drawLines: true, mode: 'zigzag',
   tolPct: 1.5, minTouches: 3, maxSlope: '', top: 6, lookback: '', anchorDays: 120, maxHistory: 2,
-  mergePct: 0, targets: 2, minVisits: 2, prefer: 'recent' };
+  mergePct: 0, targets: 2, minVisits: 2, prefer: 'recent', ...CONCEPT_DEFAULTS };
 
 export function createPointsController({ root, srChart, drawings, getCandles, getNow, status,
                                          getDrawings = () => [], armLineTool = () => {},
                                          getLayers = () => ({}),
-                                         showDrawing = () => {}, onVerdictChange = () => {} }) {
+                                         showDrawing = () => {}, onVerdictChange = () => {},
+                                         onSettingsChange = () => {}, card }) {
   let state = { ...DEFAULTS }, info = null, seq = 0, presets = [];
+  const lineDots = createLineDots({ card, chart: srChart.chart, series: srChart.series, drawings,
+    onFocus: role => { focus = role; focusAt = role === null ? null : getNow(); paint(); draw(); } });
   let busy = false, secs = null, inflight = null;      // what the panel says while it is working
   let focus = null, focusAt = null;    // one line of the setup, alone - at the date it was picked
   const show = { dots: true, lines: true, boxes: true, closedots: false, zigzag: false };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
+  // lines are based on the zigzag and nothing else (owner, 2026-10-08): the old rule is not offered
+  if (state.mode === 'owner') state.mode = 'zigzag';
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
   const parseSizes = () => state.sizesText.split(/[,\s]+/).filter(Boolean)
     .map(s => +s / 100).filter(s => s >= 0.005 && s <= 1);
@@ -64,6 +71,8 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
     // use when he is looking at the chart (owner, 2026-10-05: "if its calculating i would like to
     // see it on the top not only inside the swing points card")
     status('computing the lines…', 'warn');
+    // still busy after a few seconds: most likely the server is warming up after a restart - say so
+    const slow = setTimeout(() => { if (busy) status('computing the lines… the server is warming up after a restart (up to ~2 min)', 'warn'); }, 4000);
     const sizes = parseSizes(), mine = ++seq;
     const body = {
       end: now, sizes, target_days: sizes.length ? null : +state.targetDays,
@@ -75,6 +84,7 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
         merge_pct: state.mergePct === '' ? 0 : +state.mergePct,
         targets_each_way: state.targets === '' ? 0 : +state.targets,
         min_visits: +state.minVisits, prefer: state.prefer,
+        concepts: state.mode === 'concepts' ? conceptFlags(state) : null,
       } : null,
       // what is switched on in his window, so the server log can say it (owner, 2026-10-07:
       // "pipes is not checked do you see my fucking window?")
@@ -86,14 +96,14 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
       const res = await api.points(body, ctrl.signal);
       if (mine !== seq) return;
       info = res; secs = (performance.now() - t0) / 1000;
-      busy = false; inflight = null;
+      busy = false; inflight = null; clearTimeout(slow);
       paint();
       draw(mine);
       status(`lines in ${secs.toFixed(2)} s`);
     } catch (e) {
       if (e.name === 'AbortError') return;          // a newer "now" took over; it owns the panel
       if (mine === seq) {
-        busy = false; secs = null; inflight = null;
+        busy = false; secs = null; inflight = null; clearTimeout(slow);
         status(`points: ${e.message}`, 'err'); info = null; draw(mine);
       }
     }
@@ -139,13 +149,18 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
     // 2026-10-04: "i unchecked the calculated lines but still see the touch points")
     drawings.setUsed(!(show.lines && state.drawLines) ? []
       : groups.flatMap(g => picked(g).flatMap(l =>
-          (l.times || []).map(t => ({ time: t, price: l.price, role: l.role })))));
+          (l.times || []).map((t, i) => ({ time: t, price: (l.point_prices || [])[i] || l.price, role: l.role })))));
+    // focused: the very line drawn on the chart (a trend line keeps its slope), matched by its dots
+    const sameLine = (ln, l) => (ln.points || []).length && (l.points || []).length
+      && Math.min(...ln.points) === Math.min(...l.points) && Math.abs(Math.exp(ln.y1 + ln.slope * (getNow() - ln.x1)) / l.price - 1) < 0.01;
     const lines = focus
-      ? groups.map(g => ({ color: g.color, lines: picked(g).map(l => ({
+      ? groups.map(g => ({ color: g.color, lines: picked(g).map(l => drawables(g).find(ln => sameLine(ln, l)) || {
           x1: Math.min(...(l.points || [getNow()])), y1: Math.log(l.price), slope: 0,
-          first: Math.min(...(l.points || [getNow()])), last: getNow() })) }))
+          first: Math.min(...(l.points || [getNow()])), last: getNow() }) }))
       : groups.map(g => ({ color: g.color, lines: drawables(g) }));
     srChart.drawPointLines(show.lines && state.drawLines ? lines : [], getCandles(), getNow());
+    lineDots.show(groups.map(g => ({ ...g, story: { ...(g.story || {}), lines: picked(g) } })), getCandles(), getNow(),
+                  show.lines && state.drawLines, show.stars !== false);
   }
 
   // `answered` is the points request this paint is the ANSWER to. Only the request path passes it:
@@ -161,6 +176,7 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
         state.presetName = '';
         save();
         refresh();
+        onSettingsChange();          // the events are judged against these lines
       },
       onLoadPreset: loadPreset, onSavePreset: savePreset, ...verdicts.handlers });
   }
@@ -171,7 +187,10 @@ export function createPointsController({ root, srChart, drawings, getCandles, ge
   const trends = () => (info ? info.sizes : []).flatMap(g => (g.trends || []).map(t => ({
     at_now: Math.exp(t.y1 + t.slope * (getNow() - t.x1)), slope_pct_day: Math.expm1(t.slope) * 100 })));
 
-  return { refresh, trends, verdicts, linkDrawing: verdicts.linkDrawing,
+  // the line switches the events are judged against: the page's own when the rule is "concepts"
+  const concepts = () => (state.mode === 'concepts' ? conceptFlags(state) : null);
+
+  return { refresh, trends, verdicts, concepts, linkDrawing: verdicts.linkDrawing,
     busy: () => busy,          // the lines are the slow part: nothing else may claim the top bar
     setVisible(layers) { Object.assign(show, layers); paint(); } };
 }

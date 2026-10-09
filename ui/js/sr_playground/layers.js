@@ -12,6 +12,9 @@ export const LAYERS = [
   ['closeline', 'close-only line'],
   ['closedots', 'close dots'],
   ['zigzag', 'zigzag'],
+  ['events', 'events'],              // every event over history, a dot a day (events_controller.js)
+  ['stars', 'stars on the lines'],   // breakout / retest / fakeout at the lines on screen (line_dots.js)
+  ['trades', 'trades'],              // his strategy's entries and exits (trades_controller.js)
 ];
 const OFF_BY_DEFAULT = ['closeline', 'closedots', 'zigzag'];     // a different way to see the chart, not a layer to hide
 

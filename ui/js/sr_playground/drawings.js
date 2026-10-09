@@ -2,7 +2,8 @@
 // chart. What each thing looks like is overlay.js; chart <-> pixels is chart_coords.js.
 // Tools: pan (default), line (click two points), box (click two corners), sketch. Esc cancels.
 import { createCoords } from './chart_coords.js';
-import { band, shape, swingBox, touchZone, usedPoint, zigzagLine, STYLE } from './overlay.js';
+import { band, lineDot, shape, swingBox, touchZone, usedPoint, zigzagLine, STYLE } from './overlay.js';
+import { eventMark, tradeMark, EVENT_STYLE } from './event_overlay.js';
 
 const TWO_POINT_TOOLS = ['line', 'box'];     // what a click-click actually builds
 const SKETCH_STEP = 4;        // px between kept points: a thinned path, not every mouse sample
@@ -14,6 +15,9 @@ export function createDrawings({ chart, series, svg, container, onCreate }) {
   let swings = [];                  // each peak/valley as the journey it is
   let used = [];                    // the few points the answer was built from
   let zigzag = [];                  // the zigzag the trend is read from
+  let events = [];                  // the events on screen (events_controller.js)
+  let lineDots = [];                // a dot at each line's end (line_dots.js)
+  let trades = [];                  // the strategy's trades (trades_controller.js)
   const show = { drawings: true, detections: true };
   let down = null, sketch = null;   // own click detection: the library drops a quick second click
 
@@ -75,11 +79,14 @@ export function createDrawings({ chart, series, svg, container, onCreate }) {
       .concat((show.detections ? detected : []).map(it => shape(it.kind, it.points, 'det', it.label, co)))
       .concat((show.drawings ? items : []).map(it => shape(it.kind, it.points, it.id === selected ? 'sel' : 'user', it.label, co)));
     parts.push(zigzagLine(zigzag, co));
+    parts.push(...events.map(e => eventMark(e, co)));
+    parts.push(...lineDots.map(d => lineDot(d, co)));
+    parts.push(...trades.map(t => tradeMark(t, co)));
     parts.push(...used.map(u => usedPoint(u, co)));
     if (sketch && sketch.length > 1) parts.push(shape('freehand', sketch, 'preview', '', co));
     else if (anchor && hover) parts.push(shape(tool, [anchor, hover], 'preview', '', co));
     const sig = parts.join('');
-    if (sig !== lastSig) { svg.innerHTML = STYLE + sig; lastSig = sig; }
+    if (sig !== lastSig) { svg.innerHTML = STYLE + EVENT_STYLE + sig; lastSig = sig; }
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
@@ -97,6 +104,9 @@ export function createDrawings({ chart, series, svg, container, onCreate }) {
     setSwings(list) { swings = list; },
     setUsed(list) { used = list; },
     setZigzag(list) { zigzag = list; },
+    setEvents(list) { events = list; },
+    setLineDots(list) { lineDots = list; },
+    setTrades(list) { trades = list; },
     select(id) { selected = id; },
     setDetected(list) { detected = list; },
     setZones(list) { zones = list; },

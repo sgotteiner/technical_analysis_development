@@ -1,17 +1,21 @@
 // The swing-points panel: sizes, the line rule and its settings, and what was found.
 // The found lines and the owner's verdict on each live in ./found_lines.js.
 import { foundRows, bindFound, theStory } from './found_lines.js';
+import { conceptSettings, bindConcepts } from './concepts_panel.js';
 
 function lineSettings(state) {
   if (!state.drawLines) return '';
   const touchesRule = state.mode === 'touches';
   return `<div class="row">
       <label>rule <select id="pt-mode">
-        <option value="owner"${state.mode === 'owner' ? ' selected' : ''}>recent levels + their history</option>
         <option value="moves"${state.mode === 'moves' ? ' selected' : ''}>by the move that ran into it</option>
         <option value="touches"${touchesRule ? ' selected' : ''}>any line, by touch count</option>
+        <option value="channels"${state.mode === 'channels' ? ' selected' : ''}>TradingView S/R Channels (47.5K uses)</option>
+        <option value="zigzag"${state.mode === 'zigzag' ? ' selected' : ''}>from the zigzag (kept lines)</option>
+        <option value="concepts"${state.mode === 'concepts' ? ' selected' : ''}>concepts (choose below)</option>
       </select></label>
-      <label>max distance <input id="pt-tol" type="number" step="0.1" min="0.1" value="${state.tolPct}">%</label>
+      ${state.mode === 'concepts' ? conceptSettings(state) + '</div>' : ''}
+      ${['concepts', 'zigzag'].includes(state.mode) ? '' : `<label>max distance <input id="pt-tol" type="number" step="0.1" min="0.1" value="${state.tolPct}">%</label>
       <label>recent = last <input id="pt-anchor" type="number" min="1" value="${state.anchorDays}"> days</label>
       <label>show <input id="pt-top" type="number" min="1" max="50" value="${state.top}"></label>
       <label>min touches <input id="pt-touch" type="number" min="2" max="20" value="${state.minTouches}"></label>
@@ -24,7 +28,7 @@ function lineSettings(state) {
         <option value="visits"${state.prefer === 'visits' ? ' selected' : ''}>most visits wins</option>
       </select></label>
       ${touchesRule ? `<label>max slope <input id="pt-slope" type="number" step="0.05" min="0" value="${state.maxSlope}" placeholder="any">%/day</label>` : ''}
-    </div>`;
+    </div>`}`;
 }
 
 function presetRow(presets, state) {
@@ -96,4 +100,5 @@ export function renderPointsPanel({ root, state, info, colors, candles, answered
    ['#pt-tol', 'tolPct'], ['#pt-anchor', 'anchorDays'], ['#pt-top', 'top'], ['#pt-touch', 'minTouches'],
    ['#pt-hist', 'maxHistory'], ['#pt-merge', 'mergePct'], ['#pt-targets', 'targets'], ['#pt-visits', 'minVisits'], ['#pt-prefer', 'prefer'],
    ['#pt-slope', 'maxSlope']].forEach(([id, key]) => bind(id, key));
+  bindConcepts(root, state, onChange);
 }

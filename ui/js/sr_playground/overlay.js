@@ -41,13 +41,7 @@ export function touchZone(z, { xOf, yOf }) {
     if (yR !== null) parts.push('<line class="g-anchor" x1="' + (x + w / 2 - 4) + '" y1="' + yR
       + '" x2="' + (x + w / 2 + 4) + '" y2="' + yR + '"/>');
   }
-  // short by default - a dozen full sentences at one price collide into noise, which is what made
-  // the old swing-box labels unreadable. The whole sentence appears when one line is focused.
-  const label = z.detail
-    ? z.kind + ' · ' + z.bars + 'd · ' + z.touching_bars + ' bars on it · '
-      + z.height_pct.toFixed(1) + '% band · from ' + z.came_from + ' to ' + z.left_to
-    : z.kind + ' ' + z.bars + 'd';
-  parts.push('<text x="' + (x + 3) + '" y="' + (yTop - 4) + '">' + esc(label) + '</text>');
+  // no words on the chart: the line's end dot opens a card that explains it (owner, 2026-10-08)
   return '<g class="zone-box ' + esc(z.kind) + '">' + parts.join('') + '</g>';
 }
 
@@ -99,8 +93,22 @@ export function zigzagLine(points, { xOf, yOf }) {
 export function usedPoint(u, { xOf, yOf }) {
   const x = xOf(u.time), y = yOf(u.price);
   if (x === null || y === null) return '';
-  return '<g class="used"><circle cx="' + x + '" cy="' + y + '" r="6"/>'
-    + '<text x="' + (x + 9) + '" y="' + (y + 4) + '">' + esc(u.role) + '</text></g>';
+  return '<g class="used"><circle cx="' + x + '" cy="' + y + '" r="6"/></g>';
+}
+
+// the dot at a line's end: clicked, it opens the card that explains the line (line_dots.js)
+export function lineDot(d, { xOf, yOf }) {
+  const x = xOf(d.time), y = yOf(d.price);
+  if (x === null || y === null) return '';
+  if (d.star) {          // an event at the line: a gold star on it, where it happened
+    const pts = Array.from({ length: 10 }, (_, i) => {
+      const r = i % 2 ? 3.2 : 8, a = Math.PI / 5 * i - Math.PI / 2;
+      return (x + r * Math.cos(a)).toFixed(1) + ',' + (y + r * Math.sin(a)).toFixed(1);
+    }).join(' ');
+    return '<polygon points="' + pts + '" fill="#ffca28" stroke="#131722" stroke-width="1.5"/>';
+  }
+  return '<circle class="line-dot" cx="' + x + '" cy="' + y + '" r="5" fill="'
+    + d.color + '" stroke="#131722" stroke-width="2"/>';
 }
 
 export function shape(kind, points, cls, label, { xy }) {

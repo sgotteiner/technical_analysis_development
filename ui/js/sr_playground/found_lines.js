@@ -57,6 +57,8 @@ export function foundRows({ state, info, colors, candles, judgements = [], drawi
           + ` · move ${lv.move.toFixed(0)}% = ${lv.vs_now.toFixed(2)}× now — ${lv.term}`
           + ` · ${lv.touches} touches`
           + ` · ${day(candles, lv.first)} → ${day(candles, lv.last)}`
+        : lv.score !== undefined          // rule "concepts": what made it is on the setup card
+        ? `level ${num(lv.price)} · score ${lv.score} · ${lv.kept_by} · ${day(candles, lv.first)} → ${day(candles, lv.last)}`
         : `level ${num(lv.price)}${lv.from_history ? ' (target)' : ''}`
           + `${lv.at_price_now ? ' (price on it)' : ''}`
           + ` · touched ${lv.touches}× (${lv.history} before) · ${day(candles, lv.first)} → ${day(candles, lv.last)}`;

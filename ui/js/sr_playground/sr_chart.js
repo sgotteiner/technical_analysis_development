@@ -112,14 +112,27 @@ export function createSrChart(el) {
     chart.timeScale().setVisibleRange({ from, to });
   }
 
+  // one marker list per series: the dots and the event letters are kept apart and set together
+  let dotMarkers = [], eventMarkers = [];
+  const applyMarkers = () => {
+    past.setMarkers(dotMarkers.concat(eventMarkers).sort((a, b) => a.time - b.time));
+    drawn.markers = dotMarkers.length; drawn.eventMarkers = eventMarkers.length;
+  };
   function setPointMarkers(groups) {
-    const markers = groups.flatMap(g => g.points.map(p => ({
+    dotMarkers = groups.flatMap(g => g.points.map(p => ({
       time: p.time, position: p.kind === 'peak' ? 'aboveBar' : 'belowBar', color: g.color,
       shape: g.shape || 'circle', size: 0.6 })));
-    past.setMarkers(markers.sort((a, b) => a.time - b.time));
-    drawn.markers = markers.length;
+    applyMarkers();
+  }
+  // a day with events: one small dot under (up) or over (down) its candle - clicked, it explains
+  // itself (events_popup.js). Grey when the day's events point both ways.
+  function setEventMarkers(days) {
+    eventMarkers = days.map(d => ({ time: d.time, shape: 'circle', size: 0.5,
+      position: d.direction === 'up' ? 'belowBar' : 'aboveBar',
+      color: d.mixed ? '#9598a1' : d.direction === 'up' ? '#26a69a' : '#ef5350' }));
+    applyMarkers();
   }
 
-  return { chart, series: past, setNow, setCloseLine, drawView, focus, setPointMarkers, drawPointLines,
+  return { chart, series: past, setNow, setCloseLine, drawView, focus, setPointMarkers, setEventMarkers, drawPointLines,
     drawn: () => ({ ...drawn }) };
 }

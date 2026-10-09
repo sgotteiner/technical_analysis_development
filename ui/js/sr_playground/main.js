@@ -8,6 +8,9 @@ import { renderResults } from './results_panel.js';
 import { createGroundTruth } from './ground_truth_controller.js';
 import { createSetupsController } from './setups_controller.js';
 import { createPointsController } from './points_controller.js';
+import { createEventsController } from './events_controller.js';
+import { createChartCard } from './chart_card.js';
+import { createTradesController } from './trades_controller.js';
 import { createLayers } from './layers.js';
 import { createZonesController } from './zones_controller.js';
 import { createSketchpad } from './sketchpad.js';
@@ -57,16 +60,23 @@ const sketchpad = createSketchpad({ root: $('sketchpad'), status, chart: drawing
   // the one card that can save the strokes must not be shut while they are waiting in it
   onPending: () => cards && cards.show('sketchpad'),
   onSaved: () => groundTruth.reloadFromServer() });
-const points = createPointsController({ root: $('points'), srChart, drawings, status,
+// one card over the chart for every clickable dot - events and line ends
+const card = createChartCard({ chart: srChart.chart, container: $('chart'), canClick: () => drawings.tool() === 'pan' });
+const points = createPointsController({ root: $('points'), srChart, drawings, status, card,
   getCandles: () => candles, getNow: () => now,
   getDrawings: () => groundTruth.all(),
   getLayers: () => layers.state(),
   armLineTool: () => tools.setTool('line'),
   onVerdictChange: () => groundTruth.refresh(),
+  onSettingsChange: () => events.refresh(),
   showDrawing: id => {
     const a = groundTruth.all().find(x => x.id === id);
     if (a) { groundTruth.select(a.id); centerOn(a); }
   } });
+const events = createEventsController({ root: $('events'), srChart, drawings, status, card,
+  getCandles: () => candles, getNow: () => now, setNow: i => setNow(i), getConcepts: () => points.concepts() });
+const trades = createTradesController({ root: $('trades'), card, chart: srChart.chart, series: srChart.series,
+  drawings, status, getNow: () => now, setNow: i => setNow(i) });
 const zones = createZonesController({ root: $('zones'), drawings, getNow: () => now, status,
   getTrends: () => points.trends() });
 const layers = createLayers({ root: $('layers'), onChange: applyLayers });
@@ -76,7 +86,9 @@ const tools = createTools({ drawings, status, sketchpad, step: d => setNow(now +
 function applyLayers(show) {
   drawings.setVisible({ drawings: show.drawings, detections: show.detections });
   points.setVisible({ dots: show.dots, lines: show.lines, boxes: show.boxes, closedots: !!show.closedots,
-    zigzag: !!show.zigzag });
+    zigzag: !!show.zigzag, stars: show.stars !== false });
+  events.setVisible(show.events !== false);
+  trades.setVisible(show.trades !== false);
   zones.setVisible(show.zones);
   srChart.drawView(show.pipes ? view : null, candles, now);
   srChart.setCloseLine(!!show.closeline);
@@ -121,6 +133,8 @@ function setNow(i, refocus = true) {
   history.replaceState(null, '', '#' + $('date').value);
   compute();
   points.refresh();
+  events.refresh();
+  trades.refresh();
   zones.refresh();
   groundTruth.onNowMoved();   // the drawings follow the date, and an armed redraw does not
 }
@@ -143,7 +157,7 @@ setNow(start >= 0 ? start : candles.length - 1);
 applyLayers(layers.state());        // honour the boxes that were left unticked last time
 // the sidebar as cards. The guide first, so the page says what it is before it shows anything
 renderGuide($('guide'));
-const cards = createCards({ root: $('side'), open: ['guide', 'story', 'points'] });
+const cards = createCards({ root: $('side'), open: ['guide', 'story', 'trades', 'events', 'points'] });
 window.__srPlayground = { state: () => ({ now, view, request, annotations: groundTruth.all(),
   setups: setups.setups(), layers: layers.state(), drawn: srChart.drawn() }),
   setNow, compute, srChart };   // for automated checks
